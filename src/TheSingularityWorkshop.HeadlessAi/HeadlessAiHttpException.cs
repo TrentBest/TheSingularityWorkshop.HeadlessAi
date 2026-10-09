@@ -4,15 +4,13 @@ namespace TheSingularityWorkshop.HeadlessAi;
 public sealed class HeadlessAiHttpException : HttpRequestException
 {
     public HeadlessAiHttpException(string profileId, HttpStatusCode statusCode, string responseExcerpt)
-        : base($"HeadlessAi profile '{profileId}' returned HTTP {(int)statusCode} ({statusCode}).")
+        : base($"HeadlessAi profile '{profileId}' returned HTTP {(int)statusCode} ({statusCode}).", null, statusCode)
     {
         ProfileId = profileId;
-        StatusCode = statusCode;
         ResponseExcerpt = responseExcerpt;
     }
 
     public string ProfileId { get; }
-    public HttpStatusCode StatusCode { get; }
     /// <summary>Bounded but potentially sensitive response text. Redact before persistence.</summary>
     public string ResponseExcerpt { get; }
 }
