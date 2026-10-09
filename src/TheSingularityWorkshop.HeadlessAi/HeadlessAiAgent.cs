@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text;
 
 namespace TheSingularityWorkshop.HeadlessAi;
@@ -104,10 +105,12 @@ public sealed class HeadlessAiAgent
     private static async Task BufferResponseAsync(HttpResponseMessage response, int maxBytes, CancellationToken cancellationToken)
     {
         var original = response.Content;
-        using var buffer = new MemoryStream();
-        await using (var stream = await original.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
+        var initialCapacity = (int)Math.Min(maxBytes, original.Headers.ContentLength ?? 16384);
+        using var buffer = new MemoryStream(initialCapacity);
+        var chunk = ArrayPool<byte>.Shared.Rent(81920);
+        try
         {
-            var chunk = new byte[81920];
+            await using var stream = await original.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             long total = 0;
             while (true)
             {
@@ -121,8 +124,12 @@ public sealed class HeadlessAiAgent
                 total += read;
             }
         }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(chunk);
+        }
 
-        var replacement = new ByteArrayContent(buffer.ToArray());
+        var replacement = new ByteArrayContent(buffer.GetBuffer(), 0, (int)buffer.Length);
         foreach (var header in original.Headers)
         {
             if (!string.Equals(header.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
