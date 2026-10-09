@@ -1,18 +1,46 @@
 # Alpha Readiness — HeadlessAi
 
-> **Purpose:** make the first public alpha understandable, inspectable, and safe to evaluate. An alpha is an invitation to test a clearly bounded contract—not a claim of production maturity.
+> **Purpose:** prepare a first release that is genuinely useful, understandable, and testable. “Alpha” describes maturity and the need for real-world feedback; it is not a reason to artificially withhold coherent functionality.
 
-## What the alpha is
+## Release ambition
 
-HeadlessAi is a .NET 8 library for invoking configured AI-capable HTTP endpoints through explicit protocol adapters. The initial scope is deliberately narrow:
+HeadlessAi addresses a major integration limitation: developers should be able to add AI capabilities to applications and services without adopting a heavyweight framework, GUI, application runtime, or single-provider architecture. The first release should deliver as much of that useful domain as can be implemented coherently and supported by tests and documentation.
+
+The standard is **broad usefulness with honest boundaries**:
+
+- Prefer a coherent end-to-end capability over a shallow collection of APIs.
+- Keep the core independently usable and provider-extensible.
+- Make provider differences explicit instead of pretending they are identical.
+- Test normal operation and failure behavior using deterministic fixtures; do not make CI depend on paid live endpoints.
+- Describe what is implemented today separately from experimental features, known limitations, and roadmap ambitions.
+- Do not promise security, semantic correctness, performance, token savings, accuracy, or cost savings without evidence.
+
+## What exists in the current foundation
+
+The current implementation includes:
 
 - Reusable endpoint profiles and agent templates.
-- A lightweight agent invocation surface using a host-injected `HttpClient`.
+- A lightweight invocation surface using a host-injected `HttpClient`.
 - Raw-text, delegate-based, JSON, OpenAI Responses, Gemini `generateContent`, and Anthropic Messages adapters.
 - Request-time header providers, cancellation, timeouts, and bounded response bodies.
 - Normalized content and provider usage metadata where the response supplies it.
+- Deterministic fixture tests, a BenchmarkDotNet baseline project, coverage reporting, and package packing in CI.
 
-Built-in provider adapters are text-focused and non-streaming. The package does not supply conversation memory, autonomous planning, tool execution, authorization, global rate/cost budgets, or a GUI. ProtocolAi and GrammarAi remain optional.
+The built-in provider adapters are currently text-focused and non-streaming. The list above describes the present foundation, not a claim that the whole useful HeadlessAi domain is finished.
+
+## Domain-completeness questions
+
+Before treating the first release as ready, assess whether a developer can:
+
+1. **Connect:** configure an endpoint, authentication headers, provider adapter, and request without guessing.
+2. **Use:** send a request and consume a clear result while retaining important provider-specific details.
+3. **Recover:** distinguish configuration, transport, HTTP, cancellation/timeout, response-size, and provider-payload failures.
+4. **Extend:** add an adapter or customize request/response behavior without forking the package.
+5. **Control:** understand which controls are provided by HeadlessAi and which remain the host application's responsibility.
+6. **Secure:** handle credentials, outbound endpoints, untrusted output, and authorization boundaries intentionally.
+7. **Learn:** follow a working example, understand the architecture, and find provider-specific setup and troubleshooting guidance.
+
+If a missing capability materially prevents these outcomes, evaluate implementing it before the first release rather than deferring it solely because the package is labelled alpha. If a capability is too broad to complete safely, define its boundary and document it explicitly.
 
 ## Release gates
 
@@ -32,17 +60,19 @@ Use this checklist against the exact candidate commit. Do not infer readiness fr
 - [ ] Profile validation covers absolute URI, HTTPS-by-default, explicit local HTTP opt-in, positive response limit, and timeout rules.
 - [ ] Transport tests cover caller cancellation, configured timeout, non-success HTTP status, oversized success body, and bounded error excerpts.
 - [ ] Header tests cover request-time resolution and dynamic override behavior without leaking values.
-- [ ] Adapter tests cover valid responses, missing/malformed required fields, empty text, provider error responses, and usage metadata when present.
+- [ ] Adapter tests cover valid response variants, missing/malformed required fields, empty text, provider error responses, and usage metadata when present.
 - [ ] Tests use deterministic fixtures and fake HTTP handlers; CI does not depend on paid endpoints.
+- [ ] Any newly added capability has explicit tests for cancellation, disposal, errors, and partial results where applicable.
 
 ### 3. Documentation and usability
 
 - [ ] README follows the Workshop reader journey and links to the canonical documentation map.
-- [ ] The first-use example matches current public API signatures and clearly distinguishes source-checked examples from live-provider execution.
+- [ ] First-use examples match current public API signatures and clearly distinguish fixture-based examples from live-provider execution.
 - [ ] Provider guides list required settings, authentication headers, known limitations, and official API references.
 - [ ] Security documentation explains secret handling, untrusted model output, outbound endpoint policy, and host-owned authorization.
 - [ ] Roadmap and changelog distinguish implemented behavior from planned work.
-- [ ] Claims about performance, token savings, accuracy, hallucinations, drift, and cost are either backed by reproducible evidence or explicitly described as hypotheses.
+- [ ] A new user can diagnose common configuration and request failures from documentation and error behavior.
+- [ ] Claims about performance, token savings, accuracy, hallucinations, drift, and cost are backed by reproducible evidence or explicitly described as hypotheses.
 
 ### 4. Version and release control
 
@@ -54,11 +84,13 @@ Use this checklist against the exact candidate commit. Do not infer readiness fr
 
 ## Known limitations to disclose
 
-- Provider adapters implement an initial text-focused subset of their APIs, not every provider feature.
-- Streaming, rich multimodal payloads, provider-specific tool semantics, orchestration, retries, and global budgets are not promised by this package.
+The following are known boundaries of the current foundation and should be reassessed as implementation evolves:
+
+- Built-in provider adapters implement an initial text-focused subset of their APIs, not every provider feature.
+- Streaming, rich multimodal payloads, provider-specific tool semantics, orchestration, retries, and global budgets are not promised by the current implementation.
 - Direct HTTP does not bypass provider authentication, billing, quotas, rate limits, or access policies.
 - A syntactically valid or successful response is not proof of semantic correctness or permission to act.
-- The package has no measured performance or token-efficiency claim until benchmark and end-to-end experiments have been run and recorded.
+- No measured performance or token-efficiency claim should be made until benchmark and end-to-end experiments have been run and recorded.
 
 ## How to report a candidate
 
