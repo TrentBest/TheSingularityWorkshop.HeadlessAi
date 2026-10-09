@@ -6,6 +6,7 @@
 - [x] Add immutable profiles, reusable agent templates, request-time headers, timeout/cancellation, and response-size bounds.
 - [x] Add direct-HTTP adapters for OpenAI Responses, Gemini generateContent, and Anthropic Messages with fixture tests.
 - [x] Add BenchmarkDotNet baseline, Codecov, package README metadata, and build/test/coverage/pack workflow.
+- [x] Add an alpha readiness checklist that distinguishes passing CI, package inspection, release approval, and publication.
 
 ## Adapter and transport hardening
 - [ ] Add official-schema fixture tests for error envelopes and malformed responses for each provider.
@@ -20,4 +21,11 @@
 - [ ] Optional Forge integration example using ProtocolAi and GrammarAi without making either a core dependency.
 - [ ] Reproducible measurements of token use, accuracy, schema validity, hallucination/drift, latency, and cost.
 
-Release gates: CI must pass on the exact release-candidate commit; meaningful failure-path tests; reviewed package contents; documented limitations; and explicit approval before NuGet publication.
+## Alpha release gates
+- [ ] CI passes on the exact candidate commit, including build, tests, coverage, and package packing.
+- [ ] Review failure-path tests for profiles, transport, credentials, response bounds, and provider adapters.
+- [ ] Inspect package contents and metadata from a clean artifact.
+- [ ] Confirm documentation clearly separates implemented features, limitations, and hypotheses.
+- [ ] Confirm NuGet publication remains gated by `&& false` until explicit owner approval.
+
+A passing build is necessary but not sufficient. Alpha readiness means a user can understand the intended contract, try it without guessing at required settings, recognize its limitations, and report a reproducible issue. NuGet publication still requires explicit approval.
