@@ -68,6 +68,47 @@ public sealed class HeadlessAiTests
         Assert.Equal("done", output.Content);
     }
 
+
+    [Fact]
+    public async Task Agent_ResolvesRequestHeadersAtInvocationTime()
+    {
+        using var client = new HttpClient(new StubHandler((request, _) =>
+        {
+            Assert.Equal("rotated-token", request.Headers.GetValues("Authorization").Single());
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") });
+        }));
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test")),
+            new RawTextHeadlessAiAdapter(),
+            new FixedHeaderProvider());
+
+        var output = await agent.SendAsync(new HeadlessAiInput("prompt"));
+
+        Assert.Equal("ok", output.Content);
+    }
+
+    [Fact]
+    public async Task Agent_RejectsResponseBodiesOverProfileLimit()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("123456789")
+            })));
+        var profile = new HeadlessAiProfile("fixture", new Uri("https://example.test"), maxResponseBytes: 4);
+        var agent = new HeadlessAiAgent(client, profile, new RawTextHeadlessAiAdapter());
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => agent.SendAsync(new HeadlessAiInput("prompt")));
+    }
+
+    private sealed class FixedHeaderProvider : IHeadlessAiRequestHeaderProvider
+    {
+        public ValueTask<IReadOnlyDictionary<string, string>> GetHeadersAsync(
+            HeadlessAiProfile profile, CancellationToken cancellationToken = default)
+            => ValueTask.FromResult<IReadOnlyDictionary<string, string>>(
+                new Dictionary<string, string> { ["Authorization"] = "rotated-token" });
+    }
+
     [Fact]
     public async Task Agent_BoundsHttpErrorExcerpt()
     {
