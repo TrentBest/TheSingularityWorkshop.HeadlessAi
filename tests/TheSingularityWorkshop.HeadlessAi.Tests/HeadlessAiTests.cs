@@ -173,6 +173,45 @@ public sealed class HeadlessAiTests
                 new Dictionary<string, string> { ["Authorization"] = "rotated-token" });
     }
 
+
+    [Fact]
+    public async Task JsonAdapter_MapsProviderSpecificRequestAndResponse()
+    {
+        using var client = new HttpClient(new StubHandler(async (request, _) =>
+        {
+            Assert.Equal("https://example.test/json", request.RequestUri!.ToString());
+            Assert.Equal("application/json", request.Content!.Headers.ContentType!.MediaType);
+            using var body = System.Text.Json.JsonDocument.Parse(await request.Content.ReadAsStringAsync());
+            Assert.Equal("model-z", body.RootElement.GetProperty("model").GetString());
+            Assert.Equal("task", body.RootElement.GetProperty("input").GetString());
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"output\":\"mapped\",\"usage\":{\"total_tokens\":17}}",
+                    System.Text.Encoding.UTF8, "application/json")
+            };
+        }));
+        var adapter = new JsonHeadlessAiAdapter(
+            "fixture-json",
+            (profile, input) => new System.Text.Json.Nodes.JsonObject
+            {
+                ["model"] = profile.Settings["model"],
+                ["input"] = input.Content
+            },
+            root => root.GetProperty("output").GetString()!,
+            root => new Dictionary<string, string>
+            {
+                ["total_tokens"] = root.GetProperty("usage").GetProperty("total_tokens").GetInt32().ToString()
+            });
+        var profile = new HeadlessAiProfile("fixture", new Uri("https://example.test/json"),
+            settings: new Dictionary<string, string> { ["model"] = "model-z" });
+        var agent = new HeadlessAiAgent(client, profile, adapter);
+
+        var output = await agent.SendAsync(new HeadlessAiInput("task"));
+
+        Assert.Equal("mapped", output.Content);
+        Assert.Equal("17", output.Metadata!["total_tokens"]);
+    }
+
     [Fact]
     public async Task Agent_BoundsHttpErrorExcerpt()
     {
