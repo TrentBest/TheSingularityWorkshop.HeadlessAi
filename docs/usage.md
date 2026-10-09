@@ -6,13 +6,28 @@ Create a profile, inject a shared HttpClient, and bind an adapter:
         "my-endpoint",
         new Uri("https://example.invalid/generate"),
         method: HttpMethod.Post,
-        headers: new Dictionary<string, string> { ["X-Example"] = "value" },
-        timeout: TimeSpan.FromSeconds(20));
+        settings: new Dictionary<string, string>
+        {
+            ["model"] = "model-name",
+            ["api-version"] = "endpoint-version"
+        },
+        timeout: TimeSpan.FromSeconds(20),
+        maxResponseBytes: 1024 * 1024);
 
     using var httpClient = new HttpClient();
     var agent = new HeadlessAiAgent(httpClient, profile, new RawTextHeadlessAiAdapter());
     var result = await agent.SendAsync(new HeadlessAiInput("Task text"));
 
-RawTextHeadlessAiAdapter is a minimal text example only. Many LLM endpoints require provider-specific JSON and nested response extraction. Implement IHeadlessAiAdapter for the exact endpoint contract; do not assume compatibility with GPT, Gemini, Claude, or any other provider without a matching adapter.
+Provider-specific settings are non-secret string values available to the adapter. The adapter decides how to map them and the normalized input to the exact endpoint request.
 
-The host should use a secret provider rather than hardcoding credentials, and should own conversation state, roles, permissions, cost budgets, and tool mediation. Share HttpClient instances or use IHttpClientFactory; each HeadlessAiAgent is lightweight and does not own the transport.
+## Endpoint-specific behavior
+
+RawTextHeadlessAiAdapter is a minimal text example only. For a JSON protocol, use DelegateHeadlessAiAdapter to provide request construction and response extraction, or implement IHeadlessAiAdapter as a dedicated adapter. Do not assume compatibility with GPT, Gemini, Claude, or any other provider without a matching adapter.
+
+## Credentials
+
+Use IHeadlessAiRequestHeaderProvider to retrieve authorization headers at request time from a host-owned secret store or token refresh mechanism. Static profile headers are suitable for non-secret defaults; dynamic headers override same-named profile headers. HeadlessAi does not log header values. Never hardcode production credentials in source or checked-in configuration.
+
+## Transport and host responsibilities
+
+Share HttpClient instances or use IHttpClientFactory; each agent is lightweight and does not own the transport. The profile timeout applies in addition to the caller's cancellation token. Successful response bodies are bounded by MaxResponseBytes. The host still owns conversation state, agent roles, permissions, cost budgets, and tool mediation.
