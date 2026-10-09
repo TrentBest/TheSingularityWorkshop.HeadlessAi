@@ -7,6 +7,10 @@ public sealed class HeadlessAiAgent
     private readonly HeadlessAiProfile _profile;
     private readonly IHeadlessAiAdapter _adapter;
 
+    /// <summary>Creates an agent that uses the supplied shared transport and endpoint protocol.</summary>
+    /// <param name="httpClient">Reusable transport owned by the host, not by this agent.</param>
+    /// <param name="profile">Endpoint settings for this agent.</param>
+    /// <param name="adapter">Protocol-specific request and response mapping.</param>
     public HeadlessAiAgent(HttpClient httpClient, HeadlessAiProfile profile, IHeadlessAiAdapter adapter)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -15,10 +19,18 @@ public sealed class HeadlessAiAgent
         ArgumentException.ThrowIfNullOrWhiteSpace(adapter.Id);
     }
 
+    /// <summary>Gets the identifier of the endpoint profile used by this agent.</summary>
     public string ProfileId => _profile.Id;
+
+    /// <summary>Gets the identifier of the protocol adapter used by this agent.</summary>
     public string AdapterId => _adapter.Id;
 
     /// <summary>Calls the configured endpoint without owning or disposing the injected HttpClient.</summary>
+    /// <param name="input">Normalized input that the adapter maps to the endpoint protocol.</param>
+    /// <param name="cancellationToken">Token used to cancel the request.</param>
+    /// <returns>The adapter-normalized endpoint response.</returns>
+    /// <exception cref="HeadlessAiHttpException">The endpoint returns a non-success HTTP status.</exception>
+    /// <exception cref="TimeoutException">The configured profile timeout expires before caller cancellation.</exception>
     public async Task<HeadlessAiOutput> SendAsync(HeadlessAiInput input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
