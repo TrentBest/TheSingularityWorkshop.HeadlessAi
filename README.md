@@ -1,62 +1,155 @@
-# TheSingularityWorkshop.HeadlessAi
+# ✳️ TheSingularityWorkshop.HeadlessAi
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml/badge.svg?branch=development)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml)
 [![Code Coverage](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi/branch/development/graph/badge.svg)](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi)
 
 <p align="center">
-  <img src="docs/assets/headless-ai-architecture.svg" alt="HeadlessAi architecture and trust boundaries" width="100%">
+  <img src="docs/assets/headless-ai-architecture.svg" alt="The host owns task intent, validation, permissions, memory, and actions; HeadlessAi constructs bounded HTTP requests through explicit provider adapters; configured endpoints perform inference." width="100%">
 </p>
+<p align="center"><em>Many logical callers. Explicit endpoint protocols. Host-owned authority.</em></p>
 
-**HeadlessAi is an HTTP-agent toolkit, not an AI model.** Configure endpoint-specific request and response behavior, then create lightweight agent instances that call those endpoints directly through ordinary HTTP.
+## 🟦 01 The problem—and our response
 
-Built-in adapters currently cover OpenAI Responses, Gemini generateContent, and Anthropic Messages. The raw, delegate, and JSON adapter seams let hosts call other authorized endpoints without a provider SDK. Endpoint schemas remain explicit; no universal request body is assumed.
+Applications often need to ask one or many remote AI endpoints to perform bounded tasks. Without a deliberate boundary, every host grows its own provider-specific HTTP code, credential handling, response parsing, timeout behavior, and assumptions about what a model response means.
 
-## The problem it solves
+**HeadlessAi is a .NET library for configuring and invoking AI-capable HTTP endpoints through explicit, replaceable protocol adapters.** It centralizes reusable transport mechanics without pretending every provider speaks the same protocol or taking ownership of the application that calls it.
 
-Applications need to call one or many model endpoints without duplicating HTTP plumbing, coupling business logic to vendor SDKs, or assuming every provider accepts the same request format. HeadlessAi centralizes endpoint profiles, protocol adapters, and bounded invocation while leaving orchestration and authority with the host.
+It is an invocation toolkit—not a model, agent orchestration engine, memory store, permission system, GUI, or autonomous execution loop.
 
-## First principles
+---
 
-- Provider-neutral transport, provider-specific protocols.
-- Shared injected HttpClient; no socket pool per agent/request.
-- Immutable profiles and reusable templates create many lightweight agent instances.
-- Request-time credential headers, cancellation, timeouts, and bounded response bodies.
-- ProtocolAi and GrammarAi are optional integrations, not dependencies.
-- Model output is untrusted data, not permission to execute tools.
-- Token savings, reduced drift, and accuracy gains must be measured rather than promised.
+## 🟣 02 The Workshop documentation map
 
-## Documentation
+This repository follows The Singularity Workshop's shared [Documentation Standard](DOCUMENTATION_STANDARD.md), maintained in [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). The standard is designed to **edify, not mystify**: lead with the problem, orient the reader, provide a credible first proof, then link to deeper explanations instead of cramming the entire manual into the README.
 
-- [Documentation index](docs/README.md)
-- [Problem domain](docs/problem-domain.md)
-- [Theory](docs/THEORY.md)
-- [Architecture boundaries](docs/architecture-boundaries.md)
-- [Usage guide](docs/usage.md)
-- [Provider adapters](docs/provider-adapters.md)
-- [Security model](docs/security.md)
-- [Performance](docs/performance.md)
-- [Benchmark methodology](docs/benchmark-methodology.md)
-- [Use cases](docs/use-cases.md)
-- [Measurement plan](docs/measurement-plan.md)
-- [Roadmap](docs/roadmap.md)
-- [Repository map](docs/repository-map.md)
-- [Changelog](CHANGELOG.md)
+- **New to the idea?** Start with [What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md).
+- **Want to use it?** Follow the [Usage Guide](docs/usage.md).
+- **Want to understand the why?** Read [Theory](docs/THEORY.md) and [Problem Domain](docs/problem-domain.md).
+- **Need exact boundaries?** Read [Architecture](docs/architecture-and-theory.md) and [Architecture Boundaries](docs/architecture-boundaries.md).
+- **Want the full document map?** Open the [Documentation Index](DOCUMENTATION_INDEX.md).
 
-## Build
+HeadlessAi has its own domain and vocabulary. It adopts the Workshop's shared visual and editorial language without inheriting responsibilities that belong to FSM_COS, FSM_API, ProtocolAi, GrammarAi, or a host application.
+
+---
+
+## 🩵 03 The problem and solution in depth
+
+### A profile is not an agent army
+
+HeadlessAi separates four things that are often accidentally coupled:
+
+| Part | What it means | What it does not mean |
+|---|---|---|
+| **Profile** | Immutable endpoint, HTTP method, non-secret settings, timeout, and response-size bound. | A secret vault or a guarantee that the endpoint is trustworthy. |
+| **Adapter** | Explicit mapping to and from one endpoint's protocol. | A fictional universal provider schema. |
+| **Template** | Reusable profile, adapter, and optional request-time header provider. | A running autonomous process. |
+| **Agent instance** | A lightweight caller using an injected HttpClient. | A dedicated thread, connection pool, model, memory, or permission grant. |
+
+This lets a host configure a provider once and create many logical callers without making one HTTP connection pool per agent. It does **not** remove the need for host-side concurrency limits, provider budgets, role permissions, or output validation.
+
+### Responsibility boundary
+
+- **HeadlessAi owns:** endpoint invocation, adapter extension points, cancellation and timeouts, response bounds, and normalized response extraction.
+- **The host owns:** task planning, roles, memory, queues, concurrency and cost budgets, permissions, semantic validation, and approval of consequential actions.
+- **The provider owns:** its endpoint schema, authentication requirements, quotas, and inference behavior.
+- **ProtocolAi and GrammarAi:** optional host-side integrations that may help express stable meaning and constrained structure. Neither is required by HeadlessAi.
+
+A well-formed response can still be wrong. A valid grammar is not proof of truth, and model output never grants itself permission to execute a tool, change a runtime, or modify external state.
+
+### Implemented behavior versus research hypotheses
+
+The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These built-ins are an initial text-focused slice, not full support for every provider feature.
+
+ProtocolAi + GrammarAi may reduce repeated explanatory tokens or some forms of ambiguity in repeated tasks. That is a **testable hypothesis**, not a package guarantee. Setup costs, repair calls, output validity, semantic drift, and unsupported claims must be measured against a comparable baseline. See the [Measurement Plan](docs/measurement-plan.md).
+
+---
+
+## 🟢 04 See it in a minute
+
+This source-shaped example shows the smallest real invocation path using the OpenAI Responses adapter. It sends a live request, so use your own authorized endpoint and provide a real credential through a host-owned secret mechanism. This is not an offline unit test.
+
+~~~csharp
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using TheSingularityWorkshop.HeadlessAi;
+
+var profile = new HeadlessAiProfile(
+    id: "research",
+    endpoint: new Uri("https://api.openai.com/v1/responses"),
+    settings: new Dictionary<string, string>
+    {
+        ["model"] = "your-model",
+        ["instructions"] = "Answer in one concise paragraph.",
+        ["max_output_tokens"] = "256"
+    });
+
+using var httpClient = new HttpClient();
+
+// Implement IHeadlessAiRequestHeaderProvider using your host's credential source.
+// Do not put a production secret in source code or checked-in settings.
+var template = new HeadlessAiAgentTemplate(
+    profile,
+    new OpenAiResponsesAdapter(),
+    headerProvider: yourRequestHeaderProvider);
+
+var agent = template.CreateAgent(httpClient);
+var result = await agent.SendAsync(new HeadlessAiInput("Explain what an HTTP endpoint is."));
+Console.WriteLine(result.Content);
+~~~
+
+**Expected behavior:** HeadlessAi sends an endpoint-specific request, bounds the response body, and returns extracted text. A provider error is reported as an error, not disguised as a successful empty answer. Replace the placeholder header provider with an implementation of IHeadlessAiRequestHeaderProvider backed by your host's credential source.
+
+For deterministic examples that need no network or secrets, see the fixture-based tests under [tests](tests/TheSingularityWorkshop.HeadlessAi.Tests/).
+
+---
+
+## 🟪 05 Documentation and theory
+
+Use the [Documentation Index](DOCUMENTATION_INDEX.md) to choose the right depth. Key starting points:
+
+- [What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md) — an accessible introduction to the problem and boundary.
+- [Problem Domain](docs/problem-domain.md) — vocabulary, lifecycle, non-goals, trust, and acceptance criteria.
+- [Theory](docs/THEORY.md) — why identity, protocol, transport, and authority must remain distinct.
+- [Architecture](docs/architecture-and-theory.md) — profiles, adapters, templates, instances, and invariants.
+- [Architecture Boundaries](docs/architecture-boundaries.md) — dependency direction and responsibility ownership.
+- [Usage Guide](docs/usage.md) — configuration and custom adapters.
+- [Provider Adapters](docs/provider-adapters.md) — endpoint-specific settings and current limitations.
+- [Security Model](docs/security.md) — credentials, untrusted output, response bounds, and host responsibilities.
+- [Performance](docs/performance.md) and [Benchmark Methodology](docs/benchmark-methodology.md) — measured facts versus hypotheses.
+- [Measurement Plan](docs/measurement-plan.md) — reproducible token, validity, drift, and quality comparisons.
+- [Use Cases](docs/use-cases.md) — where the library fits and where it does not.
+- [Development Roadmap](docs/roadmap.md) — staged work and future boundaries.
+
+---
+
+## Build and verify
 
 Requires the .NET 8 SDK.
 
-    dotnet restore TheSingularityWorkshop.HeadlessAi.slnx
-    dotnet build TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-restore
-    dotnet test TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-build
+~~~sh
+dotnet restore TheSingularityWorkshop.HeadlessAi.slnx
+dotnet build TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-restore
+dotnet test TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-build
+~~~
 
-Run local performance baselines:
+Local benchmarks use fixture HTTP responses rather than live provider calls:
 
-    dotnet run --project benchmarks/TheSingularityWorkshop.HeadlessAi.Benchmarks/TheSingularityWorkshop.HeadlessAi.Benchmarks.csproj --configuration Release
+~~~sh
+dotnet run --project benchmarks/TheSingularityWorkshop.HeadlessAi.Benchmarks/TheSingularityWorkshop.HeadlessAi.Benchmarks.csproj --configuration Release
+~~~
 
-## Scope and safety
+Benchmark numbers should be reported only after the benchmark is actually run, with its environment and methodology recorded.
 
-HeadlessAi owns configured HTTP invocation and adapter contracts. It does not own a GUI, persistent conversation store, secret vault, workflow engine, FSM runtime, or authority to execute arbitrary model output. Direct HTTP does not bypass provider authentication, billing, rate limits, or access policies.
+## Ecosystem fit and maturity
 
-This is early development. NuGet publication is disabled in CI unless explicitly approved.
+HeadlessAi can be used on its own by any .NET host that needs its HTTP invocation boundary. It does not require TheForge, FSM_COS, FSM_API, ProtocolAi, or GrammarAi. Compatible Workshop contracts can make integration easier, but adopting the whole ecosystem is not a prerequisite.
+
+The current implementation is early development. Streaming, rich multimodal content, provider-specific tool semantics, global rate/cost budgets, and a host orchestration loop are not promised by this package. Direct HTTP does not bypass provider authentication, billing, rate limits, or access policies.
+
+NuGet publication remains disabled in CI unless the repository owner explicitly approves a release.
+
+---
+
+<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong><br><em>And because static boundaries are invitations to cause trouble.</em></p>
