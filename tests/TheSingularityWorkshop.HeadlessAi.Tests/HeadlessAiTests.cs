@@ -98,7 +98,7 @@ public sealed class HeadlessAiTests
         var profile = new HeadlessAiProfile("fixture", new Uri("https://example.test"), maxResponseBytes: 4);
         var agent = new HeadlessAiAgent(client, profile, new RawTextHeadlessAiAdapter());
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => agent.SendAsync(new HeadlessAiInput("prompt")));
+        await Assert.ThrowsAsync<InvalidDataException>(() => agent.SendAsync(new HeadlessAiInput("prompt")));
     }
 
     private sealed class FixedHeaderProvider : IHeadlessAiRequestHeaderProvider
