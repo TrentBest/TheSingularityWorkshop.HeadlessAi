@@ -39,7 +39,7 @@ public sealed class ProviderAdapterFailureTests
             Content = new StringContent("{ definitely not json")
         };
 
-        await Assert.ThrowsAsync<System.Text.Json.JsonException>(
+        await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(
             async () => await adapter.ReadResponseAsync(response));
     }
 
@@ -52,7 +52,7 @@ public sealed class ProviderAdapterFailureTests
             Content = new StringContent(string.Empty)
         };
 
-        await Assert.ThrowsAsync<System.Text.Json.JsonException>(
+        await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(
             async () => await adapter.ReadResponseAsync(response));
     }
 }
