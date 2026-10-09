@@ -108,13 +108,47 @@ public sealed class HeadlessAiTests
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") });
         }));
         var agent = new HeadlessAiAgent(client,
-            new HeadlessAiProfile("fixture", new Uri("https://example.test")),
+            new HeadlessAiProfile("fixture", new Uri("https://example.test"),
+                headers: new Dictionary<string, string> { ["Authorization"] = "old-token" }),
             new RawTextHeadlessAiAdapter(),
             new FixedHeaderProvider());
 
         var output = await agent.SendAsync(new HeadlessAiInput("prompt"));
 
         Assert.Equal("ok", output.Content);
+    }
+
+
+    [Fact]
+    public async Task Agent_ConvertsProfileTimeoutToTimeoutException()
+    {
+        using var client = new HttpClient(new StubHandler(async (_, token) =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }));
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test"), timeout: TimeSpan.FromMilliseconds(100)),
+            new RawTextHeadlessAiAdapter());
+
+        await Assert.ThrowsAsync<TimeoutException>(() => agent.SendAsync(new HeadlessAiInput("prompt")));
+    }
+
+    [Fact]
+    public async Task Agent_PreservesCallerCancellation()
+    {
+        using var client = new HttpClient(new StubHandler(async (_, token) =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }));
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test"), timeout: TimeSpan.FromSeconds(10)),
+            new RawTextHeadlessAiAdapter());
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(30));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => agent.SendAsync(new HeadlessAiInput("prompt"), cancellation.Token));
     }
 
     [Fact]
