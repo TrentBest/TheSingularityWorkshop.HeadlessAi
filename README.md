@@ -1,6 +1,7 @@
 # TheSingularityWorkshop.HeadlessAi
 
 [![Build](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml/badge.svg?branch=development)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi/branch/development/graph/badge.svg)](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi)
 
 **HeadlessAi is an HTTP-agent toolkit, not an AI model.** Configure endpoint-specific request and response behavior, then create lightweight agent instances that call those endpoints directly through ordinary HTTP.
 
