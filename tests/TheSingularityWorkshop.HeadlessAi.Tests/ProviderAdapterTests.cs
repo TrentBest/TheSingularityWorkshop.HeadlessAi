@@ -117,6 +117,64 @@ public sealed class ProviderAdapterTests
         Assert.Equal("5", output.Metadata!["output_tokens"]);
     }
 
+
+    [Fact]
+    public async Task OpenAiResponsesAdapter_CombinesTextPartsWithoutOptionalMetadata()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                "{\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"first\"},{\"type\":\"output_text\",\"text\":\"second\"}]}]}",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("openai", new Uri("https://api.openai.com/v1/responses"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test" });
+        var agent = new HeadlessAiAgent(client, profile, new OpenAiResponsesAdapter());
+
+        var output = await agent.SendAsync(new HeadlessAiInput("task"));
+
+        Assert.Equal($"first{Environment.NewLine}second", output.Content);
+        Assert.Null(output.Metadata);
+    }
+
+    [Fact]
+    public async Task GeminiAdapter_CombinesTextPartsWithoutOptionalMetadata()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"first\"},{\"text\":\"second\"}]}}]}",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("gemini",
+            new Uri("https://generativelanguage.googleapis.com/v1beta/models/model-test:generateContent"));
+        var agent = new HeadlessAiAgent(client, profile, new GeminiGenerateContentAdapter());
+
+        var output = await agent.SendAsync(new HeadlessAiInput("task"));
+
+        Assert.Equal($"first{Environment.NewLine}second", output.Content);
+        Assert.Null(output.Metadata);
+    }
+
+    [Fact]
+    public async Task AnthropicAdapter_CombinesTextBlocksWithoutOptionalMetadata()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                "{\"content\":[{\"type\":\"text\",\"text\":\"first\"},{\"type\":\"tool_use\",\"id\":\"tool-1\"},{\"type\":\"text\",\"text\":\"second\"}]}",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
+        var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
+
+        var output = await agent.SendAsync(new HeadlessAiInput("task"));
+
+        Assert.Equal($"first{Environment.NewLine}second", output.Content);
+        Assert.Null(output.Metadata);
+    }
+
     private sealed class StubHandler(
         Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {
