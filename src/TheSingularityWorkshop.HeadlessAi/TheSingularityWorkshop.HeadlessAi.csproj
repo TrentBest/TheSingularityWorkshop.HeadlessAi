@@ -10,6 +10,9 @@
     <Company>The Singularity Workshop</Company>
     <Description>Provider-neutral HTTP agent primitives with explicit endpoint-specific request and response adapters.</Description>
     <RepositoryUrl>https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>http;agents;llm;provider-adapter;headless</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -17,4 +20,7 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 </Project>
