@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="660" viewBox="0 0 1200 660" role="img" aria-labelledby="title desc">
+  <title id="title">HeadlessAi architecture and trust boundaries</title>
+  <desc id="desc">The host owns intent, permissions, memory and validation. HeadlessAi handles endpoint profiles, provider adapters and bounded HTTP transport. Providers own endpoint protocols and model inference. ProtocolAi and GrammarAi are optional host-side helpers.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101827"/><stop offset="1" stop-color="#1c2b3b"/></linearGradient>
+    <linearGradient id="headless" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4b942"/><stop offset="1" stop-color="#d97706"/></linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#a7bacd"/></marker>
+    <style>
+      .title{font:700 30px system-ui,sans-serif;fill:#f8fafc}.subtitle{font:400 15px system-ui,sans-serif;fill:#cbd5e1}
+      .heading{font:700 19px system-ui,sans-serif;fill:#f8fafc}.body{font:400 15px system-ui,sans-serif;fill:#dbe6f0}
+      .small{font:400 13px system-ui,sans-serif;fill:#cbd5e1}.edge{fill:none;stroke:#a7bacd;stroke-width:2.5;marker-end:url(#arrow)}
+      .dash{fill:none;stroke:#7c9bb7;stroke-width:2;stroke-dasharray:8 7;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="660" rx="24" fill="url(#background)"/>
+  <text x="56" y="58" class="title">HeadlessAi · The endpoint invocation boundary</text>
+  <text x="56" y="88" class="subtitle">Many logical agents. Explicit provider protocols. Host-owned authority.</text>
+  <rect x="55" y="145" width="275" height="340" rx="18" fill="#23364a" stroke="#6f8ba5" stroke-width="1.5"/>
+  <text x="82" y="184" class="heading">Host / TheForge</text>
+  <text x="82" y="218" class="body">Owns application policy</text>
+  <text x="82" y="254" class="small">• Task planning and roles</text>
+  <text x="82" y="282" class="small">• Memory and retention</text>
+  <text x="82" y="310" class="small">• Permissions and budgets</text>
+  <text x="82" y="338" class="small">• Output validation</text>
+  <text x="82" y="366" class="small">• Approval and real-world action</text>
+  <rect x="80" y="403" width="225" height="52" rx="10" fill="#304a61" stroke="#7c9bb7"/>
+  <text x="192" y="425" text-anchor="middle" class="small">Optional helpers</text>
+  <text x="192" y="444" text-anchor="middle" class="body">ProtocolAi · GrammarAi</text>
+  <rect x="440" y="145" width="320" height="340" rx="18" fill="url(#headless)" stroke="#ffe0a3" stroke-width="2"/>
+  <text x="470" y="184" class="heading" fill="#241605">HeadlessAi</text>
+  <text x="470" y="218" class="body" fill="#241605">Reusable invocation toolkit</text>
+  <rect x="470" y="245" width="260" height="52" rx="10" fill="#fff0cb" stroke="#b96a08"/>
+  <text x="600" y="267" text-anchor="middle" class="heading" fill="#462607">Endpoint profile</text>
+  <text x="600" y="286" text-anchor="middle" class="small" fill="#462607">URI · method · settings · bounds</text>
+  <rect x="470" y="313" width="260" height="52" rx="10" fill="#fff0cb" stroke="#b96a08"/>
+  <text x="600" y="335" text-anchor="middle" class="heading" fill="#462607">Protocol adapter</text>
+  <text x="600" y="354" text-anchor="middle" class="small" fill="#462607">Explicit request/response mapping</text>
+  <rect x="470" y="381" width="260" height="52" rx="10" fill="#fff0cb" stroke="#b96a08"/>
+  <text x="600" y="403" text-anchor="middle" class="heading" fill="#462607">Bounded HTTP</text>
+  <text x="600" y="422" text-anchor="middle" class="small" fill="#462607">Shared transport · cancel · timeout</text>
+  <rect x="870" y="145" width="275" height="340" rx="18" fill="#23364a" stroke="#6f8ba5" stroke-width="1.5"/>
+  <text x="897" y="184" class="heading">Configured endpoint</text>
+  <text x="897" y="218" class="body">Provider-owned contract</text>
+  <text x="897" y="254" class="small">• Authentication and quotas</text>
+  <text x="897" y="282" class="small">• Model-specific request schema</text>
+  <text x="897" y="310" class="small">• Inference and response schema</text>
+  <text x="897" y="338" class="small">• Usage and provider errors</text>
+  <rect x="895" y="380" width="225" height="64" rx="10" fill="#304a61" stroke="#7c9bb7"/>
+  <text x="1007" y="405" text-anchor="middle" class="small">Direct HTTP does not bypass</text>
+  <text x="1007" y="425" text-anchor="middle" class="body">auth · billing · policy</text>
+  <path d="M330 258 H430" class="edge"/>
+  <path d="M770 258 H860" class="edge"/>
+  <path d="M860 365 H770" class="edge"/>
+  <path d="M430 365 H330" class="edge"/>
+  <text x="380" y="240" text-anchor="middle" class="small">task</text>
+  <text x="815" y="240" text-anchor="middle" class="small">HTTP</text>
+  <text x="815" y="347" text-anchor="middle" class="small">response</text>
+  <text x="380" y="347" text-anchor="middle" class="small">result</text>
+  <path d="M192 455 V530 H600 V495" class="dash"/>
+  <text x="600" y="555" text-anchor="middle" class="body">Optional semantic compression and grammar belong at the host boundary.</text>
+  <text x="600" y="590" text-anchor="middle" class="subtitle">Model output is data, never authority. Validate before acting.</text>
+  <text x="600" y="630" text-anchor="middle" class="small">The Singularity Workshop · HeadlessAi</text>
+</svg>
