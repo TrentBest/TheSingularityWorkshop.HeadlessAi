@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [master, development]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish the verified package to NuGet.org'
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -51,7 +57,7 @@ jobs:
           name: headlessai-package
           path: artifacts/*.nupkg
       - name: Publish to NuGet (disabled by default)
-        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' && false
+        if: github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/master' && false
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: dotnet nuget push ./artifacts/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
