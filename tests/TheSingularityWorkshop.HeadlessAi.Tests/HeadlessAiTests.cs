@@ -21,6 +21,23 @@ public sealed class HeadlessAiTests
             new HeadlessAiProfile("test", new Uri("https://example.test"), timeout: TimeSpan.Zero));
     }
 
+
+    [Fact]
+    public void Template_CreatesMultipleAgentsFromOneConfiguration()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") })));
+        var profile = new HeadlessAiProfile("shared-profile", new Uri("https://example.test"));
+        var template = new HeadlessAiAgentTemplate(profile, new RawTextHeadlessAiAdapter());
+
+        var first = template.CreateAgent(client);
+        var second = template.CreateAgent(client);
+
+        Assert.NotSame(first, second);
+        Assert.Equal(first.ProfileId, second.ProfileId);
+        Assert.Equal(first.AdapterId, second.AdapterId);
+    }
+
     [Fact]
     public async Task Agent_UsesInjectedTransportAndNormalizesOutput()
     {
