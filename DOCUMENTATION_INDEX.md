@@ -13,6 +13,7 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 | Understand dependency direction | [Architecture Boundaries](docs/architecture-boundaries.md) |
 | Invoke an endpoint | [Usage Guide](docs/usage.md) |
 | Configure a supported provider | [Provider Adapters](docs/provider-adapters.md) |
+| Understand tested provider parsing failures | [Provider Failure Contract](docs/provider-failure-contract.md) |
 | Handle credentials and untrusted responses | [Security Model](docs/security.md) |
 | Understand benchmark limits | [Benchmark Methodology](docs/benchmark-methodology.md) and [Performance](docs/performance.md) |
 | Evaluate ProtocolAi + GrammarAi | [Measurement Plan](docs/measurement-plan.md) |
