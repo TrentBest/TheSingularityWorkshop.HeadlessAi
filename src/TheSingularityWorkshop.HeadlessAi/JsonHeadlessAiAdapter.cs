@@ -44,7 +44,7 @@ public sealed class JsonHeadlessAiAdapter : IHeadlessAiAdapter
             ?? throw new InvalidOperationException($"JSON adapter '{Id}' produced a null request body.");
         var content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(body));
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
-        return new HttpRequestMessage(profile.Method) { Content = content };
+        return new HttpRequestMessage(profile.Method, profile.Endpoint) { Content = content };
     }
 
     /// <inheritdoc />
