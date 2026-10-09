@@ -67,12 +67,14 @@ ProtocolAi + GrammarAi may reduce repeated explanatory tokens or some forms of a
 
 ## 🟢 04 See it in a minute
 
-This source-shaped example shows the smallest real invocation path using the OpenAI Responses adapter. It sends a live request, so use your own authorized endpoint and provide a real credential through a host-owned secret mechanism. This is not an offline unit test.
+This source-checked example shows the smallest real invocation path using the OpenAI Responses adapter. It sends a live request, so use your own authorized endpoint and provide a real credential through a host-owned secret mechanism. This example has been checked against the current source contracts but has not been run against a live provider. It is not an offline unit test.
 
 ~~~csharp
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using TheSingularityWorkshop.HeadlessAi;
 
 var profile = new HeadlessAiProfile(
@@ -86,48 +88,30 @@ var profile = new HeadlessAiProfile(
     });
 
 using var httpClient = new HttpClient();
-
-// Implement IHeadlessAiRequestHeaderProvider using your host's credential source.
-// Do not put a production secret in source code or checked-in settings.
 var template = new HeadlessAiAgentTemplate(
     profile,
     new OpenAiResponsesAdapter(),
-    headerProvider: yourRequestHeaderProvider);
+    headerProvider: new EnvironmentBearerHeaderProvider());
 
 var agent = template.CreateAgent(httpClient);
 var result = await agent.SendAsync(new HeadlessAiInput("Explain what an HTTP endpoint is."));
 Console.WriteLine(result.Content);
-~~~
 
-**Expected behavior:** HeadlessAi sends an endpoint-specific request, bounds the response body, and returns extracted text. A provider error is reported as an error, not disguised as a successful empty answer. Replace the placeholder header provider with an implementation of IHeadlessAiRequestHeaderProvider backed by your host's credential source.
+sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
+{
+    public ValueTask<IReadOnlyDictionary<string, string>> GetHeadersAsync(
+        HeadlessAiProfile profile,
+        CancellationToken cancellationToken = default)
+    {
+        var token = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        if (string.IsNullOrWhiteSpace(token))
+            throw new InvalidOperationException("Set OPENAI_API_KEY before running this example.");
 
-For deterministic examples that need no network or secrets, see the fixture-based tests under [tests](tests/TheSingularityWorkshop.HeadlessAi.Tests/).
-
----
-
-## 🟪 05 Documentation and theory
-
-Use the [Documentation Index](DOCUMENTATION_INDEX.md) to choose the right depth. Key starting points:
-
-- [What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md) — an accessible introduction to the problem and boundary.
-- [Problem Domain](docs/problem-domain.md) — vocabulary, lifecycle, non-goals, trust, and acceptance criteria.
-- [Theory](docs/THEORY.md) — why identity, protocol, transport, and authority must remain distinct.
-- [Architecture](docs/architecture-and-theory.md) — profiles, adapters, templates, instances, and invariants.
-- [Architecture Boundaries](docs/architecture-boundaries.md) — dependency direction and responsibility ownership.
-- [Usage Guide](docs/usage.md) — configuration and custom adapters.
-- [Provider Adapters](docs/provider-adapters.md) — endpoint-specific settings and current limitations.
-- [Security Model](docs/security.md) — credentials, untrusted output, response bounds, and host responsibilities.
-- [Performance](docs/performance.md) and [Benchmark Methodology](docs/benchmark-methodology.md) — measured facts versus hypotheses.
-- [Measurement Plan](docs/measurement-plan.md) — reproducible token, validity, drift, and quality comparisons.
-- [Use Cases](docs/use-cases.md) — where the library fits and where it does not.
-- [Development Roadmap](docs/roadmap.md) — staged work and future boundaries.
-
----
-
-## Build and verify
-
-Requires the .NET 8 SDK.
-
+        IReadOnlyDictionary<string, string> headers =
+            new Dictionary<string, string> { ["Authorization"] = $"Bearer {token}" };
+        return ValueTask.FromResult(headers);
+    }
+}
 ~~~sh
 dotnet restore TheSingularityWorkshop.HeadlessAi.slnx
 dotnet build TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-restore
