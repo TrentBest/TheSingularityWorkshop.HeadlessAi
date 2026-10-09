@@ -83,8 +83,16 @@ public sealed class HeadlessAiAgent
         {
             if (replaceExisting)
             {
-                request.Headers.Remove(header.Key);
-                request.Content?.Headers.Remove(header.Key);
+                foreach (var existing in request.Headers.Select(item => item.Key)
+                    .Where(name => string.Equals(name, header.Key, StringComparison.OrdinalIgnoreCase)).ToArray())
+                    request.Headers.Remove(existing);
+
+                if (request.Content is not null)
+                {
+                    foreach (var existing in request.Content.Headers.Select(item => item.Key)
+                        .Where(name => string.Equals(name, header.Key, StringComparison.OrdinalIgnoreCase)).ToArray())
+                        request.Content.Headers.Remove(existing);
+                }
             }
 
             if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value) &&
