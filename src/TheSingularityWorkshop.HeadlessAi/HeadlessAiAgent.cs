@@ -67,7 +67,7 @@ public sealed class HeadlessAiAgent
                 throw new HeadlessAiHttpException(_profile.Id, response.StatusCode, excerpt);
             }
 
-            await response.Content.LoadIntoBufferAsync(_profile.MaxResponseBytes, timeoutSource.Token).ConfigureAwait(false);
+            await BufferResponseAsync(response, _profile.MaxResponseBytes, timeoutSource.Token).ConfigureAwait(false);
             return await _adapter.ReadResponseAsync(response, timeoutSource.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -91,6 +91,37 @@ public sealed class HeadlessAiAgent
                 (request.Content is null || !request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value)))
                 throw new InvalidOperationException($"Profile header '{header.Key}' could not be applied.");
         }
+    }
+
+    private static async Task BufferResponseAsync(HttpResponseMessage response, int maxBytes, CancellationToken cancellationToken)
+    {
+        var original = response.Content;
+        using var buffer = new MemoryStream();
+        await using (var stream = await original.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var chunk = new byte[81920];
+            long total = 0;
+            while (true)
+            {
+                var requested = (int)Math.Min(chunk.Length, (long)maxBytes - total + 1);
+                var read = await stream.ReadAsync(chunk.AsMemory(0, requested), cancellationToken).ConfigureAwait(false);
+                if (read == 0)
+                    break;
+                if (total + read > maxBytes)
+                    throw new InvalidDataException($"Response body exceeds the configured {maxBytes}-byte limit.");
+                buffer.Write(chunk, 0, read);
+                total += read;
+            }
+        }
+
+        var replacement = new ByteArrayContent(buffer.ToArray());
+        foreach (var header in original.Headers)
+        {
+            if (!string.Equals(header.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
+                replacement.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+        response.Content = replacement;
+        original.Dispose();
     }
 
     private static async Task<string> ReadBoundedExcerptAsync(HttpContent content, CancellationToken cancellationToken)
