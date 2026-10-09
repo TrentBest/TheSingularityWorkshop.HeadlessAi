@@ -17,8 +17,9 @@ The target is a **useful first release with honest boundaries**: implement the c
 
 ## Core usability and contract hardening
 
-- [ ] Add official-schema fixture tests for provider success variants, error envelopes, missing fields, malformed JSON, and empty responses.
-- [ ] Add explicit redirect/outbound-network policy and adapter parse-error taxonomy.
+- [ ] Complete official-schema fixture coverage for provider success variants, error envelopes, and missing fields. Minimum malformed-JSON, empty-body, and valid-JSON-without-usable-text cases are now covered for all three built-in adapters; see [Provider Failure Contract](provider-failure-contract.md).
+- [x] Document redirect behavior, credential-forwarding risk, and host-owned outbound endpoint validation; see [Security](security.md).
+- [ ] Define a stable adapter parse-error taxonomy that callers can handle without depending on provider-specific parser internals.
 - [ ] Add safe diagnostics and correlation identifiers without content or credential logging.
 - [ ] Document and test configuration defaults, request headers, timeout/cancellation, response bounds, and error handling as one coherent developer journey.
 - [ ] Add end-to-end fake-server examples showing the library from profile creation through normalized result and failure diagnosis.
