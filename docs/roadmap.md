@@ -6,7 +6,6 @@
 - [x] Add immutable profiles, reusable agent templates, request-time headers, timeout/cancellation, and response-size bounds.
 - [x] Add direct-HTTP adapters for OpenAI Responses, Gemini generateContent, and Anthropic Messages with fixture tests.
 - [x] Add BenchmarkDotNet baseline, Codecov, package README metadata, and build/test/coverage/pack workflow.
-- [ ] Verify the latest exact branch head in CI and fix all failures.
 
 ## Adapter and transport hardening
 - [ ] Add official-schema fixture tests for error envelopes and malformed responses for each provider.
@@ -21,4 +20,4 @@
 - [ ] Optional Forge integration example using ProtocolAi and GrammarAi without making either a core dependency.
 - [ ] Reproducible measurements of token use, accuracy, schema validity, hallucination/drift, latency, and cost.
 
-Release gates: exact-head CI green, meaningful failure-path tests, reviewed package contents, documented limitations, and explicit approval before NuGet publication.
+Release gates: CI must pass on the exact release-candidate commit; meaningful failure-path tests; reviewed package contents; documented limitations; and explicit approval before NuGet publication.
