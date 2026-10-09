@@ -1,0 +1,42 @@
+name: Build, Test, Coverage, and Pack
+
+on:
+  push:
+    branches: [master, development]
+  pull_request:
+    branches: [master, development]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore
+        run: dotnet restore TheSingularityWorkshop.HeadlessAi.slnx
+      - name: Build
+        run: dotnet build TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-restore
+      - name: Test with coverage
+        run: dotnet test TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+      - name: Generate coverage report
+        run: reportgenerator "-reports:TestResults/**/coverage.cobertura.xml" "-targetdir:coverage-report" "-reporttypes:Cobertura;Html"
+      - name: Pack
+        run: dotnet pack src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj --configuration Release --no-build --output ./artifacts
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: headlessai-package
+          path: artifacts/*.nupkg
+      - name: Publish to NuGet (disabled by default)
+        if: github.event_name == 'workflow_dispatch' && false
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
