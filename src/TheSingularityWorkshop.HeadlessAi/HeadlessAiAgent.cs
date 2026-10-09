@@ -18,7 +18,7 @@ public sealed class HeadlessAiAgent
     public string ProfileId => _profile.Id;
     public string AdapterId => _adapter.Id;
 
-    /// <summary>Calls the endpoint without owning or disposing the injected HttpClient.</summary>
+    /// <summary>Calls the configured endpoint without owning or disposing the injected HttpClient.</summary>
     public async Task<HeadlessAiOutput> SendAsync(HeadlessAiInput input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -28,7 +28,7 @@ public sealed class HeadlessAiAgent
 
         using var request = _adapter.CreateRequest(_profile, input)
             ?? throw new InvalidOperationException($"Adapter '{_adapter.Id}' returned a null request.");
-        request.RequestUri ??= _profile.Endpoint;
+        request.RequestUri = _profile.Endpoint;
         request.Method = _profile.Method;
 
         foreach (var header in _profile.Headers)
