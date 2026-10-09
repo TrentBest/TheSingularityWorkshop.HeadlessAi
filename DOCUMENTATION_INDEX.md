@@ -17,6 +17,7 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 | Understand benchmark limits | [Benchmark Methodology](docs/benchmark-methodology.md) and [Performance](docs/performance.md) |
 | Evaluate ProtocolAi + GrammarAi | [Measurement Plan](docs/measurement-plan.md) |
 | Understand practical fit and non-fit | [Use Cases](docs/use-cases.md) |
+| Evaluate an alpha candidate and release gates | [Alpha Readiness](docs/ALPHA_READINESS.md) |
 | Build, test, and plan work | [Contributing](CONTRIBUTING.md), [Roadmap](docs/roadmap.md), and [Continuation Brief](docs/CONTINUATION_BRIEF.md) |
 
 ## Document responsibilities
@@ -29,6 +30,7 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 - Usage/provider guides: practical use and provider-specific settings.
 - Security: credential and trust model.
 - Performance and measurement guides: evidence, limitations, and open hypotheses.
+- Alpha readiness: concrete pre-release gates, evidence to retain, and publication safety.
 - Roadmap, contribution guide, and continuation brief: ongoing development and release posture.
 
 Source and tests determine current behavior. If documentation and implementation disagree, record and resolve the discrepancy rather than assuming the prose is correct. Distinguish current source, published artifacts, design intent, and future work.
