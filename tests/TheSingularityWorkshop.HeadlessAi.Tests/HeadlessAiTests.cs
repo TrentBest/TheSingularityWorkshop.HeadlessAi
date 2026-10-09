@@ -38,6 +38,36 @@ public sealed class HeadlessAiTests
     }
 
     [Fact]
+    public async Task DelegateAdapter_AllowsEndpointSpecificRequestAndResponseMapping()
+    {
+        using var client = new HttpClient(new StubHandler(async (request, _) =>
+        {
+            Assert.Equal("application/custom+json", request.Content!.Headers.ContentType!.MediaType);
+            Assert.Equal("{\"task\":\"compress\"}", await request.Content.ReadAsStringAsync());
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"result\":\"done\"}") };
+        }));
+        var adapter = new DelegateHeadlessAiAdapter(
+            "fixture-json",
+            (_, input) => new HttpRequestMessage(HttpMethod.Put, "https://ignored.invalid")
+            {
+                Content = new StringContent("{\"task\":\"" + input.Content + "\"}", System.Text.Encoding.UTF8, "application/custom+json")
+            },
+            async (response, token) =>
+            {
+                var body = await response.Content.ReadAsStringAsync(token);
+                var value = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("result").GetString()!;
+                return new HeadlessAiOutput(value, response.StatusCode, response.Content.Headers.ContentType?.MediaType);
+            });
+        var profile = new HeadlessAiProfile("fixture", new Uri("https://example.test/provider"), method: HttpMethod.Post);
+        var agent = new HeadlessAiAgent(client, profile, adapter);
+
+        var output = await agent.SendAsync(new HeadlessAiInput("compress"));
+
+        Assert.Equal("done", output.Content);
+        Assert.Equal("https://example.test/provider", client.BaseAddress?.ToString() ?? "https://example.test/provider");
+    }
+
+    [Fact]
     public async Task Agent_BoundsHttpErrorExcerpt()
     {
         using var client = new HttpClient(new StubHandler((_, _) =>
