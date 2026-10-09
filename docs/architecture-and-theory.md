@@ -5,7 +5,7 @@ HeadlessAi is a reusable .NET transport-and-adapter layer for invoking configure
 ## Agent configuration model
 
 - **Profile:** immutable endpoint URI, HTTP method, default headers, timeout, maximum response size, and provider-specific non-secret settings.
-- **Adapter:** endpoint-specific request construction and response extraction. The raw-text adapter is only a minimal example; delegate adapters allow quick experiments, while stable provider protocols should have dedicated adapters.
+- **Adapter:** endpoint-specific request construction and response extraction. Built-ins cover OpenAI Responses, Gemini generateContent, and Anthropic Messages; raw-text, delegate, and JSON adapters support custom endpoints.
 - **Template:** reusable combination of profile, adapter, and optional request-time header provider.
 - **Agent instance:** lightweight caller created from a template and an injected HttpClient. Instances do not own the transport or implicitly share conversation state because conversation state belongs to the host.
 
