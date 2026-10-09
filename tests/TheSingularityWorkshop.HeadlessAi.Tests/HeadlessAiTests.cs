@@ -1,5 +1,6 @@
 using System.Net;
 using TheSingularityWorkshop.HeadlessAi;
+using Xunit;
 
 namespace TheSingularityWorkshop.HeadlessAi.Tests;
 
@@ -27,10 +28,7 @@ public sealed class HeadlessAiTests
         {
             Assert.Equal(HttpMethod.Post, request.Method);
             Assert.Equal("https://example.test/invoke", request.RequestUri!.ToString());
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("reply")
-            });
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("reply") });
         }));
         var profile = new HeadlessAiProfile("fixture", new Uri("https://example.test/invoke"));
         var agent = new HeadlessAiAgent(client, profile, new RawTextHeadlessAiAdapter());
@@ -53,6 +51,7 @@ public sealed class HeadlessAiTests
         var exception = await Assert.ThrowsAsync<HeadlessAiHttpException>(
             () => agent.SendAsync(new HeadlessAiInput("prompt")));
         Assert.Equal(2048, exception.ResponseExcerpt.Length);
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
     }
 
     private sealed class StubHandler(
