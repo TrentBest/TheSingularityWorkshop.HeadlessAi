@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace TheSingularityWorkshop.HeadlessAi;
 
 /// <summary>Normalized response content and transport metadata.</summary>
