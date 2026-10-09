@@ -14,6 +14,19 @@ public sealed class HeadlessAiTests
         Assert.Equal("local", local.Id);
     }
 
+
+    [Fact]
+    public void Profile_CopiesProviderSettingsIntoReadOnlyConfiguration()
+    {
+        var settings = new Dictionary<string, string> { ["model"] = "model-a" };
+        var profile = new HeadlessAiProfile("fixture", new Uri("https://example.test"), settings: settings);
+        settings["model"] = "model-b";
+
+        Assert.Equal("model-a", profile.Settings["model"]);
+        Assert.Throws<NotSupportedException>(() =>
+            ((IDictionary<string, string>)profile.Settings)["model"] = "model-c");
+    }
+
     [Fact]
     public void Profile_RejectsZeroTimeout()
     {
