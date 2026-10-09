@@ -28,6 +28,12 @@ jobs:
         run: dotnet tool install --global dotnet-reportgenerator-globaltool
       - name: Generate coverage report
         run: reportgenerator "-reports:TestResults/**/coverage.cobertura.xml" "-targetdir:coverage-report" "-reporttypes:Cobertura;Html"
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: TestResults/**/coverage.cobertura.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
       - name: Pack
         run: dotnet pack src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj --configuration Release --no-build --output ./artifacts
       - name: Upload package artifact
