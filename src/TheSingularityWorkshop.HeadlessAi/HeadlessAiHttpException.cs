@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace TheSingularityWorkshop.HeadlessAi;
 
 /// <summary>Represents a non-success HTTP response from a configured endpoint.</summary>
