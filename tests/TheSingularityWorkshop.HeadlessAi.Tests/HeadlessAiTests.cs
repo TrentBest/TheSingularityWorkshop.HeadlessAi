@@ -42,6 +42,8 @@ public sealed class HeadlessAiTests
     {
         using var client = new HttpClient(new StubHandler(async (request, _) =>
         {
+            Assert.Equal("https://example.test/provider", request.RequestUri!.ToString());
+            Assert.Equal(HttpMethod.Post, request.Method);
             Assert.Equal("application/custom+json", request.Content!.Headers.ContentType!.MediaType);
             Assert.Equal("{\"task\":\"compress\"}", await request.Content.ReadAsStringAsync());
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"result\":\"done\"}") };
@@ -64,7 +66,6 @@ public sealed class HeadlessAiTests
         var output = await agent.SendAsync(new HeadlessAiInput("compress"));
 
         Assert.Equal("done", output.Content);
-        Assert.Equal("https://example.test/provider", client.BaseAddress?.ToString() ?? "https://example.test/provider");
     }
 
     [Fact]
