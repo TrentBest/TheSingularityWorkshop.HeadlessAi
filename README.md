@@ -13,7 +13,9 @@
 
 **HeadlessAi lets a .NET application call AI services over HTTP without tying the application to one provider's SDK.**
 
-Configure an endpoint, choose its protocol adapter, send input, and receive the response. HeadlessAi reuses the HTTP and provider-communication plumbing so each application does not have to build it again.
+The basic interaction is **prompt in, response out**: your application supplies text, HeadlessAi sends an HTTP request to a configured AI-service endpoint, and your application receives the returned content—without opening a browser or GUI. HeadlessAi reuses the HTTP plumbing and provider-specific request/response mapping so each application does not have to build them again.
+
+This is API communication, not browser automation. A provider's API is not necessarily the same interface as its public chat website, and a URL alone does not make different protocols interchangeable.
 
 **It is the connection to the AI service—not the AI model or an autonomous agent.** Your application remains in control of what the response means, what is permitted, and what happens next. HeadlessAi does not require the rest of The Singularity Workshop; ProtocolAi and GrammarAi are optional companions.
 
@@ -68,7 +70,9 @@ ProtocolAi + GrammarAi may reduce repeated explanatory tokens or some forms of a
 
 ## 🟢 04 See it in a minute
 
-This source-checked example shows the smallest real invocation path using the OpenAI Responses adapter. It sends a live request, so use your own authorized endpoint and provide a real credential through a host-owned secret mechanism. This example has been checked against the current source contracts but has not been run against a live provider. It is not an offline unit test.
+This concrete example uses **one specific protocol: OpenAI's Responses API**. It is not a HeadlessAi requirement, and the endpoint URL is not interchangeable with other providers' URLs. The selected adapter must match the service's request and response format. This calls the provider API directly; it does not automate the ChatGPT website or reuse a signed-in web session.
+
+It sends a live request, so use your own authorized endpoint and provide a real credential through a host-owned secret mechanism. This example has been checked against the current source contracts but has not been run against a live provider. It is not an offline unit test.
 
 ~~~csharp
 using System;
