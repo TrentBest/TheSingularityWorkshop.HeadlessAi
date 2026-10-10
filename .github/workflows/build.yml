@@ -51,6 +51,44 @@ jobs:
           fail_ci_if_error: true
       - name: Pack
         run: dotnet pack src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj --configuration Release --no-build --output ./artifacts
+      - name: Audit packed NuGet artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import glob, re, sys, zipfile
+          from xml.etree import ElementTree as ET
+          packages = glob.glob('artifacts/*.nupkg')
+          if len(packages) != 1:
+              raise SystemExit(f'Expected exactly one .nupkg, found {len(packages)}: {packages}')
+          package = packages[0]
+          with zipfile.ZipFile(package) as z:
+              names = z.namelist()
+              readme_names = [n for n in names if n.lower() == 'readme.md']
+              nuspec_names = [n for n in names if n.endswith('.nuspec')]
+              dlls = [n for n in names if n.startswith('lib/net8.0/') and n.endswith('.dll')]
+              xml_docs = [n for n in names if n.startswith('lib/net8.0/') and n.endswith('.xml')]
+              assert readme_names, 'Package is missing README.md'
+              assert nuspec_names, 'Package is missing its .nuspec manifest'
+              assert dlls, 'Package is missing the net8.0 assembly'
+              assert xml_docs, 'Package is missing XML API documentation'
+              readme = z.read(readme_names[0]).decode('utf-8')
+              assert 'raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/docs/assets/headless-ai-architecture.svg' in readme, 'README architecture visual must use a package-safe absolute URL'
+              relative = re.findall(r'\]\((?!https?://|mailto:|#)([^)\s]+)\)', readme)
+              assert not relative, f'NuGet README contains relative links that will not resolve on nuget.org: {relative}'
+              ns = {'n': 'http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd'}
+              root = ET.fromstring(z.read(nuspec_names[0]))
+              metadata = root.find('.//{*}metadata')
+              assert metadata is not None, 'Package metadata is missing'
+              def value(tag):
+                  node = metadata.find('{*}' + tag)
+                  return node.text.strip() if node is not None and node.text else ''
+              assert value('id') == 'TheSingularityWorkshop.HeadlessAi', f"Unexpected package id: {value('id')}"
+              assert value('version') == '0.1.0-alpha.1', f"Unexpected package version: {value('version')}"
+              assert value('license') or value('licenseUrl'), 'License metadata is missing'
+              assert value('readme') == 'README.md', f"Unexpected package README metadata: {value('readme')}"
+              print(f'PASS: {package} contains assembly, XML docs, README, license metadata, expected id/version, absolute visual URL, and no relative README links.')
+          PY
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
         with:
