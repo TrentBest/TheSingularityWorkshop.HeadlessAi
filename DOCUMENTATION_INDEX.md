@@ -15,6 +15,7 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 | Configure a supported provider | [Provider Adapters](docs/provider-adapters.md) |
 | Understand tested provider parsing failures | [Provider Failure Contract](docs/provider-failure-contract.md) |
 | Handle credentials and untrusted responses | [Security Model](docs/security.md) |
+| See concrete uses across Workshop repositories | [Ecosystem Integration](docs/ecosystem-integration.md) |
 | Understand benchmark limits | [Benchmark Methodology](docs/benchmark-methodology.md) and [Performance](docs/performance.md) |
 | Evaluate ProtocolAi + GrammarAi | [Measurement Plan](docs/measurement-plan.md) |
 | Understand practical fit and non-fit | [Use Cases](docs/use-cases.md) |
@@ -29,6 +30,7 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 - Problem domain: vocabulary, scope, lifecycle, and acceptance criteria.
 - Architecture guides: implementation shape and responsibility ownership.
 - Usage/provider guides: practical use and provider-specific settings.
+- Ecosystem integration: concrete cross-repository scenarios, current evidence versus opportunities, dependency direction, and host-owned safety rules.
 - Security: credential and trust model.
 - Performance and measurement guides: evidence, limitations, and open hypotheses.
 - Alpha readiness: concrete pre-release gates, evidence to retain, and publication safety.
