@@ -52,7 +52,7 @@ public sealed class GeminiGenerateContentAdapter : IHeadlessAiAdapter
         var generation = new JsonObject();
         JsonProviderAdapterHelpers.AddOptionalDouble(generation, profile, "temperature");
         JsonProviderAdapterHelpers.AddOptionalDouble(generation, profile, "top_p", "topP");
-        JsonProviderAdapterHelpers.AddOptionalInt(generation, profile, "max_output_tokens", "maxOutputTokens");
+        JsonProviderAdapterHelpers.AddOptionalPositiveInt(generation, profile, "max_output_tokens", "maxOutputTokens");
         if (generation.Count > 0)
             body["generationConfig"] = generation;
         return body;
