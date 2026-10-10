@@ -1,8 +1,8 @@
 # What is HeadlessAi?
 
-HeadlessAi is a small library that helps an application ask an AI-capable HTTP endpoint for a result without having to reinvent the same network plumbing for every worker.
+**HeadlessAi is a small .NET library for calling AI services over HTTP through explicit, replaceable protocol adapters.** It handles reusable endpoint configuration, provider-specific request and response mapping, and bounded HTTP invocation—without requiring a provider SDK.
 
-Imagine a workshop with several specialists: one researches, one reviews, and another checks formatting. They may use the same service but perform different jobs. HeadlessAi gives the application a consistent way to configure and call those endpoints. The analogy stops there: the library does not assign the specialists' roles, give them permissions, remember their work, or decide whether their advice is correct. The host application remains responsible for those decisions.
+HeadlessAi is the connection to an AI service, not the model and not an autonomous agent. The host application supplies the task and credentials, then decides how to validate, interpret, and use the response. HeadlessAi does not own application memory, permissions, budgets, or actions.
 
 ## Four pieces, four jobs
 
