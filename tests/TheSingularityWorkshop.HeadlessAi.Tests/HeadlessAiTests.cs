@@ -229,6 +229,34 @@ public sealed class HeadlessAiTests
         Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Profile_RejectsNonPositiveResponseLimit(int maxResponseBytes)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new HeadlessAiProfile("test", new Uri("https://example.test"), maxResponseBytes: maxResponseBytes));
+    }
+
+    [Fact]
+    public void Profile_RejectsRelativeEndpointUri()
+    {
+        var endpoint = new Uri("/invoke", UriKind.Relative);
+
+        Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("test", endpoint));
+    }
+
+    [Fact]
+    public void Profile_AllowsExplicitInfiniteTimeout()
+    {
+        var profile = new HeadlessAiProfile(
+            "test",
+            new Uri("https://example.test"),
+            timeout: System.Threading.Timeout.InfiniteTimeSpan);
+
+        Assert.Equal(System.Threading.Timeout.InfiniteTimeSpan, profile.Timeout);
+    }
+
     private sealed class StubHandler(
         Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {
