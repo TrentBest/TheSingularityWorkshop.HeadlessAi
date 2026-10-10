@@ -13,6 +13,9 @@ internal static class JsonProviderAdapterHelpers
         return value;
     }
 
+    public static int RequireIntSetting(HeadlessAiProfile profile, string key)
+        => ParseInt(profile, key, RequireSetting(profile, key));
+
     public static void AddOptionalString(JsonObject target, HeadlessAiProfile profile, string setting, string? property = null)
     {
         if (profile.Settings.TryGetValue(setting, out var value))
@@ -22,20 +25,39 @@ internal static class JsonProviderAdapterHelpers
     public static void AddOptionalInt(JsonObject target, HeadlessAiProfile profile, string setting, string? property = null)
     {
         if (profile.Settings.TryGetValue(setting, out var value))
-            target[property ?? setting] = int.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+            target[property ?? setting] = ParseInt(profile, setting, value);
     }
 
     public static void AddOptionalDouble(JsonObject target, HeadlessAiProfile profile, string setting, string? property = null)
     {
         if (profile.Settings.TryGetValue(setting, out var value))
-            target[property ?? setting] = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+        {
+            if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) ||
+                double.IsNaN(parsed) || double.IsInfinity(parsed))
+                throw InvalidSetting(profile, setting, "a finite number");
+            target[property ?? setting] = parsed;
+        }
     }
 
     public static void AddOptionalBool(JsonObject target, HeadlessAiProfile profile, string setting, string? property = null)
     {
         if (profile.Settings.TryGetValue(setting, out var value))
-            target[property ?? setting] = bool.Parse(value);
+        {
+            if (!bool.TryParse(value, out var parsed))
+                throw InvalidSetting(profile, setting, "true or false");
+            target[property ?? setting] = parsed;
+        }
     }
+
+    private static int ParseInt(HeadlessAiProfile profile, string setting, string value)
+    {
+        if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+            throw InvalidSetting(profile, setting, "an integer");
+        return parsed;
+    }
+
+    private static ArgumentException InvalidSetting(HeadlessAiProfile profile, string setting, string expected)
+        => new($"Profile '{profile.Id}' setting '{setting}' must be {expected}.", nameof(profile));
 
     public static string? ReadString(JsonElement parent, string property)
         => parent.ValueKind == JsonValueKind.Object && parent.TryGetProperty(property, out var value)

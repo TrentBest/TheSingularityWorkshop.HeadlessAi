@@ -52,7 +52,8 @@ Use this checklist against the exact candidate commit. Do not infer readiness fr
 - [ ] Unit tests pass without live provider calls or credentials.
 - [ ] Coverage report is produced and uploaded successfully.
 - [ ] Package can be packed from a clean checkout.
-- [ ] Inspect the generated `.nupkg`: verify assembly, XML documentation, README, license metadata, package ID, version, target framework, and absence of secrets or unintended files.
+- [ ] Inspect the generated `.nupkg`: verify assembly, XML documentation, README, license metadata, package ID, version, target framework, and absence of secrets or unintended files. CI now checks the assembly, XML docs, README, license, package ID/version, and README portability.
+- [ ] Verify the README architecture visual resolves for NuGet consumers and all internal README links are absolute repository URLs; CI checks these conditions inside the packed `.nupkg`.
 - [ ] Record the candidate commit SHA and retain the package artifact.
 
 ### 2. Contract and failure-path tests
