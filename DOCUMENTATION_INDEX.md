@@ -11,7 +11,8 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 | Learn why the boundary exists | [Theory](docs/THEORY.md) |
 | Understand implementation ownership and lifecycle | [Architecture](docs/architecture-and-theory.md) |
 | Understand dependency direction | [Architecture Boundaries](docs/architecture-boundaries.md) |
-| Invoke an endpoint | [Usage Guide](docs/usage.md) |
+| Invoke an endpoint using the current public API | [Usage Guide](docs/usage.md) |
+| Understand the proposed fluent configuration direction | [Fluent Configuration Design](docs/fluent-configuration-design.md) |
 | Configure a supported provider | [Provider Adapters](docs/provider-adapters.md) |
 | Understand tested provider parsing failures | [Provider Failure Contract](docs/provider-failure-contract.md) |
 | Handle credentials and untrusted responses | [Security Model](docs/security.md) |
@@ -30,6 +31,7 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 - Problem domain: vocabulary, scope, lifecycle, and acceptance criteria.
 - Architecture guides: implementation shape and responsibility ownership.
 - Usage/provider guides: practical use and provider-specific settings.
+- Fluent configuration design: proposed ergonomics, provider-neutral constraints, and acceptance criteria; not a shipped API contract.
 - Ecosystem integration: concrete cross-repository scenarios, current evidence versus opportunities, dependency direction, and host-owned safety rules.
 - Security: credential and trust model.
 - Performance and measurement guides: evidence, limitations, and open hypotheses.
