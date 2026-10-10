@@ -27,6 +27,7 @@ This repository follows The Singularity Workshop's shared [Documentation Standar
 - **Want to use it?** Follow the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
 - **Want to understand the why?** Read [Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md) and [Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md).
 - **Need exact boundaries?** Read [Architecture](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-and-theory.md) and [Architecture Boundaries](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-boundaries.md).
+- **Want to see where it fits across the Workshop?** Read [Ecosystem Integration](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/ecosystem-integration.md) for concrete use patterns, candidate package integrations, and clear implemented-versus-proposed labels.
 - **Want the full document map?** Open the [Documentation Index](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md).
 
 HeadlessAi has its own domain and vocabulary. It adopts the Workshop's shared visual and editorial language without inheriting responsibilities that belong to FSM_COS, FSM_API, ProtocolAi, GrammarAi, or a host application.
@@ -112,6 +113,8 @@ sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
         return ValueTask.FromResult(headers);
     }
 }
+~~~
+
 ~~~sh
 dotnet restore TheSingularityWorkshop.HeadlessAi.slnx
 dotnet build TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-restore
@@ -129,6 +132,8 @@ Benchmark numbers should be reported only after the benchmark is actually run, w
 ## Ecosystem fit and maturity
 
 HeadlessAi can be used on its own by any .NET host that needs its HTTP invocation boundary. It does not require TheForge, FSM_COS, FSM_API, ProtocolAi, or GrammarAi. Compatible Workshop contracts can make integration easier, but adopting the whole ecosystem is not a prerequisite.
+
+For concrete Workshop-specific examples—including AnyApp, browser experiences, semantic validation, FSM workflows, MicroBundles, Ontology, Renderer, Profiles, and Economy—see the [Ecosystem Integration guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/ecosystem-integration.md). That guide labels implemented capabilities separately from proposed integrations.
 
 The current implementation is early development. Streaming, rich multimodal content, provider-specific tool semantics, global rate/cost budgets, and a host orchestration loop are not promised by this package. Direct HTTP does not bypass provider authentication, billing, rate limits, or access policies.
 
