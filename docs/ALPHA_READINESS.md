@@ -53,6 +53,7 @@ Use this checklist against the exact candidate commit. Do not infer readiness fr
 - [ ] Coverage report is produced and uploaded successfully.
 - [ ] Package can be packed from a clean checkout.
 - [ ] Inspect the generated `.nupkg`: verify assembly, XML documentation, README, license metadata, package ID, version, target framework, and absence of secrets or unintended files.
+- [ ] Verify README image and relative-link behavior in the packed NuGet README, not only in GitHub rendering; required visual assets must resolve for package consumers.
 - [ ] Record the candidate commit SHA and retain the package artifact.
 
 ### 2. Contract and failure-path tests
