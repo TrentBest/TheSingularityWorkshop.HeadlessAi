@@ -16,6 +16,9 @@ internal static class JsonProviderAdapterHelpers
     public static int RequireIntSetting(HeadlessAiProfile profile, string key)
         => ParseInt(profile, key, RequireSetting(profile, key));
 
+    public static int RequirePositiveIntSetting(HeadlessAiProfile profile, string key)
+        => ParsePositiveInt(profile, key, RequireSetting(profile, key));
+
     public static void AddOptionalString(JsonObject target, HeadlessAiProfile profile, string setting, string? property = null)
     {
         if (profile.Settings.TryGetValue(setting, out var value))
@@ -26,6 +29,12 @@ internal static class JsonProviderAdapterHelpers
     {
         if (profile.Settings.TryGetValue(setting, out var value))
             target[property ?? setting] = ParseInt(profile, setting, value);
+    }
+
+    public static void AddOptionalPositiveInt(JsonObject target, HeadlessAiProfile profile, string setting, string? property = null)
+    {
+        if (profile.Settings.TryGetValue(setting, out var value))
+            target[property ?? setting] = ParsePositiveInt(profile, setting, value);
     }
 
     public static void AddOptionalDouble(JsonObject target, HeadlessAiProfile profile, string setting, string? property = null)
@@ -53,6 +62,14 @@ internal static class JsonProviderAdapterHelpers
     {
         if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
             throw InvalidSetting(profile, setting, "an integer");
+        return parsed;
+    }
+
+    private static int ParsePositiveInt(HeadlessAiProfile profile, string setting, string value)
+    {
+        var parsed = ParseInt(profile, setting, value);
+        if (parsed <= 0)
+            throw InvalidSetting(profile, setting, "a positive integer");
         return parsed;
     }
 
