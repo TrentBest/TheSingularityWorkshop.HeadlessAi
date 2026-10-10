@@ -40,6 +40,25 @@ Review each capability by asking: Does it materially help a developer build a us
 
 This is a discovery and implementation queue, not a promise that all items already exist. Prefer completing a capability coherently over adding a superficial API for it.
 
+## Optional ProtocolAi + GrammarAi bridge
+
+The core must remain independently usable. The generic `HeadlessAiInput` and `IHeadlessAiAdapter` contracts already provide the HTTP invocation seam, but they do **not** constitute a typed integration with ProtocolAi or GrammarAi. No first-party bridge is shipped yet.
+
+The intended deliverable is a separate, opt-in companion package/repository (working name: `TheSingularityWorkshop.HeadlessAi.ProtocolAi`) that references HeadlessAi, ProtocolAi, and GrammarAi. This keeps the dependency direction explicit: installing HeadlessAi alone adds no semantic-package dependencies; users who want the bridge install it deliberately.
+
+Bridge acceptance criteria:
+
+- [ ] Build a versioned, human-readable exchange artifact containing protocol self-description, grammar self-description when supplied, host-selected context, and the task/request.
+- [ ] Keep clipboard transport and connected HeadlessAi transport as two ways to carry the same exchange contract; clipboard access itself remains a host/UI concern.
+- [ ] Provide a deterministic receive path that parses the returned exchange, validates protocol payloads with ProtocolAi, validates structural grammar data where applicable, and returns a result for host policy to accept/reject/clarify.
+- [ ] Preserve unknown literals and useful diagnostics; never treat a valid parse or protocol reference as authorization to execute an action.
+- [ ] Avoid putting credentials, secrets, or host-private context into copyable artifacts unless the host explicitly selects that content.
+- [ ] Add deterministic round-trip tests for valid responses, malformed responses, unknown literals, wrong protocol identity, missing sections, and grammar validation failures.
+- [ ] Document what the bridge serializes and validates versus what remains owned by the host; no model/provider-specific grammar support is implied.
+- [ ] Keep all NuGet publication gates disabled by default; packing and CI are not release approval.
+
+Do not add ProtocolAi or GrammarAi references to the core HeadlessAi project to implement this. The first milestone is the companion contract and tests, not a new orchestration engine or GUI.
+
 ## Production readiness and measurement
 
 - [ ] Benchmarks for adapter construction, JSON parsing, response size, and concurrent agent instances.
