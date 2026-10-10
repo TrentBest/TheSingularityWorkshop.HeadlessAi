@@ -99,6 +99,18 @@ sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
 
 Expected behavior: the program prints the response text extracted by the selected adapter. The example has been checked against current source contracts but has not been run against a live provider. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](docs/usage.md).
 
+## 🟪 05 Documentation and theory
+
+- **[Usage Guide](docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
+- **[What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
+- **[Theory](docs/THEORY.md)** — understand why endpoint protocol, transport, identity, and application authority are separate concerns.
+- **[Problem Domain](docs/problem-domain.md)** — see the domain vocabulary, lifecycle, non-goals, and acceptance criteria.
+- **[Architecture](docs/architecture-and-theory.md) and [Dependency Boundaries](docs/architecture-boundaries.md)** — inspect responsibility ownership and prohibited dependencies.
+- **[Provider Adapters](docs/provider-adapters.md) and [Provider Failure Contract](docs/provider-failure-contract.md)** — see supported direct-HTTP protocol slices and the limits of their parsing behavior.
+- **[Fluent Configuration Design](docs/fluent-configuration-design.md)** — review the proposed ergonomic direction; it is not a current public API.
+- **[Security](docs/security.md), [Performance](docs/performance.md), and [Measurement Plan](docs/measurement-plan.md)** — review trust boundaries and what evidence is required before making claims.
+- **[Documentation Index](DOCUMENTATION_INDEX.md)** — navigate the full guide set.
+
 ## Ecosystem fit and maturity
 
 HeadlessAi can be used on its own by any .NET host that needs its HTTP invocation boundary. It does not require TheForge, FSM_COS, FSM_API, FSM_REST, ProtocolAi, or GrammarAi. FSM_REST may help an editor or authoring tool create endpoint recipes, but that is separate from HeadlessAi runtime dependencies.
