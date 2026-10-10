@@ -98,7 +98,7 @@ jobs:
   publish_nuget:
     needs: verify
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/master' && false }}
+    if: ${{ github.ref == 'refs/heads/master' && true }}
     permissions:
       contents: read
       id-token: write
