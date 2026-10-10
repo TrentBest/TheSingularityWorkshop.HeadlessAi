@@ -53,7 +53,7 @@ This lets a host configure a provider once and create many logical callers witho
 - **HeadlessAi owns:** endpoint invocation, adapter extension points, cancellation and timeouts, response bounds, and normalized response extraction.
 - **The host owns:** task planning, roles, memory, queues, concurrency and cost budgets, permissions, semantic validation, and approval of consequential actions.
 - **The provider owns:** its endpoint schema, authentication requirements, quotas, and inference behavior.
-- **ProtocolAi and GrammarAi:** optional companion integration, not dependencies of this package. The core currently exposes the generic input/adapter seam; a first-party, typed ProtocolAi + GrammarAi bridge is not yet shipped. The planned bridge belongs in a separate opt-in package so consumers can choose it without pulling these dependencies into HeadlessAi core. See the [optional integration roadmap](docs/roadmap.md#optional-protocolai--grammarai-bridge).
+- **ProtocolAi and GrammarAi:** optional companion integration, not dependencies of this package. The core currently exposes the generic input/adapter seam; a first-party, typed ProtocolAi + GrammarAi bridge is not yet shipped. The planned bridge belongs in a separate opt-in project/package **inside this repository** so consumers can choose it without pulling these dependencies into HeadlessAi core or creating another repository. See the [optional integration roadmap](docs/roadmap.md#optional-protocolai--grammarai-bridge).
 
 A well-formed response can still be wrong. A valid grammar is not proof of truth, and model output never grants itself permission to execute a tool, change a runtime, or modify external state.
 
