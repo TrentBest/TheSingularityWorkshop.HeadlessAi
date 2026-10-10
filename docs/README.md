@@ -15,6 +15,7 @@ The canonical reader map is the repository-root [Documentation Index](../DOCUMEN
 - [Usage](usage.md) — profiles, templates, agents, and custom adapters.
 - [Provider Adapters](provider-adapters.md) — built-in endpoint schemas and limitations.
 - [Use Cases](use-cases.md) — scenarios and fit boundaries.
+- [Ecosystem Integration](ecosystem-integration.md) — concrete ways HeadlessAi may fit AnyApp, semantic packages, state workflows, MicroBundles, Experiences, WebApp, Ontology, Renderer, and other Workshop domains. Implemented behavior is distinguished from future opportunities.
 - [Security](security.md) — credentials, trust, and bounded responses.
 
 ## Measure and develop
