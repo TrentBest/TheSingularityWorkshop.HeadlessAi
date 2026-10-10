@@ -21,13 +21,13 @@ This is API communication, not browser automation. A provider's API is not neces
 
 This repository follows The Singularity Workshop's shared [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md), whose goal is to **edify, not mystify**: explain the problem, orient the reader, show a credible first proof, and link to deeper explanations.
 
-- **New to the idea?** Start with [What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md).
-- **Want to use the current API?** Follow the [Usage Guide](docs/usage.md).
-- **Want to understand why the boundary exists?** Read [Theory](docs/THEORY.md) and [Problem Domain](docs/problem-domain.md).
-- **Need implementation ownership and limits?** Read [Architecture](docs/architecture-and-theory.md) and [Architecture Boundaries](docs/architecture-boundaries.md).
-- **Want the intended fluent configuration direction?** Read [Fluent Configuration Design](docs/fluent-configuration-design.md). This is a proposal, not a shipped API.
-- **Want to see where it fits across the Workshop?** Read [Ecosystem Integration](docs/ecosystem-integration.md), which separates current behavior from proposed uses.
-- **Want the full document map?** Open the [Documentation Index](DOCUMENTATION_INDEX.md).
+- **New to the idea?** Start with [What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md).
+- **Want to use the current API?** Follow the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
+- **Want to understand why the boundary exists?** Read [Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md) and [Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md).
+- **Need implementation ownership and limits?** Read [Architecture](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-and-theory.md) and [Architecture Boundaries](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-boundaries.md).
+- **Want the intended fluent configuration direction?** Read [Fluent Configuration Design](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/fluent-configuration-design.md). This is a proposal, not a shipped API.
+- **Want to see where it fits across the Workshop?** Read [Ecosystem Integration](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/ecosystem-integration.md), which separates current behavior from proposed uses.
+- **Want the full document map?** Open the [Documentation Index](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md).
 
 HeadlessAi should remain independently useful. Optional Workshop integrations must not become prerequisites for a simple HTTP invocation.
 
@@ -97,19 +97,19 @@ sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
 }
 ```
 
-Expected behavior: the program prints the response text extracted by the selected adapter. The example has been checked against current source contracts but has not been run against a live provider. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](docs/usage.md).
+Expected behavior: the program prints the response text extracted by the selected adapter. The example has been checked against current source contracts but has not been run against a live provider. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
 
 ## 🟪 05 Documentation and theory
 
-- **[Usage Guide](docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
-- **[What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
-- **[Theory](docs/THEORY.md)** — understand why endpoint protocol, transport, identity, and application authority are separate concerns.
-- **[Problem Domain](docs/problem-domain.md)** — see the domain vocabulary, lifecycle, non-goals, and acceptance criteria.
-- **[Architecture](docs/architecture-and-theory.md) and [Dependency Boundaries](docs/architecture-boundaries.md)** — inspect responsibility ownership and prohibited dependencies.
-- **[Provider Adapters](docs/provider-adapters.md) and [Provider Failure Contract](docs/provider-failure-contract.md)** — see supported direct-HTTP protocol slices and the limits of their parsing behavior.
-- **[Fluent Configuration Design](docs/fluent-configuration-design.md)** — review the proposed ergonomic direction; it is not a current public API.
-- **[Security](docs/security.md), [Performance](docs/performance.md), and [Measurement Plan](docs/measurement-plan.md)** — review trust boundaries and what evidence is required before making claims.
-- **[Documentation Index](DOCUMENTATION_INDEX.md)** — navigate the full guide set.
+- **[Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
+- **[What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
+- **[Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md)** — understand why endpoint protocol, transport, identity, and application authority are separate concerns.
+- **[Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md)** — see the domain vocabulary, lifecycle, non-goals, and acceptance criteria.
+- **[Architecture](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-and-theory.md) and [Dependency Boundaries](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-boundaries.md)** — inspect responsibility ownership and prohibited dependencies.
+- **[Provider Adapters](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/provider-adapters.md) and [Provider Failure Contract](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/provider-failure-contract.md)** — see supported direct-HTTP protocol slices and the limits of their parsing behavior.
+- **[Fluent Configuration Design](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/fluent-configuration-design.md)** — review the proposed ergonomic direction; it is not a current public API.
+- **[Security](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/security.md), [Performance](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/performance.md), and [Measurement Plan](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/measurement-plan.md)** — review trust boundaries and what evidence is required before making claims.
+- **[Documentation Index](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md)** — navigate the full guide set.
 
 ## Ecosystem fit and maturity
 
