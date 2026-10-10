@@ -4,16 +4,17 @@
 
 ## Latest candidate status — 2026-10-10 UTC
 
-**Current development candidate:** `1a33f68117a26cad80c49d6c4ee9b0dd210e58f2`
+**Current development candidate:** `a05f19a4d24d9ab22228a482df5f440d61ae8758`
 
-- [x] GitHub Actions run [#206](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/38016575095) completed successfully for this commit.
-- [x] Release build and automated tests passed in that run.
-- [x] Coverage report was produced and Codecov upload succeeded.
-- [x] NuGet package was packed, audited by the workflow, and uploaded as the `headlessai-package` workflow artifact.
+- [x] GitHub Actions run [#218](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/38017640412) completed successfully for this exact commit; the equivalent push run [#217](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/38017637532) also passed.
+- [x] Restore and Release build passed with warnings treated as errors.
+- [x] Automated tests and coverage report passed; Codecov upload succeeded. CI uses deterministic tests and does not require paid live-provider calls.
+- [x] NuGet package was packed and audited by the workflow, then uploaded as the `headlessai-package` artifact (26,166 bytes; artifact retained at time of review).
 - [x] NuGet publication step was skipped; publishing remains disabled by the workflow's `&& false` gate.
-- [ ] Human release review is still required. A successful CI run does not close every contract, security, documentation, or release-evidence gate below.
+- [x] Additional boundary tests now reject invalid response-size limits, relative endpoint URIs, and zero/negative provider token limits; explicitly infinite timeout remains supported.
+- [ ] Human release review is still required. CI passing does not itself establish release approval or complete every documentation/security/contract review.
 
-**Assessment:** this is a verified package candidate, not yet an approved release. The highest-value remaining checks are the profile/transport/header failure-path matrix, provider setup and troubleshooting documentation, security guidance, and a final clean-candidate review. Keep ProtocolAi/GrammarAi integration optional and out of the core alpha critical path.
+**Assessment:** the technical alpha candidate is getting close: the exact current HEAD has a clean CI/package pass. Remaining work is a focused final review of the user-facing docs and security boundaries, the open development-to-master PR, and any checklist items not evidenced by automated checks. Do not hold the core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
 
 ## Release ambition
 
@@ -61,13 +62,12 @@ Use this checklist against the exact candidate commit. Do not infer readiness fr
 
 ### 1. Build and package
 
-- [ ] Restore and Release build succeed with warnings treated as errors.
-- [ ] Unit tests pass without live provider calls or credentials.
-- [ ] Coverage report is produced and uploaded successfully.
-- [ ] Package can be packed from a clean checkout.
-- [ ] Inspect the generated `.nupkg`: verify assembly, XML documentation, README, license metadata, package ID, version, target framework, and absence of secrets or unintended files. CI now checks the assembly, XML docs, README, license, package ID/version, and README portability.
-- [ ] Verify the README architecture visual resolves for NuGet consumers and all internal README links are absolute repository URLs; CI checks these conditions inside the packed `.nupkg`.
-- [ ] Record the candidate commit SHA and retain the package artifact.
+- [x] Restore and Release build succeed with warnings treated as errors (run #218).
+- [x] Unit tests pass without live provider calls or credentials (run #218).
+- [x] Coverage report is produced and uploaded successfully (run #218).
+- [x] Package is packed and the workflow's packed-package audit succeeds (run #218).
+- [x] CI audit checks the assembly, XML docs, README, license, package ID/version, README portability, architecture visual, and internal README links inside the packed `.nupkg`; manually confirm any packaging details not covered by the audit.
+- [x] Candidate SHA recorded and package artifact retained: `a05f19a4d24d9ab22228a482df5f440d61ae8758`, artifact `headlessai-package` from run #218.
 
 ### 2. Contract and failure-path tests
 
