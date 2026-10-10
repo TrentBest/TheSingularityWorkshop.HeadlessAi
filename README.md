@@ -5,7 +5,7 @@
 [![Code Coverage](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi/branch/development/graph/badge.svg)](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi)
 
 <p align="center">
-  <img src="docs/assets/headless-ai-architecture.svg" alt="The host owns task intent, validation, permissions, memory, and actions; HeadlessAi constructs bounded HTTP requests through explicit provider adapters; configured endpoints perform inference." width="100%">
+  <img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/docs/assets/headless-ai-architecture.svg" alt="The host owns task intent, validation, permissions, memory, and actions; HeadlessAi constructs bounded HTTP requests through explicit provider adapters; configured endpoints perform inference." width="100%">
 </p>
 <p align="center"><em>Many logical callers. Explicit endpoint protocols. Host-owned authority.</em></p>
 
