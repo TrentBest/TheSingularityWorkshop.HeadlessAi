@@ -9,13 +9,13 @@
 </p>
 <p align="center"><em>Many logical callers. Explicit endpoint protocols. Host-owned authority.</em></p>
 
-## 🟦 01 The problem—and our response
+## 🟦 01 What is HeadlessAi?
 
-Applications often need to ask one or many remote AI endpoints to perform bounded tasks. Without a deliberate boundary, every host grows its own provider-specific HTTP code, credential handling, response parsing, timeout behavior, and assumptions about what a model response means.
+**HeadlessAi lets a .NET application call AI services over HTTP without tying the application to one provider's SDK.**
 
-**HeadlessAi is a .NET library for configuring and invoking AI-capable HTTP endpoints through explicit, replaceable protocol adapters.** It centralizes reusable transport mechanics without pretending every provider speaks the same protocol or taking ownership of the application that calls it.
+Configure an endpoint, choose its protocol adapter, send input, and receive the response. HeadlessAi reuses the HTTP and provider-communication plumbing so each application does not have to build it again.
 
-It is an invocation toolkit—not a model, agent orchestration engine, memory store, permission system, GUI, or autonomous execution loop.
+**It is the connection to the AI service—not the AI model or an autonomous agent.** Your application remains in control of what the response means, what is permitted, and what happens next. HeadlessAi does not require the rest of The Singularity Workshop; ProtocolAi and GrammarAi are optional companions.
 
 ---
 
