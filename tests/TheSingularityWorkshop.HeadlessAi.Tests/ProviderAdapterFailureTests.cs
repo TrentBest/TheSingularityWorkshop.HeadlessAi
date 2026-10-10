@@ -55,4 +55,34 @@ public sealed class ProviderAdapterFailureTests
         await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(
             async () => await adapter.ReadResponseAsync(response));
     }
+
+    [Theory]
+    [InlineData("max_output_tokens", "not-an-integer")]
+    [InlineData("temperature", "not-a-number")]
+    [InlineData("store", "sometimes")]
+    public void OpenAiAdapter_RejectsMalformedSettingsWithSettingName(string setting, string value)
+    {
+        var profile = new HeadlessAiProfile("fixture-profile", new Uri("https://example.com/v1/responses"),
+            settings: new Dictionary<string, string> { ["model"] = "fixture-model", [setting] = value });
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            new OpenAiResponsesAdapter().CreateRequest(profile, new HeadlessAiInput("task")));
+
+        Assert.Contains("fixture-profile", exception.Message);
+        Assert.Contains(setting, exception.Message);
+    }
+
+    [Fact]
+    public void AnthropicAdapter_RejectsMalformedRequiredTokenLimitWithSettingName()
+    {
+        var profile = new HeadlessAiProfile("fixture-profile", new Uri("https://example.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "fixture-model", ["max_tokens"] = "many" });
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            new AnthropicMessagesAdapter().CreateRequest(profile, new HeadlessAiInput("task")));
+
+        Assert.Contains("fixture-profile", exception.Message);
+        Assert.Contains("max_tokens", exception.Message);
+    }
+
 }
