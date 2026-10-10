@@ -13,7 +13,7 @@ These adapters use documented HTTP JSON contracts directly and add no provider S
 - Required profile setting: model
 - Optional settings: instructions, max_output_tokens, temperature, top_p, store
 - Optional per-input metadata: previous_response_id
-- Authentication: provide Authorization: Bearer ... through a request-time header provider or a protected profile header.
+- Authentication: provide Authorization: Bearer ... through a request-time header provider. Keep secret values out of source-controlled profile settings.
 - Extracts output_text content and response/model/status/token-usage metadata.
 
 Reference: [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses/create).
@@ -23,7 +23,7 @@ Reference: [OpenAI Responses API](https://platform.openai.com/docs/api-reference
 - Adapter: GeminiGenerateContentAdapter
 - Endpoint: configure the full model-specific URL, such as https://generativelanguage.googleapis.com/v1beta/models/MODEL:generateContent
 - Optional settings: system_instruction, temperature, top_p, max_output_tokens
-- Authentication: provide x-goog-api-key through a request-time header provider or a protected profile header.
+- Authentication: provide x-goog-api-key through a request-time header provider. Keep secret values out of source-controlled profile settings.
 - Extracts candidate text and usage metadata. If no candidate text is returned, it reports a blocked/no-text condition instead of inventing an empty success.
 
 Reference: [Gemini generateContent REST API](https://ai.google.dev/api/generate-content).
@@ -34,7 +34,7 @@ Reference: [Gemini generateContent REST API](https://ai.google.dev/api/generate-
 - Endpoint: https://api.anthropic.com/v1/messages
 - Required profile settings: model, max_tokens
 - Optional settings: system, temperature, top_p, top_k
-- Headers: configure x-api-key and anthropic-version (for example, 2023-06-01) using a request-time header provider or protected profile headers.
+- Headers: configure x-api-key and anthropic-version (for example, 2023-06-01); use a request-time header provider for the secret API key and keep it out of source-controlled profile settings.
 - Extracts text blocks and message/model/stop-reason/token-usage metadata.
 
 Some current Claude model families reject sampling parameters such as temperature or top_p. Leave them unset unless supported by the selected model.
