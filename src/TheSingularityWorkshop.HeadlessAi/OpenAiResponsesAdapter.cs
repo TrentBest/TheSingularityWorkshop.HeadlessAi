@@ -34,7 +34,7 @@ public sealed class OpenAiResponsesAdapter : IHeadlessAiAdapter
             ["input"] = input.Content
         };
         JsonProviderAdapterHelpers.AddOptionalString(body, profile, "instructions");
-        JsonProviderAdapterHelpers.AddOptionalInt(body, profile, "max_output_tokens");
+        JsonProviderAdapterHelpers.AddOptionalPositiveInt(body, profile, "max_output_tokens");
         JsonProviderAdapterHelpers.AddOptionalDouble(body, profile, "temperature");
         JsonProviderAdapterHelpers.AddOptionalDouble(body, profile, "top_p");
         JsonProviderAdapterHelpers.AddOptionalBool(body, profile, "store");
