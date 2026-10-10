@@ -44,7 +44,7 @@ This is a discovery and implementation queue, not a promise that all items alrea
 
 The core must remain independently usable. The generic `HeadlessAiInput` and `IHeadlessAiAdapter` contracts already provide the HTTP invocation seam, but they do **not** constitute a typed integration with ProtocolAi or GrammarAi. No first-party bridge is shipped yet.
 
-The intended deliverable is a separate, opt-in companion package/repository (working name: `TheSingularityWorkshop.HeadlessAi.ProtocolAi`) that references HeadlessAi, ProtocolAi, and GrammarAi. This keeps the dependency direction explicit: installing HeadlessAi alone adds no semantic-package dependencies; users who want the bridge install it deliberately.
+The intended deliverable is a separate, opt-in **project/package inside this repository** (working name: `TheSingularityWorkshop.HeadlessAi.ProtocolAi`) that references HeadlessAi, ProtocolAi, and GrammarAi. Do not create a new GitHub repository for it. Installing HeadlessAi core alone adds no semantic-package dependencies; users who want the guided bridge install the companion package deliberately.
 
 Bridge acceptance criteria:
 
@@ -57,7 +57,7 @@ Bridge acceptance criteria:
 - [ ] Document what the bridge serializes and validates versus what remains owned by the host; no model/provider-specific grammar support is implied.
 - [ ] Keep all NuGet publication gates disabled by default; packing and CI are not release approval.
 
-Do not add ProtocolAi or GrammarAi references to the core HeadlessAi project to implement this. The first milestone is the companion contract and tests, not a new orchestration engine or GUI.
+Do not add ProtocolAi or GrammarAi references to the core HeadlessAi project to implement this. Put those references only in the optional companion project so advanced developers can omit the package entirely. The first milestone is the companion contract and tests, not a new orchestration engine or GUI.
 
 ## Production readiness and measurement
 
