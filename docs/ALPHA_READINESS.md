@@ -2,6 +2,19 @@
 
 > **Purpose:** prepare a first release that is genuinely useful, understandable, and testable. “Alpha” describes maturity and the need for real-world feedback; it is not a reason to artificially withhold coherent functionality.
 
+## Latest candidate status — 2026-10-10 UTC
+
+**Current development candidate:** `1a33f68117a26cad80c49d6c4ee9b0dd210e58f2`
+
+- [x] GitHub Actions run [#206](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/38016575095) completed successfully for this commit.
+- [x] Release build and automated tests passed in that run.
+- [x] Coverage report was produced and Codecov upload succeeded.
+- [x] NuGet package was packed, audited by the workflow, and uploaded as the `headlessai-package` workflow artifact.
+- [x] NuGet publication step was skipped; publishing remains disabled by the workflow's `&& false` gate.
+- [ ] Human release review is still required. A successful CI run does not close every contract, security, documentation, or release-evidence gate below.
+
+**Assessment:** this is a verified package candidate, not yet an approved release. The highest-value remaining checks are the profile/transport/header failure-path matrix, provider setup and troubleshooting documentation, security guidance, and a final clean-candidate review. Keep ProtocolAi/GrammarAi integration optional and out of the core alpha critical path.
+
 ## Release ambition
 
 HeadlessAi addresses a major integration limitation: developers should be able to add AI capabilities to applications and services without adopting a heavyweight framework, GUI, application runtime, or single-provider architecture. The first release should deliver as much of that useful domain as can be implemented coherently and supported by tests and documentation.
