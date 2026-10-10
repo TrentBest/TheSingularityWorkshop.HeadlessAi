@@ -31,7 +31,7 @@ public sealed class AnthropicMessagesAdapter : IHeadlessAiAdapter
         var body = new JsonObject
         {
             ["model"] = JsonProviderAdapterHelpers.RequireSetting(profile, "model"),
-            ["max_tokens"] = int.Parse(JsonProviderAdapterHelpers.RequireSetting(profile, "max_tokens"), System.Globalization.CultureInfo.InvariantCulture),
+            ["max_tokens"] = JsonProviderAdapterHelpers.RequireIntSetting(profile, "max_tokens"),
             ["messages"] = new JsonArray
             {
                 new JsonObject
