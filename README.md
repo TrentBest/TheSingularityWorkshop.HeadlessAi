@@ -1,6 +1,6 @@
 # ✳️ 00 TheSingularityWorkshop.HeadlessAi
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/LICENSE)
 [![Build](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml/badge.svg?branch=development)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml)
 [![Code Coverage](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi/branch/development/graph/badge.svg)](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi)
 
@@ -21,13 +21,13 @@ It is an invocation toolkit—not a model, agent orchestration engine, memory st
 
 ## 🟣 02 The Workshop documentation map
 
-This repository follows The Singularity Workshop's shared [Documentation Standard](DOCUMENTATION_STANDARD.md), maintained in [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). The standard is designed to **edify, not mystify**: lead with the problem, orient the reader, provide a credible first proof, then link to deeper explanations instead of cramming the entire manual into the README.
+This repository follows The Singularity Workshop's shared [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_STANDARD.md), maintained in [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). The standard is designed to **edify, not mystify**: lead with the problem, orient the reader, provide a credible first proof, then link to deeper explanations instead of cramming the entire manual into the README.
 
-- **New to the idea?** Start with [What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md).
-- **Want to use it?** Follow the [Usage Guide](docs/usage.md).
-- **Want to understand the why?** Read [Theory](docs/THEORY.md) and [Problem Domain](docs/problem-domain.md).
-- **Need exact boundaries?** Read [Architecture](docs/architecture-and-theory.md) and [Architecture Boundaries](docs/architecture-boundaries.md).
-- **Want the full document map?** Open the [Documentation Index](DOCUMENTATION_INDEX.md).
+- **New to the idea?** Start with [What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md).
+- **Want to use it?** Follow the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
+- **Want to understand the why?** Read [Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md) and [Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md).
+- **Need exact boundaries?** Read [Architecture](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-and-theory.md) and [Architecture Boundaries](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-boundaries.md).
+- **Want the full document map?** Open the [Documentation Index](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md).
 
 HeadlessAi has its own domain and vocabulary. It adopts the Workshop's shared visual and editorial language without inheriting responsibilities that belong to FSM_COS, FSM_API, ProtocolAi, GrammarAi, or a host application.
 
@@ -53,7 +53,7 @@ This lets a host configure a provider once and create many logical callers witho
 - **HeadlessAi owns:** endpoint invocation, adapter extension points, cancellation and timeouts, response bounds, and normalized response extraction.
 - **The host owns:** task planning, roles, memory, queues, concurrency and cost budgets, permissions, semantic validation, and approval of consequential actions.
 - **The provider owns:** its endpoint schema, authentication requirements, quotas, and inference behavior.
-- **ProtocolAi and GrammarAi:** optional companion integration, not dependencies of this package. The core currently exposes the generic input/adapter seam; a first-party, typed ProtocolAi + GrammarAi bridge is not yet shipped. The planned bridge belongs in a separate opt-in project/package **inside this repository** so consumers can choose it without pulling these dependencies into HeadlessAi core or creating another repository. See the [optional integration roadmap](docs/roadmap.md#optional-protocolai--grammarai-bridge).
+- **ProtocolAi and GrammarAi:** optional companion integration, not dependencies of this package. The core currently exposes the generic input/adapter seam; a first-party, typed ProtocolAi + GrammarAi bridge is not yet shipped. The planned bridge belongs in a separate opt-in project/package **inside this repository** so consumers can choose it without pulling these dependencies into HeadlessAi core or creating another repository. See the [optional integration roadmap](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/roadmap.md#optional-protocolai--grammarai-bridge).
 
 A well-formed response can still be wrong. A valid grammar is not proof of truth, and model output never grants itself permission to execute a tool, change a runtime, or modify external state.
 
@@ -61,7 +61,7 @@ A well-formed response can still be wrong. A valid grammar is not proof of truth
 
 The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These built-ins are an initial text-focused slice, not full support for every provider feature.
 
-ProtocolAi + GrammarAi may reduce repeated explanatory tokens or some forms of ambiguity in repeated tasks. That is a **testable hypothesis**, not a package guarantee. Setup costs, repair calls, output validity, semantic drift, and unsupported claims must be measured against a comparable baseline. See the [Measurement Plan](docs/measurement-plan.md).
+ProtocolAi + GrammarAi may reduce repeated explanatory tokens or some forms of ambiguity in repeated tasks. That is a **testable hypothesis**, not a package guarantee. Setup costs, repair calls, output validity, semantic drift, and unsupported claims must be measured against a comparable baseline. See the [Measurement Plan](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/measurement-plan.md).
 
 ---
 
