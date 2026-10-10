@@ -1,26 +1,55 @@
 # Usage guide
 
-A profile is a reusable endpoint configuration; an adapter defines that endpoint's request and response protocol; a template combines the two so a host can create many lightweight agent instances.
+**The shortest path is: configure an endpoint, choose its adapter, create a caller, and send input.** This example uses the OpenAI Responses API and expects a real API key in the host environment. It makes a live network request; it is not an offline test.
 
-    var profile = new HeadlessAiProfile(
-        "my-endpoint",
-        new Uri("https://api.openai.com/v1/responses"),
-        headers: new Dictionary<string, string> { ["Authorization"] = "Bearer supplied-by-secret-provider" },
-        settings: new Dictionary<string, string>
-        {
-            ["model"] = "your-model",
-            ["instructions"] = "Return concise, schema-conformant output.",
-            ["max_output_tokens"] = "512"
-        },
-        timeout: TimeSpan.FromSeconds(30),
-        maxResponseBytes: 1024 * 1024);
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using TheSingularityWorkshop.HeadlessAi;
 
-    using var httpClient = new HttpClient();
-    var template = new HeadlessAiAgentTemplate(profile, new OpenAiResponsesAdapter());
-    var researcher = template.CreateAgent(httpClient);
-    var reviewer = template.CreateAgent(httpClient);
+var profile = new HeadlessAiProfile(
+    id: "research",
+    endpoint: new Uri("https://api.openai.com/v1/responses"),
+    settings: new Dictionary<string, string>
+    {
+        ["model"] = "your-model",
+        ["instructions"] = "Answer in one concise paragraph.",
+        ["max_output_tokens"] = "256"
+    });
 
-The profile and adapter are reusable; each agent is a lightweight caller instance. For rotating credentials, prefer IHeadlessAiRequestHeaderProvider instead of storing bearer tokens in static profile headers.
+using var httpClient = new HttpClient();
+var template = new HeadlessAiAgentTemplate(
+    profile,
+    new OpenAiResponsesAdapter(),
+    headerProvider: new EnvironmentBearerHeaderProvider());
+
+var agent = template.CreateAgent(httpClient);
+var result = await agent.SendAsync(new HeadlessAiInput("Explain what an HTTP endpoint is."));
+Console.WriteLine(result.Content);
+
+sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
+{
+    public ValueTask<IReadOnlyDictionary<string, string>> GetHeadersAsync(
+        HeadlessAiProfile profile,
+        CancellationToken cancellationToken = default)
+    {
+        var token = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        if (string.IsNullOrWhiteSpace(token))
+            throw new InvalidOperationException("Set OPENAI_API_KEY before running this example.");
+
+        IReadOnlyDictionary<string, string> headers =
+            new Dictionary<string, string> { ["Authorization"] = $"Bearer {token}" };
+        return ValueTask.FromResult(headers);
+    }
+}
+```
+
+Before running it, replace `your-model` with a model available to your account and set `OPENAI_API_KEY` in the process environment. Keep credentials out of source control.
+
+A profile describes the endpoint and non-secret settings. An adapter maps the endpoint's request and response format. A template combines them, and `CreateAgent(httpClient)` creates a lightweight caller. Reuse the injected `HttpClient`; do not create a separate connection pool for every logical caller.
 
 ## Built-in direct-HTTP adapters
 
