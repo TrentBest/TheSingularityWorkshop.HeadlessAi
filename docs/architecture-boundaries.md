@@ -15,7 +15,7 @@ flowchart LR
     H -->|validate / approve / act| X[Application or runtime]
 ~~~
 
-The optional integrations describe composition above the core, not package dependencies. HeadlessAi must compile and operate without ProtocolAi, GrammarAi, TheForge, FSM_COS, or FSM_API. The current generic input/adapter seam is not itself a first-party typed ProtocolAi/GrammarAi bridge; that bridge is planned as a separate opt-in companion package.
+The optional integrations describe composition above the core, not package dependencies. HeadlessAi must compile and operate without ProtocolAi, GrammarAi, TheForge, FSM_COS, or FSM_API. The current generic input/adapter seam is not itself a first-party typed ProtocolAi/GrammarAi bridge; that bridge is planned as a separate opt-in project/package within this repository. Only that companion project should reference ProtocolAi and GrammarAi; the core must remain independently usable.
 
 ## Ownership matrix
 
