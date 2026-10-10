@@ -121,4 +121,35 @@ Local benchmarks use deterministic fixture HTTP responses rather than live provi
 
 ---
 
-<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong><br><em>And because static boundaries are invitations to cause trouble.</em></p>
+## 🔗 Resources, code & support
+
+### 📦 Packages and source
+
+- **HeadlessAi:** [NuGet package page](https://www.nuget.org/packages/TheSingularityWorkshop.HeadlessAi) · [Source repository](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi)
+- **FSM_API:** [Core NuGet package](https://www.nuget.org/packages/TheSingularityWorkshop.FSM_API) · [Unity Asset Store](https://assetstore.unity.com/packages/slug/332450) · [Source repository](https://github.com/TrentBest/FSM_API)
+- **FSM_COS:** [NuGet package](https://www.nuget.org/packages/TheSingularityWorkshop.FSM_COS) · [Source repository](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS)
+- **FSM_Serialization:** [NuGet package](https://www.nuget.org/packages/TheSingularityWorkshop.FSM_Serialization) · [Source repository](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Serialization)
+- **WebPage:** [Source repository](https://github.com/TrentBest/WebPage)
+- **FSM_API_Unity:** [Source repository](https://github.com/TrentBest/FSM_API_Unity)
+
+### 🌐 Find the Workshop
+
+- **GitHub:** [The Singularity Workshop repositories](https://github.com/TrentBest)
+- **CoderLegion:** [Join the Workshop community](https://coderlegion.com/user/The+Singularity+Workshop)
+
+### 💖 Support The Singularity Workshop
+
+- **Patreon:** [Support the Workshop](https://www.patreon.com/c/TheSingularityWorkshop)
+- **PayPal:** [Make a donation](https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J)
+
+<p align="center">
+  <a href="https://github.com/TrentBest">
+    <img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop avatar and brand" width="200">
+  </a>
+</p>
+
+<p align="center">
+  <em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br>
+  <strong>Because state shouldn't be a mess.</strong><br>
+  <em>And because static boundaries are invitations to cause trouble.</em>
+</p>
