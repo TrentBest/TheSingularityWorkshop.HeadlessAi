@@ -22,6 +22,7 @@ The target is a **useful first release with honest boundaries**: implement the c
 - [ ] Define a stable adapter parse-error taxonomy that callers can handle without depending on provider-specific parser internals.
 - [ ] Add safe diagnostics and correlation identifiers without content or credential logging.
 - [ ] Document and test configuration defaults, request headers, timeout/cancellation, response bounds, and error handling as one coherent developer journey.
+- [ ] Implement and test a small fluent configuration facade that composes the existing profile/template contracts; follow the [Fluent Configuration Design](fluent-configuration-design.md) acceptance criteria and keep the current constructor API supported.
 - [ ] Add end-to-end fake-server examples showing the library from profile creation through normalized result and failure diagnosis.
 - [ ] Verify package contents, XML docs, examples, provider setup instructions, and clean-install experience.
 
