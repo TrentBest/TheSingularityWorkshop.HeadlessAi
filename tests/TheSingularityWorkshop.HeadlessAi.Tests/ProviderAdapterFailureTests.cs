@@ -72,6 +72,36 @@ public sealed class ProviderAdapterFailureTests
         Assert.Contains(setting, exception.Message);
     }
 
+    [Theory]
+    [InlineData("max_output_tokens", "0")]
+    [InlineData("max_output_tokens", "-1")]
+    public void OpenAiAdapter_RejectsNonPositiveTokenLimit(string setting, string value)
+    {
+        var profile = new HeadlessAiProfile("fixture-profile", new Uri("https://example.com/v1/responses"),
+            settings: new Dictionary<string, string> { ["model"] = "fixture-model", [setting] = value });
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            new OpenAiResponsesAdapter().CreateRequest(profile, new HeadlessAiInput("task")));
+
+        Assert.Contains(setting, exception.Message);
+        Assert.Contains("positive integer", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    public void AnthropicAdapter_RejectsNonPositiveRequiredTokenLimit(string value)
+    {
+        var profile = new HeadlessAiProfile("fixture-profile", new Uri("https://example.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "fixture-model", ["max_tokens"] = value });
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            new AnthropicMessagesAdapter().CreateRequest(profile, new HeadlessAiInput("task")));
+
+        Assert.Contains("max_tokens", exception.Message);
+        Assert.Contains("positive integer", exception.Message);
+    }
+
     [Fact]
     public void AnthropicAdapter_RejectsMalformedRequiredTokenLimitWithSettingName()
     {
