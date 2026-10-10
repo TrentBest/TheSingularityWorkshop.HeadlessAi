@@ -1,0 +1,100 @@
+name: Build, Test, Coverage, and Pack
+
+on:
+  push:
+    branches: [master, development]
+  pull_request:
+    branches: [master, development]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish the verified package to NuGet.org'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore
+        run: dotnet restore TheSingularityWorkshop.HeadlessAi.slnx
+      - name: Build
+        run: dotnet build TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-restore
+      - name: Test with coverage
+        run: dotnet test TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory ./TestResults
+      - name: Prepare coverage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          coverage_file="$(find ./TestResults -type f -name 'coverage.cobertura.xml' -print -quit)"
+          if [[ -z "$coverage_file" ]]; then
+            echo "No coverage.cobertura.xml file was produced."
+            find ./TestResults -maxdepth 4 -type f -print || true
+            exit 1
+          fi
+          cp "$coverage_file" ./TestResults/coverage.cobertura.xml
+          echo "Prepared coverage report: $coverage_file"
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: TrentBest/TheSingularityWorkshop.HeadlessAi
+          files: ./TestResults/coverage.cobertura.xml
+          fail_ci_if_error: true
+      - name: Pack
+        run: dotnet pack src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj --configuration Release --no-build --output ./artifacts
+      - name: Audit packed NuGet artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import glob, re, zipfile
+          from xml.etree import ElementTree as ET
+          packages = glob.glob('artifacts/*.nupkg')
+          if len(packages) != 1:
+              raise SystemExit(f'Expected exactly one .nupkg, found {len(packages)}: {packages}')
+          package = packages[0]
+          with zipfile.ZipFile(package) as z:
+              names = z.namelist()
+              readme_names = [n for n in names if n.lower() == 'readme.md']
+              nuspec_names = [n for n in names if n.endswith('.nuspec')]
+              dlls = [n for n in names if n.startswith('lib/net8.0/') and n.endswith('.dll')]
+              xml_docs = [n for n in names if n.startswith('lib/net8.0/') and n.endswith('.xml')]
+              assert readme_names, 'Package is missing README.md'
+              assert nuspec_names, 'Package is missing its .nuspec manifest'
+              assert dlls, 'Package is missing the net8.0 assembly'
+              assert xml_docs, 'Package is missing XML API documentation'
+              readme = z.read(readme_names[0]).decode('utf-8')
+              assert 'raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/docs/assets/headless-ai-architecture.svg' in readme, 'README architecture visual must use a package-safe absolute URL'
+              relative = re.findall(r'\]\((?!https?://|mailto:|#)([^)\s]+)\)', readme)
+              assert not relative, f'NuGet README contains relative links that will not resolve on nuget.org: {relative}'
+              root = ET.fromstring(z.read(nuspec_names[0]))
+              metadata = root.find('.//{*}metadata')
+              assert metadata is not None, 'Package metadata is missing'
+              def value(tag):
+                  node = metadata.find('{*}' + tag)
+                  return node.text.strip() if node is not None and node.text else ''
+              assert value('id') == 'TheSingularityWorkshop.HeadlessAi', f"Unexpected package id: {value('id')}"
+              assert value('version') == '0.1.0-alpha.1', f"Unexpected package version: {value('version')}"
+              assert value('license') or value('licenseUrl'), 'License metadata is missing'
+              assert value('readme') == 'README.md', f"Unexpected package README metadata: {value('readme')}"
+              print(f'PASS: {package} contains assembly, XML docs, README, license metadata, expected id/version, absolute visual URL, and no relative README links.')
+          PY
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: headlessai-package
+          path: artifacts/*.nupkg
+      - name: Publish to NuGet (TEMPORARY first-release authorization)
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish == true))
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
