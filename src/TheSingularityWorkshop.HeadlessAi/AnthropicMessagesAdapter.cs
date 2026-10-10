@@ -31,7 +31,7 @@ public sealed class AnthropicMessagesAdapter : IHeadlessAiAdapter
         var body = new JsonObject
         {
             ["model"] = JsonProviderAdapterHelpers.RequireSetting(profile, "model"),
-            ["max_tokens"] = JsonProviderAdapterHelpers.RequireIntSetting(profile, "max_tokens"),
+            ["max_tokens"] = JsonProviderAdapterHelpers.RequirePositiveIntSetting(profile, "max_tokens"),
             ["messages"] = new JsonArray
             {
                 new JsonObject
@@ -44,7 +44,7 @@ public sealed class AnthropicMessagesAdapter : IHeadlessAiAdapter
         JsonProviderAdapterHelpers.AddOptionalString(body, profile, "system");
         JsonProviderAdapterHelpers.AddOptionalDouble(body, profile, "temperature");
         JsonProviderAdapterHelpers.AddOptionalDouble(body, profile, "top_p");
-        JsonProviderAdapterHelpers.AddOptionalInt(body, profile, "top_k");
+        JsonProviderAdapterHelpers.AddOptionalPositiveInt(body, profile, "top_k");
         return body;
     }
 
