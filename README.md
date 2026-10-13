@@ -1,3 +1,5 @@
+![The Singularity Workshop animated moniker](https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Renderer/development/docs/assets/moniker.svg)
+
 # ✳️ 00 TheSingularityWorkshop.HeadlessAi
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/LICENSE)
