@@ -62,6 +62,8 @@ The host can configure a target and create many logical callers while reusing it
 
 The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These are concrete protocol adapters around generic invocation contracts; the core domain remains independent of provider and model types.
 
+For non-success HTTP responses, `HeadlessAiHttpException` exposes the status, a response excerpt capped at 2048 bytes, and any parsed `Retry-After` guidance. Oversized successful response bodies fail with `InvalidDataException`; profile timeouts become `TimeoutException`, while caller cancellation remains cancellation. HeadlessAi does not automatically retry requests—see the [usage guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md) for handling these outcomes.
+
 ## 🟢 05 See it in a minute
 
 The current public API uses constructors for the profile and template. This example uses OpenAI Responses as one concrete protocol; it makes a live provider request, so set an authorized API key and replace the example model identifier before running.
