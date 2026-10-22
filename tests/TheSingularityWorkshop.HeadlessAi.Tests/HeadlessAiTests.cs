@@ -7,6 +7,15 @@ namespace TheSingularityWorkshop.HeadlessAi.Tests;
 public sealed class HeadlessAiTests
 {
     [Fact]
+    public void HttpException_PreservesOriginalThreeArgumentConstructorForBinaryCompatibility()
+    {
+        var constructor = typeof(HeadlessAiHttpException).GetConstructor(
+            new[] { typeof(string), typeof(HttpStatusCode), typeof(string) });
+
+        Assert.NotNull(constructor);
+    }
+
+    [Fact]
     public void Profile_RequiresHttpsUnlessExplicitlyOverridden()
     {
         Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("test", new Uri("http://example.test")));
