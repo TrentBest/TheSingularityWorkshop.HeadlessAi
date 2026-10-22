@@ -71,7 +71,8 @@ public sealed class HeadlessAiAgent
             await BufferResponseAsync(response, _profile.MaxResponseBytes, timeoutSource.Token).ConfigureAwait(false);
             return await _adapter.ReadResponseAsync(response, timeoutSource.Token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (
+            !cancellationToken.IsCancellationRequested && timeoutSource.IsCancellationRequested)
         {
             throw new TimeoutException($"The request for profile '{_profile.Id}' exceeded its configured timeout.");
         }
