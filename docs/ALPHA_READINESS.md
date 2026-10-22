@@ -4,16 +4,16 @@
 
 ## Latest candidate status — 2026-10-22 UTC
 
-**Last fully verified source candidate before this readiness update:** `9ec49ea205400c20bccb12485b880820018fd2e2` on `development`.
+**Last fully verified candidate before this readiness-document update:** `ccd071576795638bc0180d9ca7eabe663b2a01cd` on `development`.
 
-- [x] GitHub Actions run [#39716665195](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39716665195) completed successfully for that exact commit.
-- [x] Restore, Release build, automated tests, coverage preparation/upload, and NuGet packing passed in that run. Tests use deterministic fixtures and do not require paid live-provider calls.
+- [x] GitHub Actions run [#39716927168](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39716927168) completed successfully for that exact commit.
+- [x] Restore, Release build, automated tests, coverage preparation/upload, and NuGet packing passed. Tests use deterministic fixtures and do not require paid live-provider calls.
 - [x] The packed artifact audit verified the assembly, XML API documentation, README, license metadata, package ID/version, package-safe README links, Markdown under `docs/`, `docs/GALLERY.md`, and SVG documentation assets.
 - [x] The publication job was skipped. The current workflow uses an unconditional `if: ${{ false }}` gate, so a manual dispatch cannot publish the package.
 - [x] GitHub Actions references in the workflow are pinned to immutable commit SHAs.
 - [ ] Human release review remains required. CI passing does not itself establish release approval or complete every documentation/security/contract review.
 
-**Assessment:** the implementation and package-artifact checks are stronger than the October 10 snapshot. The readiness-document and gallery-link edits after `9ec49ea` are documentation-only; their new CI run must pass before this updated documentation head is considered verified. The package remains alpha and is not approved for publication. Do not hold the core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
+**Assessment:** the implementation and package-artifact checks are stronger than the October 10 snapshot. This status update is documentation-only; its resulting commit must also pass CI. The package remains alpha and is not approved for publication. Do not hold the core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
 
 ## Release ambition
 
