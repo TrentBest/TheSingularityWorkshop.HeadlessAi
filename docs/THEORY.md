@@ -44,6 +44,35 @@ When many tasks reuse the same vocabulary and structural rules, sending those de
 
 The benefit depends on amortization. Setup definitions cost tokens; compact symbols may be harder for a model to interpret; output and repair costs may change; providers may offer caching that alters the economics. Measure the entire workflow over a representative set of repeated tasks.
 
+## The invocation lifecycle is a sequence of separate decisions
+
+A useful mental model is not simply “send prompt, receive answer.” The full path has distinct boundaries:
+
+```text
+host intent and configuration
+        |
+        v
+endpoint adapter maps request
+        |
+        v
+bounded HTTP invocation
+        |
+        v
+adapter extracts response content
+        |
+        v
+host checks protocol / structure / meaning
+        |
+        v
+host policy decides what happens next
+```
+
+HeadlessAi is responsible for the middle transport-and-adapter boundary: mapping the request for the selected endpoint, performing the configured HTTP call, respecting timeout/cancellation/response limits, and extracting content according to the adapter contract. It does not decide whether that content answers the right question, whether the user is authorized to act on it, or whether a proposed action is safe.
+
+Failure is a first-class path, not an exception to the model. A call can fail before sending, during transport, at the HTTP status boundary, while parsing an endpoint response, or because a configured bound is exceeded. The host should distinguish retryable from non-retryable failures according to its own operation and budget; a retry is not automatically safe for every endpoint or side effect.
+
+The response and the failure path both return control to the host. Neither should be silently converted into trusted intent. The host decides whether to retry, request clarification, display the result, reject it, or continue through additional validation.
+
 ## 6. Structure is not truth
 
 A grammar can make an answer syntactically valid without making it correct. A protocol can make identifiers stable without ensuring the model interprets them correctly. Validation should therefore have multiple layers:
