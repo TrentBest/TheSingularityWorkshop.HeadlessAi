@@ -1,11 +1,3 @@
-## 🟣 01 Why use HeadlessAi?
-
-Connecting an application to an AI endpoint can pull provider-specific HTTP details into code that should be focused on the application's job. HeadlessAi separates endpoint configuration and protocol adaptation from the host's own policy, memory, permissions, and actions.
-
-Use it when a .NET application needs a direct input-to-response HTTP path without browser automation or a provider SDK in the core integration. The host still decides what the response means and what may happen next.
-
-**Explore the Workshop:** [Find packages on NuGet](https://www.nuget.org/packages?q=TheSingularityWorkshop) · [Browse the repository guide](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/docs/WORKSHOP_REPOSITORIES.md)
-
 <!-- The Singularity Workshop moniker -->
 <p align="center">
   <a href="https://github.com/TrentBest">
@@ -24,6 +16,14 @@ Use it when a .NET application needs a direct input-to-response HTTP path withou
   <img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/docs/assets/headless-ai-architecture.svg" alt="The host owns task intent, validation, permissions, memory, and actions; HeadlessAi constructs bounded HTTP requests through explicit protocol adapters; configured endpoints perform inference." width="100%">
 </p>
 <p align="center"><em>Many logical callers. Explicit endpoint protocols. Host-owned authority.</em></p>
+
+## 🟣 01 Why use HeadlessAi?
+
+Connecting an application to an AI endpoint can pull provider-specific HTTP details into code that should be focused on the application's job. HeadlessAi separates endpoint configuration and protocol adaptation from the host's own policy, memory, permissions, and actions.
+
+Use it when a .NET application needs a direct input-to-response HTTP path without browser automation or a provider SDK in the core integration. The host still decides what the response means and what may happen next.
+
+**Explore the Workshop:** [Find packages on NuGet](https://www.nuget.org/packages?q=TheSingularityWorkshop) · [Browse the repository guide](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/docs/WORKSHOP_REPOSITORIES.md)
 
 ## 🟦 02 What is HeadlessAi?
 
