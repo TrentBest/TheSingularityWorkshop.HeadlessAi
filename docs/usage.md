@@ -84,9 +84,15 @@ Use `JsonHeadlessAiAdapter` with a request factory that constructs the exact JSO
 
 Use `IHeadlessAiRequestHeaderProvider` to retrieve authorization headers at request time from a host-owned secret store or token refresh mechanism. Static profile headers are suitable for non-secret defaults; dynamic headers override same-named profile headers. HeadlessAi does not log header values. Never hardcode production credentials in source or checked-in configuration.
 
-The host is responsible for validating outbound endpoint configuration for its deployment, including any server-side request forgery (SSRF) concerns. Review redirect behavior and credential forwarding when choosing endpoints and transport settings.
+The host is responsible for validating outbound endpoint configuration for its deployment, including server-side request forgery (SSRF) concerns. A profile requires an absolute HTTPS URI by default, but that check is not an outbound-network security policy: it does not block private IP ranges, validate DNS results, or restrict which hosts your application may contact.
 
-## Transport and limits
+For server-side applications, enforce an explicit endpoint/host allowlist at the application boundary. Configure the injected transport for your threat model; in particular, the default .NET HTTP handler can follow redirects. If redirects could move a request outside the allowlist or forward credentials to an unintended destination, disable automatic redirects or validate every redirect with a transport policy that you control. Do not treat a validated initial URI as proof that every eventual network destination is trusted. HeadlessAi does not own the injected `HttpClient` and cannot impose handler-level redirect, proxy, DNS, or network-isolation policy after construction.
+
+## Custom-adapter contract
+
+A custom `IHeadlessAiAdapter` is called once per `SendAsync` invocation. Its `CreateRequest` result must be a newly created request owned by that invocation; the agent disposes the request and response after processing. The agent replaces the adapter-supplied request URI and HTTP method with the profile's endpoint and method, then applies profile headers followed by request-time headers. Dynamic headers replace same-named profile headers case-insensitively. Do not depend on an adapter-supplied URI or method being retained.
+
+`ReadResponseAsync` is called only after a successful HTTP status. It must consume the response while the callback is running, honor the supplied cancellation token for asynchronous work, and return a normalized `HeadlessAiOutput`; it must not retain the response or its content for later use. The agent bounds the buffered successful response before invoking the adapter and disposes transport objects when the call completes. Adapter instances and header providers may be shared by templates, so they must be stateless or thread-safe. The agent does not automatically retry failures; the host owns retry budgets and idempotency decisions.\n\n## Transport and limits
 
 The profile timeout applies in addition to the caller's cancellation token. Successful response bodies are bounded by `MaxResponseBytes`, and non-success excerpts are bounded to 2048 bytes. The host owns conversation state, role policy, budgets, permissions, semantic validation, and tool mediation. Shared adapters and header providers should be stateless or thread-safe.
 
