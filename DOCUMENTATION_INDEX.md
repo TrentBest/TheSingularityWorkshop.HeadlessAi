@@ -21,6 +21,7 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 | Evaluate ProtocolAi + GrammarAi | [Measurement Plan](docs/measurement-plan.md) |
 | Understand practical fit and non-fit | [Use Cases](docs/use-cases.md) |
 | Evaluate an alpha candidate and release gates | [Alpha Readiness](docs/ALPHA_READINESS.md) |
+| Reconcile branch history without losing unique work | [Branch Reconciliation Ledger](docs/BRANCH_RECONCILIATION.md) |
 | Browse the architecture visual and evidence links | [Gallery](docs/GALLERY.md) |
 | Build, test, and plan work | [Contributing](CONTRIBUTING.md), [Roadmap](docs/roadmap.md), and [Continuation Brief](docs/CONTINUATION_BRIEF.md) |
 
