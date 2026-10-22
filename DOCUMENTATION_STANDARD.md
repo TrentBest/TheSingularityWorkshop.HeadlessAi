@@ -1,6 +1,6 @@
 # HeadlessAi Documentation Standard
 
-HeadlessAi adopts the shared Workshop documentation standard defined in [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). That repository is the canonical source; this file records the local application and rules specific to this repository.
+HeadlessAi adopts the shared Workshop documentation standard defined in [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/master/DOCUMENTATION_STANDARD.md). That repository is the canonical source; this file records the local application and rules specific to this repository.
 
 The goal is **edify, not mystify**: explain the human problem and mental model, state technical boundaries precisely, provide an honest first success, and support claims with evidence.
 
