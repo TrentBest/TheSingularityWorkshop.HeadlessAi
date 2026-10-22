@@ -8,6 +8,7 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 |---|---|
 | Understand the problem and purpose | [README](README.md), then [What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md) |
 | Understand domain vocabulary and non-goals | [Problem Domain](docs/problem-domain.md) |
+| Track domain completeness and release attack plan | [Domain Completeness Plan](docs/DOMAIN_COMPLETENESS.md) |
 | Learn why the boundary exists | [Theory](docs/THEORY.md) |
 | Understand implementation ownership and lifecycle | [Architecture](docs/architecture-and-theory.md) |
 | Understand dependency direction | [Architecture Boundaries](docs/architecture-boundaries.md) |
