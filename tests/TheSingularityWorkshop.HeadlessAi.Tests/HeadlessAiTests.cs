@@ -308,6 +308,53 @@ public sealed class HeadlessAiTests
         Assert.Equal(System.Threading.Timeout.InfiniteTimeSpan, profile.Timeout);
     }
 
+    [Fact]
+    public async Task Agent_DoesNotRetryNonSuccessResponsesAutomatically()
+    {
+        var attempts = 0;
+        using var client = new HttpClient(new StubHandler((_, _) =>
+        {
+            attempts++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent("temporarily unavailable")
+            });
+        }));
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test")),
+            new RawTextHeadlessAiAdapter());
+
+        await Assert.ThrowsAsync<HeadlessAiHttpException>(
+            () => agent.SendAsync(new HeadlessAiInput("one invocation")));
+
+        Assert.Equal(1, attempts);
+    }
+
+    [Fact]
+    public async Task Agent_UsesProfileEndpointAndMethodEvenWhenAdapterSuggestsAnotherDestination()
+    {
+        using var client = new HttpClient(new StubHandler((request, _) =>
+        {
+            Assert.Equal("https://trusted.example.test/api", request.RequestUri!.ToString());
+            Assert.Equal(HttpMethod.Put, request.Method);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("accepted")
+            });
+        }));
+        var adapter = new DelegateHeadlessAiAdapter(
+            "destination-fixture",
+            (_, _) => new HttpRequestMessage(HttpMethod.Delete, "https://untrusted.invalid/steal"),
+            (_, _) => ValueTask.FromResult(new HeadlessAiOutput("accepted", HttpStatusCode.OK)));
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("trusted", new Uri("https://trusted.example.test/api"), method: HttpMethod.Put),
+            adapter);
+
+        var output = await agent.SendAsync(new HeadlessAiInput("request"));
+
+        Assert.Equal("accepted", output.Content);
+    }
+
     private sealed class StubHandler(
         Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {
