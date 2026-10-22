@@ -59,6 +59,8 @@ flowchart TD
 
 HeadlessAi is responsible for transport and adapter behavior. It must not turn a response into an executable tool call or mutate the host's live state by itself.
 
+The failure branch is intentionally not one universal outcome: cancellation, timeout, non-success HTTP status, oversized bodies, malformed JSON, and structurally unusable provider responses have different handling requirements. See the [Provider Failure Contract](provider-failure-contract.md) for the currently documented and tested cases. A host may choose to retry, but retrying a billable operation requires an explicit policy for idempotency and duplicate effects.
+
 ## Why many agents can share one endpoint definition
 
 A template is reusable configuration; an agent instance is a convenient invocation surface. The template can create many lightweight callers without each caller recreating provider settings or owning an independent network connection pool. The host can assign distinct roles and task contexts while retaining one explicit endpoint contract.
