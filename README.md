@@ -53,7 +53,7 @@ The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini g
 
 ## 🟢 04 See it in a minute
 
-The current public API uses constructors for the profile and template; a fluent endpoint builder is a design target, not shipped functionality. This source-shaped example uses one implemented protocol, OpenAI Responses. It makes a live provider request, so set a real authorized API key and replace the example model identifier before running.
+The current public API uses constructors for the profile and template. This example uses OpenAI Responses as one concrete protocol; it makes a live provider request, so set an authorized API key and replace the example model identifier before running.
 
 ```csharp
 using System;
@@ -107,10 +107,10 @@ Expected behavior: the program prints the response text extracted by the selecte
 - **[Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
 - **[What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
 - **[Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md)** — understand why endpoint protocol, transport, identity, and application authority are separate concerns.
-- **[Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md)** — see the domain vocabulary, lifecycle, non-goals, and acceptance criteria.
+- **[Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md)** — understand the request, response, and host responsibilities.
 - **[Architecture](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-and-theory.md) and [Dependency Boundaries](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-boundaries.md)** — inspect responsibility ownership and prohibited dependencies.
 - **[Provider Adapters](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/provider-adapters.md) and [Provider Failure Contract](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/provider-failure-contract.md)** — see supported direct-HTTP protocol slices and the limits of their parsing behavior.
-- **[Fluent Configuration Design](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/fluent-configuration-design.md)** — review the proposed ergonomic direction; it is not a current public API.
+
 - **[Security](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/security.md), [Performance](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/performance.md), and [Measurement Plan](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/measurement-plan.md)** — review trust boundaries and what evidence is required before making claims.
 - **[Documentation Index](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md)** — navigate the full guide set.
 
