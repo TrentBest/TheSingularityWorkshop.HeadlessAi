@@ -22,6 +22,10 @@ The public API configures profiles and templates through constructors; the examp
 
 ## What happens when a request is sent?
 
+![Conceptual lifecycle from host intent through endpoint adaptation and bounded HTTP transport to host-owned acceptance of the result or failure](assets/headless-ai-invocation-lifecycle.svg)
+
+*This is a teaching diagram, not a live trace. It emphasizes that HeadlessAi returns data or a failure; the host owns acceptance and consequential decisions.*
+
 1. The host decides what work is appropriate and supplies the input.
 2. The selected adapter constructs the endpoint-specific request.
 3. HeadlessAi applies the configured endpoint and method, obtains any request-time headers, and sends through the host-provided HTTP transport.
