@@ -73,6 +73,57 @@ Failure is a first-class path, not an exception to the model. A call can fail be
 
 The response and the failure path both return control to the host. Neither should be silently converted into trusted intent. The host decides whether to retry, request clarification, display the result, reject it, or continue through additional validation.
 
+## A consumer example: turn a support request into a reviewed proposal
+
+Consider a commerce application that receives: “Please cancel order 4812.” The goal is not to let a fluent model response cancel an order directly. The goal is to turn the request into a candidate the application can check against its own records and rules.
+
+The three bundle responsibilities can be composed without collapsing them into one authority:
+
+```text
+customer request
+      |
+      v
+HeadlessAi
+send input to a configured endpoint; return candidate content
+      |
+      v
+ProtocolAi
+recognize application-owned actions and order identities;
+leave unknown values explicit
+      |
+      v
+GrammarAi
+describe the allowed shape of a request, such as
+an action followed by its target
+      |
+      v
+host links definitions and validates the candidate
+      |
+      v
+host checks customer identity, order ownership,
+order state, policy, and confirmation requirements
+      |
+      v
+business service performs an approved operation
+```
+
+This is a composition pattern, not an automatic pipeline supplied by HeadlessAi. The host or an explicit integration must connect the packages, link protocol references, and perform candidate parsing or validation. The model's response is still untrusted input.
+
+The layers answer different questions:
+
+- **HeadlessAi:** Can the application make a bounded request to this configured endpoint and extract its response?
+- **ProtocolAi:** Which candidate values correspond to identities owned by the application, and which remain unknown literals?
+- **GrammarAi:** Which relationships and sequences are permitted by the declared structural definition?
+- **The host:** Does this request refer to a real order belonging to this customer, is cancellation allowed now, and should the operation proceed?
+
+Suppose the model returns a well-formed request for order `4812`, but that order belongs to another customer. Transport, protocol, and structural checks may all have succeeded; the host must still reject the operation. If the model invents an action, the host can ask for clarification or reject the unknown value rather than treating it as a recognized command. If the HTTP call times out, the host must decide whether retrying is appropriate; it must not infer that the business operation did or did not occur unless the endpoint contract establishes that fact.
+
+This is the practical value of the separation: each layer narrows a different kind of uncertainty, while the application retains authority over records, permissions, confirmation, and side effects. It also makes each failure diagnosable without claiming that any single successful check makes the entire request safe.
+
+Use this composition when you need AI to propose structured work against application-owned concepts. Keep the final business decision and execution in the host, where the real data and authority live.
+
+---
+
 ## 6. Structure is not truth
 
 A grammar can make an answer syntactically valid without making it correct. A protocol can make identifiers stable without ensuring the model interprets them correctly. Validation should therefore have multiple layers:
