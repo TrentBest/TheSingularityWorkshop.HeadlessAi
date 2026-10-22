@@ -165,6 +165,27 @@ public sealed class HeadlessAiTests
         await Assert.ThrowsAsync<InvalidDataException>(() => agent.SendAsync(new HeadlessAiInput("prompt")));
     }
 
+    [Fact]
+    public async Task Agent_ReportsNonSuccessStatusAndBoundsTheResponseExcerpt()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+            {
+                Content = new StringContent(new string('x', 3000))
+            })));
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test/invoke")),
+            new RawTextHeadlessAiAdapter());
+
+        var error = await Assert.ThrowsAsync<HeadlessAiHttpException>(
+            () => agent.SendAsync(new HeadlessAiInput("prompt")));
+
+        Assert.Equal("fixture", error.ProfileId);
+        Assert.Equal(HttpStatusCode.TooManyRequests, error.StatusCode);
+        Assert.Equal(2048, error.ResponseExcerpt.Length);
+        Assert.All(error.ResponseExcerpt, character => Assert.Equal('x', character));
+    }
+
     private sealed class FixedHeaderProvider : IHeadlessAiRequestHeaderProvider
     {
         public ValueTask<IReadOnlyDictionary<string, string>> GetHeadersAsync(
