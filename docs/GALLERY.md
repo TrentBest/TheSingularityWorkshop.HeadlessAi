@@ -23,6 +23,19 @@ The picture is explanatory artwork—not a live request trace, generated UML, or
 
 The SVGs in [section-dividers](assets/section-dividers/) are navigation artwork for the six-part README journey, not implementation diagrams.
 
+### Follow one invocation from intent to decision
+
+![Animated HeadlessAi invocation lifecycle showing host preparation, endpoint adaptation, bounded HTTP transport, response or failure, and host-owned acceptance gates](assets/headless-ai-invocation-lifecycle.svg)
+
+Read the flow from top to bottom:
+
+1. The host chooses the task, endpoint profile, credentials, cancellation policy, and what the result may be used for.
+2. HeadlessAi uses the selected adapter to map the endpoint-specific request and extract response content around a bounded HTTP invocation.
+3. A call can return content or fail through timeout, transport/HTTP errors, malformed responses, or configured limits. These outcomes must be handled explicitly.
+4. The host applies the checks that determine whether the result is structurally acceptable, semantically appropriate, and authorized for any consequential action.
+
+The animation is an authored conceptual walkthrough, not a live trace or a claim that every endpoint has identical failure semantics. The adapter and endpoint contract determine the concrete request and response details.
+
 ## See actual behavior
 
 From the repository root:
