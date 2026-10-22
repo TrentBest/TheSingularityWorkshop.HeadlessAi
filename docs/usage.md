@@ -9,7 +9,7 @@
 
 **The basic operation is prompt in, response out—without a browser or GUI.** The host supplies input, HeadlessAi sends an HTTP request to a configured endpoint, and the host receives the returned content.
 
-The current public API uses a `HeadlessAiProfile` and `HeadlessAiAgentTemplate` to configure that interaction. **A fluent endpoint builder is a design target, not part of the shipped API yet.** See the [fluent configuration design note](fluent-configuration-design.md) for the intended direction and its acceptance criteria.
+The public API uses a `HeadlessAiProfile` and `HeadlessAiAgentTemplate` to configure that interaction.
 
 This example uses **one specific protocol: OpenAI's Responses API**. That is an example choice, not a requirement or a generic endpoint. The URL, adapter, authentication headers, and settings must match the service you intend to call. This code calls the provider API directly; it does **not** automate the ChatGPT website or submit into the same signed-in web session. Provider APIs and their website experiences can have different features and conversation state.
 
