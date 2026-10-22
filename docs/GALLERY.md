@@ -1,0 +1,32 @@
+# HeadlessAi Gallery
+
+HeadlessAi provides provider-neutral HTTP invocation primitives with explicit endpoint-specific adapters. This gallery separates the explanatory architecture picture from deterministic fixtures that verify request mapping and failure behavior.
+
+## Visual tour
+
+### The endpoint invocation boundary
+
+![HeadlessAi architecture and trust boundaries](assets/headless-ai-architecture.svg)
+
+This authored architecture diagram shows the responsibility split: the host owns intent, permissions, memory, and validation; HeadlessAi maps normalized input to an endpoint protocol and bounds the HTTP response; the provider owns its API and inference. ProtocolAi and GrammarAi are optional host-side helpers, not required dependencies of HeadlessAi's core.
+
+The picture is explanatory artwork—not a live request trace, generated UML, or proof that a remote provider was contacted.
+
+### README journey markers
+
+The SVGs in [section-dividers](assets/section-dividers/) are navigation artwork for the six-part README journey, not implementation diagrams.
+
+## See actual behavior
+
+From the repository root:
+
+```bash
+dotnet test tests/TheSingularityWorkshop.HeadlessAi.Tests/TheSingularityWorkshop.HeadlessAi.Tests.csproj --configuration Release
+dotnet pack src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj --configuration Release
+```
+
+The tests use deterministic HTTP fixtures; they do not require paid live-provider calls. They cover adapter request/response behavior, malformed and empty responses, timeout and response-size boundaries, and invalid settings. A successful fixture test is not proof of compatibility with every provider API variant.
+
+## Detailed recipe
+
+Start with [Usage](usage.md), then read [Provider Adapters](provider-adapters.md), [Provider Failure Contract](provider-failure-contract.md), [Security Model](security.md), [Architecture Boundaries](architecture-boundaries.md), and [Alpha Readiness](ALPHA_READINESS.md).
