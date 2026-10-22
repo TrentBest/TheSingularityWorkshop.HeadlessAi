@@ -4,16 +4,16 @@
 
 ## Latest candidate status — 2026-10-22 UTC
 
-**Last fully verified candidate before this readiness-document update:** `ccd071576795638bc0180d9ca7eabe663b2a01cd` on `development`.
+**Last verified implementation candidate before this documentation reconciliation:** `eac7f44562a4074bb3eac0d30df35861ecb6114c` on `development`.
 
-- [x] GitHub Actions run [#39716927168](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39716927168) completed successfully for that exact commit.
-- [x] Restore, Release build, automated tests, coverage preparation/upload, and NuGet packing passed. Tests use deterministic fixtures and do not require paid live-provider calls.
-- [x] The packed artifact audit verified the assembly, XML API documentation, README, license metadata, package ID/version, package-safe README links, Markdown under `docs/`, `docs/GALLERY.md`, and SVG documentation assets.
-- [x] The publication job was skipped. The current workflow uses an unconditional `if: ${{ false }}` gate, so a manual dispatch cannot publish the package.
-- [x] GitHub Actions references in the workflow are pinned to immutable commit SHAs.
-- [ ] Human release review remains required. CI passing does not itself establish release approval or complete every documentation/security/contract review.
+- [x] GitHub Actions run [#39717094485](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39717094485) passed for the implementation/documentation head recorded in the branch ledger.
+- [x] The workflow verifies restore, Release build, automated tests/coverage, package creation, and a packed-artifact audit for assembly, XML docs, README, license metadata, package ID/version, internal docs, gallery, and SVG assets.
+- [x] Publication remains hard-disabled by `if: ${{ false }}`; manual dispatch cannot publish the package.
+- [x] GitHub Actions references are pinned to immutable commit SHAs.
+- [ ] The domain completeness plan and index have now been updated in follow-up documentation commits. Their resulting head must pass CI before it becomes a verified candidate.
+- [ ] Human API/contract/security/package review remains required; a green CI run is not release approval.
 
-**Assessment:** the implementation and package-artifact checks are stronger than the October 10 snapshot. This status update is documentation-only; its resulting commit must also pass CI. The package remains alpha and is not approved for publication. Do not hold the core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
+**Assessment:** the prior readiness record was stale. This update aligns it with the most recent verified development evidence and adds a traceable [Domain Completeness Plan](DOMAIN_COMPLETENESS.md). The new documentation commits are not yet claimed as CI-verified. The package remains alpha and is not approved for publication. Do not hold the core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
 
 ## Release ambition
 
