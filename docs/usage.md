@@ -74,7 +74,7 @@ In plain language, the profile records where and how to call; the adapter speaks
 - `GeminiGenerateContentAdapter` targets the exact model-specific Gemini generateContent URL and reads optional generation settings from the profile.
 - `AnthropicMessagesAdapter` targets the Anthropic Messages endpoint and requires model and max_tokens settings.
 
-All three use direct HTTP and System.Text.Json; no provider SDK is required. Configure each endpoint's required headers and settings as documented in [Provider adapters](provider-adapters.md). These are explicit protocol adapters—not evidence that the core API should depend on any provider's SDK or model classes. Direct HTTP does not bypass provider authentication, billing, rate limits, or access policy.
+All three use direct HTTP and System.Text.Json; no provider SDK is required. Configure each endpoint's required headers and settings as documented in [Provider adapters](provider-adapters.md). These are explicit protocol adapters; the core API remains independent of provider SDKs and model classes. Direct HTTP does not bypass provider authentication, billing, rate limits, or access policy.
 
 ## Custom endpoint protocols
 
