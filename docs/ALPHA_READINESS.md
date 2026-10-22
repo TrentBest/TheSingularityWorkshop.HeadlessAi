@@ -9,18 +9,18 @@
 
 > **Purpose:** prepare a first release that is genuinely useful, understandable, and testable. “Alpha” describes maturity and the need for real-world feedback; it is not a reason to artificially withhold coherent functionality.
 
-## Latest candidate status — 2026-10-22 UTC
+## Latest verified CI baseline — 2026-10-22 UTC
 
-**Latest verified candidate at the time of this record:** `d18b9607aab47c3555a2418416a9a73eb9c40eda` on `development`.
+**Latest green `development` commit:** `708c8ed34f318e32362165eb8d1fb3fa01a865e1`. This supersedes the older candidate recorded below in prior audit history.
 
-- [x] GitHub Actions run [#39721702323](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39721702323) passed for this exact commit.
+- [x] GitHub Actions run [#39724307272](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39724307272) passed for this exact commit.
 - [x] The workflow verifies restore, Release build, automated tests/coverage, package creation, packed-artifact audit, and artifact upload.
 - [x] The packed-artifact audit checks the assembly, XML docs, README, license metadata, package ID/version, internal documentation, gallery, and SVG assets.
 - [x] Publication remains hard-disabled by `if: ${{ false }}`; manual dispatch cannot publish the package.
 - [x] GitHub Actions references are pinned to immutable commit SHAs.
 - [ ] Human API/contract/security/package review remains required; a green CI run is not release approval.
 
-**Assessment:** the prior candidate references are superseded by the exact-head run above. Any subsequent commit—including this readiness-document update—must pass CI before it is treated as a verified candidate. The package remains alpha and is not approved for publication. Do not hold the core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
+**Assessment:** this is the latest verified green baseline, not yet a publication-approved release candidate. Any subsequent commit—including this readiness-document update—must pass CI before its new head is treated as verified. Keep HeadlessAi independently releasable; do not hold its core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
 
 ## Release ambition
 
