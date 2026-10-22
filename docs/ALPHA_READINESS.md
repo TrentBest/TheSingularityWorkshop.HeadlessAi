@@ -4,9 +4,9 @@
 
 ## Latest candidate status — 2026-10-22 UTC
 
-**Latest verified candidate at the time of this record:** `c1880123c0eb5765250dfb8f1cc9f7cffb6badbe` on `development`.
+**Latest verified candidate at the time of this record:** `d18b9607aab47c3555a2418416a9a73eb9c40eda` on `development`.
 
-- [x] GitHub Actions run [#39720173330](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39720173330) passed for this exact commit.
+- [x] GitHub Actions run [#39721702323](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39721702323) passed for this exact commit.
 - [x] The workflow verifies restore, Release build, automated tests/coverage, package creation, packed-artifact audit, and artifact upload.
 - [x] The packed-artifact audit checks the assembly, XML docs, README, license metadata, package ID/version, internal documentation, gallery, and SVG assets.
 - [x] Publication remains hard-disabled by `if: ${{ false }}`; manual dispatch cannot publish the package.
