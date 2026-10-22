@@ -65,7 +65,7 @@ public sealed class HeadlessAiAgent
             if (!response.IsSuccessStatusCode)
             {
                 var excerpt = await ReadBoundedExcerptAsync(response.Content, timeoutSource.Token).ConfigureAwait(false);
-                throw new HeadlessAiHttpException(_profile.Id, response.StatusCode, excerpt);
+                throw new HeadlessAiHttpException(_profile.Id, response.StatusCode, excerpt, response.Headers.RetryAfter);
             }
 
             await BufferResponseAsync(response, _profile.MaxResponseBytes, timeoutSource.Token).ConfigureAwait(false);

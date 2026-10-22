@@ -179,3 +179,13 @@ Likewise, token savings and drift reduction are not properties the package can p
 </p>
 
 <p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong><br><em>And because static boundaries are invitations to cause trouble.</em></p>
+
+
+## Failure recovery is a host policy
+
+HTTP failure metadata should preserve useful facts without silently taking control away from the application. In particular, a server's `Retry-After` header can communicate when a rate-limited or temporarily unavailable endpoint would prefer another attempt. Exposing that value lets the host coordinate retries with its own deadline, budget, and workload policy.
+
+HeadlessAi therefore reports the header but does not automatically replay requests. Automatic retries can amplify outages, violate caller deadlines, or duplicate operations when a remote endpoint's execution semantics are uncertain. A host should distinguish transient statuses from permanent configuration/authentication errors, cap retry attempts, use cancellation-aware delays, and retry only when repeating the operation is acceptable.
+
+The principle is **preserve evidence, delegate policy**: the transport layer exposes what the endpoint said; the host decides what to do with it.
+
