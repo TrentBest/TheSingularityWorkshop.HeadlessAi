@@ -9,6 +9,14 @@
 
 > **Purpose:** prepare a first release that is genuinely useful, understandable, and testable. “Alpha” describes maturity and the need for real-world feedback; it is not a reason to artificially withhold coherent functionality.
 
+
+
+## Phone-first release review — 2026-10-22 UTC
+
+Start with the [Release Review Brief](RELEASE_REVIEW_BRIEF.md) for the concise current contract, package boundaries, top remaining risks, and a guided reading order. It is a review aid, not a substitute for the checks below and not authorization to publish.
+
+Latest candidate checkpoint: [a6e910b5ea6df2e5c85357fc92c176633b2da34e](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/commit/a6e910b5ea6df2e5c85357fc92c176633b2da34e). CI evidence: [workflow run #39725666027](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39725666027). Current readiness estimate: **65%** (qualitative working estimate, not a test metric). Recheck CI on the exact final candidate after all changes.
+
 ## Latest verified CI baseline — 2026-10-22 UTC
 
 **Latest green `development` commit:** `708c8ed34f318e32362165eb8d1fb3fa01a865e1`. This supersedes the older candidate recorded below in prior audit history.
