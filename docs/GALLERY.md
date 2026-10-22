@@ -61,4 +61,4 @@ Start with [Usage](usage.md), then read [Provider Adapters](provider-adapters.md
 
 ## Phone-first release review
 
-For a concise, evidence-oriented walkthrough, start with the [Release Review Brief](RELEASE_REVIEW_BRIEF.md). It summarizes the implemented contract, the boundary this package owns, the highest-value remaining review items, and the release decision path. Then use the detailed guides to inspect behavior and evidence.
+Start with the [Usage Guide](usage.md) to configure a profile and adapter, send a request, and handle the response. Use [What is HeadlessAi?](WHAT_IS_HEADLESSAI.md) for the core idea and [Architecture Boundaries](architecture-boundaries.md) for the host-owned responsibilities.
