@@ -5,10 +5,11 @@ namespace TheSingularityWorkshop.HeadlessAi;
 /// <summary>Represents a non-success HTTP response from a configured endpoint.</summary>
 public sealed class HeadlessAiHttpException : HttpRequestException
 {
-    /// <summary>Creates an exception with the profile, HTTP status, and bounded response excerpt.</summary>
+    /// <summary>Creates an exception with the profile, HTTP status, bounded response excerpt, and optional retry guidance.</summary>
     /// <param name="profileId">Identifier of the endpoint profile that returned the error.</param>
     /// <param name="statusCode">HTTP response status code.</param>
     /// <param name="responseExcerpt">Bounded response text that may contain sensitive information.</param>
+    /// <param name="retryAfter">Optional Retry-After guidance supplied by the endpoint.</param>
     public HeadlessAiHttpException(string profileId, HttpStatusCode statusCode, string responseExcerpt,
         System.Net.Http.Headers.RetryConditionHeaderValue? retryAfter = null)
         : base($"HeadlessAi profile '{profileId}' returned HTTP {(int)statusCode} ({statusCode}).", null, statusCode)
