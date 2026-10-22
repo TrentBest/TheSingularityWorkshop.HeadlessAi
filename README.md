@@ -17,6 +17,11 @@
 </p>
 <p align="center"><em>Many logical callers. Explicit endpoint protocols. Host-owned authority.</em></p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/docs/assets/headless-ai-invocation-lifecycle.svg" alt="Conceptual lifecycle: the host defines intent, HeadlessAi adapts and bounds an HTTP invocation, and the host evaluates the result or failure before taking action." width="100%">
+</p>
+<p align="center"><em>The response is data—not authority. This lifecycle is a conceptual guide, not a live request trace.</em></p>
+
 ## 🟣 01 Why use HeadlessAi?
 
 Connecting an application to an AI endpoint can pull provider-specific HTTP details into code that should be focused on the application's job. HeadlessAi separates endpoint configuration and protocol adaptation from the host's own policy, memory, permissions, and actions.
