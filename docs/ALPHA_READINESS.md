@@ -2,19 +2,18 @@
 
 > **Purpose:** prepare a first release that is genuinely useful, understandable, and testable. “Alpha” describes maturity and the need for real-world feedback; it is not a reason to artificially withhold coherent functionality.
 
-## Latest candidate status — 2026-10-10 UTC
+## Latest candidate status — 2026-10-22 UTC
 
-**Current development candidate:** `a05f19a4d24d9ab22228a482df5f440d61ae8758`
+**Last fully verified source candidate before this readiness update:** `9ec49ea205400c20bccb12485b880820018fd2e2` on `development`.
 
-- [x] GitHub Actions run [#218](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/38017640412) completed successfully for this exact commit; the equivalent push run [#217](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/38017637532) also passed.
-- [x] Restore and Release build passed with warnings treated as errors.
-- [x] Automated tests and coverage report passed; Codecov upload succeeded. CI uses deterministic tests and does not require paid live-provider calls.
-- [x] NuGet package was packed and audited by the workflow, then uploaded as the `headlessai-package` artifact (26,166 bytes; artifact retained at time of review).
-- [x] NuGet publication step was skipped; publishing remains disabled by the workflow's `&& false` gate.
-- [x] Additional boundary tests now reject invalid response-size limits, relative endpoint URIs, and zero/negative provider token limits; explicitly infinite timeout remains supported.
-- [ ] Human release review is still required. CI passing does not itself establish release approval or complete every documentation/security/contract review.
+- [x] GitHub Actions run [#39716665195](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/39716665195) completed successfully for that exact commit.
+- [x] Restore, Release build, automated tests, coverage preparation/upload, and NuGet packing passed in that run. Tests use deterministic fixtures and do not require paid live-provider calls.
+- [x] The packed artifact audit verified the assembly, XML API documentation, README, license metadata, package ID/version, package-safe README links, Markdown under `docs/`, `docs/GALLERY.md`, and SVG documentation assets.
+- [x] The publication job was skipped. The current workflow uses an unconditional `if: ${{ false }}` gate, so a manual dispatch cannot publish the package.
+- [x] GitHub Actions references in the workflow are pinned to immutable commit SHAs.
+- [ ] Human release review remains required. CI passing does not itself establish release approval or complete every documentation/security/contract review.
 
-**Assessment:** the technical alpha candidate is getting close: the exact current HEAD has a clean CI/package pass. Remaining work is a focused final review of the user-facing docs and security boundaries, the open development-to-master PR, and any checklist items not evidenced by automated checks. Do not hold the core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
+**Assessment:** the implementation and package-artifact checks are stronger than the October 10 snapshot. The readiness-document and gallery-link edits after `9ec49ea` are documentation-only; their new CI run must pass before this updated documentation head is considered verified. The package remains alpha and is not approved for publication. Do not hold the core alpha for streaming, multimodal support, orchestration, or the optional ProtocolAi/GrammarAi bridge.
 
 ## Release ambition
 
@@ -92,9 +91,8 @@ Use this checklist against the exact candidate commit. Do not infer readiness fr
 
 - [ ] Confirm package ID, version, license, repository URL, package README, and dependency list.
 - [ ] Confirm no unsupported compatibility promise is implied. The current project targets .NET 8.
-- [ ] Confirm the workflow's NuGet publish condition still ends in `&& false`.
-- [ ] Do not publish until the repository owner explicitly approves the release and the gate is intentionally changed for that approved release.
-- [ ] After an approved release, restore the disabled gate to `&& false`.
+- [x] Confirmed the current workflow uses `if: ${{ false }}`; the publication job is deliberately disabled regardless of manual-dispatch inputs.
+- [ ] Do not publish until the repository owner explicitly approves the release. Re-enabling publication must be a separate, deliberate change after approval; do not weaken the gate as part of ordinary CI or documentation work.
 
 ## Known limitations to disclose
 
