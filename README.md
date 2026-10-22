@@ -35,8 +35,6 @@ This is API communication, not browser automation. A provider's API is not neces
 
 ## 🟣 03 Start using HeadlessAi
 
-HeadlessAi is for applications that need a direct, headless HTTP connection to an AI-capable endpoint. The host supplies the input and owns the meaning and use of the response.
-
 - **Run a real request:** [Usage guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md) — current constructor-based API, endpoint configuration, credentials, response limits, and failure behavior.
 - **Understand the boundary:** [What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md).
 - **See the moving parts:** [Gallery](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/GALLERY.md).
