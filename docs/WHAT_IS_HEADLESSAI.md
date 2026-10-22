@@ -18,7 +18,7 @@ Think of it as the connection cable, not the computer at the other end. Headless
 - **Template — a reusable recipe.** It combines the profile, adapter, and optional request-time header provider.
 - **Agent instance — the calling surface.** It sends an input using an injected `HttpClient`, whose lifetime remains owned by the host.
 
-The current public API uses constructors for the profile and template. A fluent configuration API is a proposed usability direction, not shipped functionality yet; see [Fluent endpoint configuration](fluent-configuration-design.md).
+The public API configures profiles and templates through constructors; the example in the [Usage guide](usage.md) shows the complete request path.
 
 ## What happens when a request is sent?
 
@@ -52,7 +52,6 @@ ProtocolAi and GrammarAi are optional companions for applications that need know
 
 - [Usage guide](usage.md) — use the current constructor-based API.
 - [Provider adapters](provider-adapters.md) — configure the currently supported protocols.
-- [Fluent configuration design](fluent-configuration-design.md) — proposed API direction and acceptance criteria.
 - [Problem domain](problem-domain.md) — the precise vocabulary and non-goals.
 - [Theory](THEORY.md) — why these boundaries exist.
 
