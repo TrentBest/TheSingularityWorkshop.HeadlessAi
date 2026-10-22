@@ -1,3 +1,10 @@
+<!-- The Singularity Workshop moniker -->
+<p align="center">
+  <a href="https://github.com/TrentBest">
+    <img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg" alt="The Singularity Workshop — animated workshop moniker" width="720" />
+  </a>
+</p>
+
 # HeadlessAi Documentation Index
 
 This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.md). The README is the public front door; focused documents provide deeper teaching and technical authority.
@@ -42,3 +49,24 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 - Roadmap, contribution guide, and continuation brief: ongoing development and release posture.
 
 Source and tests determine current behavior. If documentation and implementation disagree, record and resolve the discrepancy rather than assuming the prose is correct. Distinguish current source, published artifacts, design intent, and future work.
+
+---
+
+<p align="center">
+  <a href="https://github.com/TrentBest">
+    <img src="https://github.com/TrentBest.png?size=200" alt="The Singularity Workshop on GitHub" width="200">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/TrentBest">GitHub</a> ·
+  <a href="https://coderlegion.com/">Coder Legion</a> ·
+  <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
+  <a href="https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J">PayPal</a>
+  <br>
+  <a href="https://github.com/TrentBest/FSM_API">FSM_API</a> ·
+  <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_Serialization">FSM_Serialization</a> ·
+  <a href="https://github.com/TrentBest/WebPage">WebPage</a>
+</p>
+
+<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong><br><em>And because static boundaries are invitations to cause trouble.</em></p>

@@ -1,3 +1,10 @@
+<!-- The Singularity Workshop moniker -->
+<p align="center">
+  <a href="https://github.com/TrentBest">
+    <img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg" alt="The Singularity Workshop — animated workshop moniker" width="720" />
+  </a>
+</p>
+
 # Provider Failure Contract
 
 A successful HTTP status is not proof that a provider returned a usable answer. HeadlessAi must distinguish transport success from a valid, meaningful provider result.
@@ -43,3 +50,24 @@ Callers should handle failures at the host boundary, where they can decide wheth
 The following remain release-hardening work rather than implied support: comprehensive official-schema fixtures for success variants and error envelopes; a stable public adapter parse-error taxonomy; safe correlation-aware diagnostics; and a fake-server example that exercises a complete invocation and failure diagnosis without a live provider.
 
 See [Provider Adapters](provider-adapters.md), [Security Model](security.md), [Architecture Boundaries](architecture-boundaries.md), and the [Roadmap](roadmap.md).
+
+---
+
+<p align="center">
+  <a href="https://github.com/TrentBest">
+    <img src="https://github.com/TrentBest.png?size=200" alt="The Singularity Workshop on GitHub" width="200">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/TrentBest">GitHub</a> ·
+  <a href="https://coderlegion.com/">Coder Legion</a> ·
+  <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
+  <a href="https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J">PayPal</a>
+  <br>
+  <a href="https://github.com/TrentBest/FSM_API">FSM_API</a> ·
+  <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_Serialization">FSM_Serialization</a> ·
+  <a href="https://github.com/TrentBest/WebPage">WebPage</a>
+</p>
+
+<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong><br><em>And because static boundaries are invitations to cause trouble.</em></p>
