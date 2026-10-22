@@ -25,21 +25,14 @@ The core contracts should not require a particular LLM identity, model class, or
 
 This is API communication, not browser automation. A provider's API is not necessarily the same interface as its public chat website, and a URL alone does not make different protocols interchangeable.
 
-## 🟣 02 The Workshop documentation map
+## 🟣 02 Start using HeadlessAi
 
-- **Want the current release review in one phone-friendly read?** Start with the [Release Review Brief](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/RELEASE_REVIEW_BRIEF.md), then follow its evidence links.
+HeadlessAi is for applications that need a direct, headless HTTP connection to an AI-capable endpoint. The host supplies the input and owns the meaning and use of the response.
 
-This repository follows The Singularity Workshop's shared [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/master/DOCUMENTATION_STANDARD.md), whose goal is to **edify, not mystify**: explain the problem, orient the reader, show a credible first proof, and link to deeper explanations.
-
-- **New to the idea?** Start with [What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md).
-- **Want to use the current API?** Follow the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
-- **Want to understand why the boundary exists?** Read [Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md) and [Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md).
-- **Need implementation ownership and limits?** Read [Architecture](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-and-theory.md) and [Architecture Boundaries](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-boundaries.md).
-- **Want the intended fluent configuration direction?** Read [Fluent Configuration Design](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/fluent-configuration-design.md). This is a proposal, not a shipped API.
-- **Want to see where it fits across the Workshop?** Read [Ecosystem Integration](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/ecosystem-integration.md), which separates current behavior from proposed uses.
-- **Want the full document map?** Open the [Documentation Index](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md).
-
-HeadlessAi should remain independently useful. Optional Workshop integrations must not become prerequisites for a simple HTTP invocation.
+- **Run a real request:** [Usage guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md) — current constructor-based API, endpoint configuration, credentials, response limits, and failure behavior.
+- **Understand the boundary:** [What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md).
+- **See the moving parts:** [Gallery](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/GALLERY.md).
+- **Browse related tools:** [The Singularity Workshop repository guide](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/docs/WORKSHOP_REPOSITORIES.md).
 
 ## 🩵 03 The problem and solution in depth
 
