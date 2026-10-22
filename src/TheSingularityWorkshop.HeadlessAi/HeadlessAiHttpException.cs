@@ -9,11 +9,13 @@ public sealed class HeadlessAiHttpException : HttpRequestException
     /// <param name="profileId">Identifier of the endpoint profile that returned the error.</param>
     /// <param name="statusCode">HTTP response status code.</param>
     /// <param name="responseExcerpt">Bounded response text that may contain sensitive information.</param>
-    public HeadlessAiHttpException(string profileId, HttpStatusCode statusCode, string responseExcerpt)
+    public HeadlessAiHttpException(string profileId, HttpStatusCode statusCode, string responseExcerpt,
+        System.Net.Http.Headers.RetryConditionHeaderValue? retryAfter = null)
         : base($"HeadlessAi profile '{profileId}' returned HTTP {(int)statusCode} ({statusCode}).", null, statusCode)
     {
         ProfileId = profileId;
         ResponseExcerpt = responseExcerpt;
+        RetryAfter = retryAfter;
     }
 
     /// <summary>Gets the identifier of the profile that returned the HTTP error.</summary>
@@ -21,4 +23,8 @@ public sealed class HeadlessAiHttpException : HttpRequestException
 
     /// <summary>Gets bounded but potentially sensitive response text. Redact before persistence.</summary>
     public string ResponseExcerpt { get; }
+
+    /// <summary>Gets the server's optional Retry-After guidance for rate limits or temporary failures.</summary>
+    /// <remarks>This is advisory metadata, not an automatic retry. The host must decide whether retrying is safe.</remarks>
+    public System.Net.Http.Headers.RetryConditionHeaderValue? RetryAfter { get; }
 }
