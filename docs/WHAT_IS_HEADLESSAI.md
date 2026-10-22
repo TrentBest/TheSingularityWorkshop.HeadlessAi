@@ -32,9 +32,9 @@ A successful HTTP response means the endpoint replied; it does not mean the mode
 
 ## Provider-neutral does not mean protocol-blind
 
-The core contracts should not require a particular LLM identity, model class, or provider SDK. A model identifier may still be a setting required by a particular remote protocol; it is configuration data, not a HeadlessAi model abstraction.
+The core contracts do not require a particular LLM identity, model class, or provider SDK. A model identifier may still be a setting required by a particular remote protocol; it is configuration data, not a HeadlessAi model abstraction.
 
-The repository currently includes explicit direct-HTTP adapters for OpenAI Responses, Gemini generateContent, and Anthropic Messages, along with raw-text, JSON, and delegate extension options. Those are concrete adapters around the generic invocation seam. They do not imply that every endpoint shares one format or that HeadlessAi core should depend on those providers' SDKs.
+The repository currently includes explicit direct-HTTP adapters for OpenAI Responses, Gemini generateContent, and Anthropic Messages, along with raw-text, JSON, and delegate extension options. Those are concrete adapters around the generic invocation seam. They do not imply that every endpoint shares one format; HeadlessAi core remains independent of those providers' SDKs.
 
 A URL alone cannot make two protocols interchangeable. Selecting an endpoint and selecting the protocol used to communicate with it are distinct choices.
 
@@ -44,7 +44,7 @@ A provider SDK can be the right choice when an application needs its full featur
 
 ## What about FSM_REST, ProtocolAi, and GrammarAi?
 
-FSM_REST may help an editor or authoring tool create and validate endpoint recipes. That is separate from runtime invocation: HeadlessAi should not require FSM_REST just to send an HTTP request.
+FSM_REST can support endpoint-recipe authoring, but it is not required to send an HTTP request with HeadlessAi.
 
 ProtocolAi and GrammarAi are optional companions for applications that need known semantic identities or constrained structures. They are not prerequisites for basic endpoint communication and must not become core dependencies. A parseable or grammar-valid answer can still be false or unsafe.
 
