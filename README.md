@@ -21,7 +21,7 @@ This is API communication, not browser automation. A provider's API is not neces
 
 ## 🟣 02 The Workshop documentation map
 
-This repository follows The Singularity Workshop's shared [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md), whose goal is to **edify, not mystify**: explain the problem, orient the reader, show a credible first proof, and link to deeper explanations.
+This repository follows The Singularity Workshop's shared [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/master/DOCUMENTATION_STANDARD.md), whose goal is to **edify, not mystify**: explain the problem, orient the reader, show a credible first proof, and link to deeper explanations.
 
 - **New to the idea?** Start with [What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md).
 - **Want to use the current API?** Follow the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
