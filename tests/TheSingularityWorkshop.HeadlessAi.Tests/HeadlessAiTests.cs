@@ -135,6 +135,25 @@ public sealed class HeadlessAiTests
     }
 
     [Fact]
+    public async Task Agent_DoesNotMisreportHttpClientTimeoutAsProfileTimeout()
+    {
+        using var client = new HttpClient(new StubHandler(async (_, token) =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }))
+        {
+            Timeout = TimeSpan.FromMilliseconds(50)
+        };
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test"), timeout: TimeSpan.FromSeconds(5)),
+            new RawTextHeadlessAiAdapter());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => agent.SendAsync(new HeadlessAiInput("prompt")));
+    }
+
+    [Fact]
     public async Task Agent_PreservesCallerCancellation()
     {
         using var client = new HttpClient(new StubHandler(async (_, token) =>
