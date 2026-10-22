@@ -22,5 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../docs/**/*.md" Pack="true" PackagePath="docs/%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="../../docs/**/*.svg" Pack="true" PackagePath="docs/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
