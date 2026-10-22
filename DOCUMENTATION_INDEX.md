@@ -23,6 +23,8 @@ This index follows the [Workshop Documentation Standard](DOCUMENTATION_STANDARD.
 | Evaluate an alpha candidate and release gates | [Alpha Readiness](docs/ALPHA_READINESS.md) |
 | Build, test, and plan work | [Contributing](CONTRIBUTING.md), [Roadmap](docs/roadmap.md), and [Continuation Brief](docs/CONTINUATION_BRIEF.md) |
 
+| Browse the architecture visual and evidence links | [Gallery](docs/GALLERY.md) |
+
 ## Document responsibilities
 
 - README: identity, reader journey, first-minute proof, boundaries, and navigation.
