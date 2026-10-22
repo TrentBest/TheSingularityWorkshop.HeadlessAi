@@ -1,3 +1,11 @@
+## 🟣 01 Why use HeadlessAi?
+
+Connecting an application to an AI endpoint can pull provider-specific HTTP details into code that should be focused on the application's job. HeadlessAi separates endpoint configuration and protocol adaptation from the host's own policy, memory, permissions, and actions.
+
+Use it when a .NET application needs a direct input-to-response HTTP path without browser automation or a provider SDK in the core integration. The host still decides what the response means and what may happen next.
+
+**Explore the Workshop:** [Find packages on NuGet](https://www.nuget.org/packages?q=TheSingularityWorkshop) · [Browse the repository guide](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/docs/WORKSHOP_REPOSITORIES.md)
+
 <!-- The Singularity Workshop moniker -->
 <p align="center">
   <a href="https://github.com/TrentBest">
@@ -17,7 +25,7 @@
 </p>
 <p align="center"><em>Many logical callers. Explicit endpoint protocols. Host-owned authority.</em></p>
 
-## 🟦 01 What is HeadlessAi?
+## 🟦 02 What is HeadlessAi?
 
 **HeadlessAi gives a .NET application a headless input-to-response connection to a configured AI-capable HTTP endpoint.** The host supplies the input; HeadlessAi sends the request and returns extracted response content. No browser window, GUI automation, or provider SDK is required for the current direct-HTTP path.
 
@@ -25,7 +33,7 @@ The core contracts should not require a particular LLM identity, model class, or
 
 This is API communication, not browser automation. A provider's API is not necessarily the same interface as its public chat website, and a URL alone does not make different protocols interchangeable.
 
-## 🟣 02 Start using HeadlessAi
+## 🟣 03 Start using HeadlessAi
 
 HeadlessAi is for applications that need a direct, headless HTTP connection to an AI-capable endpoint. The host supplies the input and owns the meaning and use of the response.
 
@@ -34,7 +42,7 @@ HeadlessAi is for applications that need a direct, headless HTTP connection to a
 - **See the moving parts:** [Gallery](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/GALLERY.md).
 - **Browse related tools:** [The Singularity Workshop repository guide](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/docs/WORKSHOP_REPOSITORIES.md).
 
-## 🩵 03 The problem and solution in depth
+## 🩵 04 The problem and solution in depth
 
 ### One configuration, reusable callers
 
@@ -51,7 +59,7 @@ The host can configure a target and create many logical callers while reusing it
 
 The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These are concrete protocol adapters around generic invocation contracts—not evidence that the core domain should depend on provider or model types.
 
-## 🟢 04 See it in a minute
+## 🟢 05 See it in a minute
 
 The current public API uses constructors for the profile and template. This example uses OpenAI Responses as one concrete protocol; it makes a live provider request, so set an authorized API key and replace the example model identifier before running.
 
@@ -102,7 +110,7 @@ sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
 
 Expected behavior: the program prints the response text extracted by the selected adapter. The example has been checked against current source contracts but has not been run against a live provider. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
 
-## 🟪 05 Documentation and theory
+## 🟪 06 Documentation and theory
 
 - **[Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
 - **[What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
