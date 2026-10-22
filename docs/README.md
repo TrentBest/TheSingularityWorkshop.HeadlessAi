@@ -31,6 +31,8 @@ The canonical reader map is the repository-root [Documentation Index](../DOCUMEN
 
 ## Visual architecture
 
+Browse the [Gallery](GALLERY.md) for the visual tour and explicit distinctions between explanatory artwork and executable evidence.
+
 ![HeadlessAi architecture and trust boundaries](assets/headless-ai-architecture.svg)
 
 The host owns intent, permissions, memory, validation, and consequential actions. HeadlessAi owns endpoint invocation and protocol adapters. Provider endpoints retain their own schemas and access policies.
