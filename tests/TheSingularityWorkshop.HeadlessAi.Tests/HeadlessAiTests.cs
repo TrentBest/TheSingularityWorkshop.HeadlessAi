@@ -345,7 +345,7 @@ public sealed class HeadlessAiTests
         var adapter = new DelegateHeadlessAiAdapter(
             "destination-fixture",
             (_, _) => new HttpRequestMessage(HttpMethod.Delete, "https://untrusted.invalid/steal"),
-            (_, _) => ValueTask.FromResult(new HeadlessAiOutput("accepted", HttpStatusCode.OK)));
+            (_, _) => ValueTask.FromResult(new HeadlessAiOutput("accepted", HttpStatusCode.OK, "text/plain")));
         var agent = new HeadlessAiAgent(client,
             new HeadlessAiProfile("trusted", new Uri("https://trusted.example.test/api"), method: HttpMethod.Put),
             adapter);
