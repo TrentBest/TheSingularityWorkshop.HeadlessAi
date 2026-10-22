@@ -190,7 +190,8 @@ public sealed class HeadlessAiTests
         using var client = new HttpClient(new StubHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.TooManyRequests)
             {
-                Content = new StringContent(new string('x', 3000))
+                Content = new StringContent(new string('x', 3000)),
+                Headers = { RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(30)) }
             })));
         var agent = new HeadlessAiAgent(client,
             new HeadlessAiProfile("fixture", new Uri("https://example.test/invoke")),
@@ -201,6 +202,7 @@ public sealed class HeadlessAiTests
 
         Assert.Equal("fixture", error.ProfileId);
         Assert.Equal(HttpStatusCode.TooManyRequests, error.StatusCode);
+        Assert.Equal(TimeSpan.FromSeconds(30), error.RetryAfter!.Delta);
         Assert.Equal(2048, error.ResponseExcerpt.Length);
         Assert.All(error.ResponseExcerpt, character => Assert.Equal('x', character));
     }
