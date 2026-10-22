@@ -29,7 +29,7 @@ Use it when a .NET application needs a direct input-to-response HTTP path withou
 
 **HeadlessAi gives a .NET application a headless input-to-response connection to a configured AI-capable HTTP endpoint.** The host supplies the input; HeadlessAi sends the request and returns extracted response content. No browser window, GUI automation, or provider SDK is required for the current direct-HTTP path.
 
-The core contracts should not require a particular LLM identity, model class, or provider SDK. An adapter handles the endpoint's protocol; the host decides what the returned content means and what may happen next.
+The core contracts do not require a particular LLM identity, model class, or provider SDK. An adapter handles the endpoint's protocol; the host decides what the returned content means and what may happen next.
 
 This is API communication, not browser automation. A provider's API is not necessarily the same interface as its public chat website, and a URL alone does not make different protocols interchangeable.
 
@@ -57,7 +57,7 @@ The current API separates four responsibilities:
 
 The host can configure a target and create many logical callers while reusing its HTTP transport. It still owns task planning, concurrency, cost budgets, role permissions, conversation state, output validation, and approval of consequential actions.
 
-The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These are concrete protocol adapters around generic invocation contracts—not evidence that the core domain should depend on provider or model types.
+The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These are concrete protocol adapters around generic invocation contracts; the core domain remains independent of provider and model types.
 
 ## 🟢 05 See it in a minute
 
@@ -128,7 +128,7 @@ HeadlessAi can be used on its own by any .NET host that needs its HTTP invocatio
 
 ProtocolAi and GrammarAi are optional companions. Streaming, rich multimodal content, provider-specific tool semantics, global rate/cost budgets, and a host orchestration loop are not promised by this package. Direct HTTP does not bypass provider authentication, billing, rate limits, or access policies.
 
-Local benchmarks use deterministic fixture HTTP responses rather than live provider calls. Benchmark numbers should be reported only after running the benchmark and recording environment and methodology. NuGet publication remains disabled in CI unless the repository owner explicitly approves a release.
+Local benchmarks use deterministic fixture HTTP responses rather than live provider calls. Benchmark results depend on the environment and methodology; see the benchmark guide for interpretation.
 
 ---
 
