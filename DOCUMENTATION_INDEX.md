@@ -19,7 +19,7 @@ HeadlessAi gives a .NET application a direct HTTP path to an AI-capable endpoint
 | Understand response extraction and failures | [Provider failure contract](docs/provider-failure-contract.md) |
 | Handle credentials, endpoint trust, and untrusted output | [Security model](docs/security.md) |
 | Understand what the host owns | [Architecture boundaries](docs/architecture-boundaries.md) |
-| See concrete examples across the Workshop | [Ecosystem integration](docs/ecosystem-integration.md) |
+| See concrete examples across the Workshop | [Ecosystem integration](docs/ecosystem-integration.md) · [CiAi integration boundary](docs/ci-ai-integration.md) |
 | Explore the system visually | [Gallery](docs/GALLERY.md) |
 | Understand measured performance and its limits | [Performance](docs/performance.md) · [Benchmark methodology](docs/benchmark-methodology.md) |
 | Learn the reasoning behind the API boundary | [Theory](docs/THEORY.md) · [Problem domain](docs/problem-domain.md) |
