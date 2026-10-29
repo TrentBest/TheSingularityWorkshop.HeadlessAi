@@ -10,7 +10,7 @@ Reusable profile/adapter configuration from which lightweight agent callers can 
 ## Declaration and ownership
 
 - **Declaration:** public class.
-- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiAgentTemplate.cs](src/TheSingularityWorkshop.HeadlessAi/HeadlessAiAgentTemplate.cs).
+- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiAgentTemplate.cs](../../src/TheSingularityWorkshop.HeadlessAi/HeadlessAiAgentTemplate.cs).
 - **Related types:** HeadlessAiAgent; HeadlessAiProfile; IHeadlessAiAdapter; IHeadlessAiRequestHeaderProvider.
 - **Responsibilities:** Owns reusable profile, adapter, and optional request-time header provider; CreateAgent receives the host's HttpClient.
 - **Non-goals:** It does not own the HTTP connection pool, host scheduling, task policy, or credential storage.
@@ -21,7 +21,7 @@ The host owns task planning, credentials, permissions, response validation, budg
 
 ## Verification
 
-Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
+Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](../../tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
 
 ## Related documentation
 
