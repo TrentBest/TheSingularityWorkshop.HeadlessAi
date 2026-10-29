@@ -10,7 +10,7 @@ One host-supplied request content value with optional metadata.
 ## Declaration and ownership
 
 - **Declaration:** public record.
-- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiInput.cs](src/TheSingularityWorkshop.HeadlessAi/HeadlessAiInput.cs).
+- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiInput.cs](../../src/TheSingularityWorkshop.HeadlessAi/HeadlessAiInput.cs).
 - **Related types:** HeadlessAiAgent; IHeadlessAiAdapter.
 - **Responsibilities:** Carries content and optional metadata into the selected adapter.
 - **Non-goals:** It does not authorize endpoint access to host data or tools.
@@ -21,7 +21,7 @@ The host owns task planning, credentials, permissions, response validation, budg
 
 ## Verification
 
-Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
+Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](../../tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
 
 ## Related documentation
 
