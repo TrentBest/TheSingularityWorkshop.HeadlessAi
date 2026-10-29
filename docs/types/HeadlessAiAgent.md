@@ -10,7 +10,7 @@ Per-invocation HTTP caller composed from a host-provided HttpClient, endpoint pr
 ## Declaration and ownership
 
 - **Declaration:** public class.
-- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiAgent.cs](src/TheSingularityWorkshop.HeadlessAi/HeadlessAiAgent.cs).
+- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiAgent.cs](../../src/TheSingularityWorkshop.HeadlessAi/HeadlessAiAgent.cs).
 - **Related types:** HeadlessAiAgentTemplate; HeadlessAiProfile; IHeadlessAiAdapter; HeadlessAiInput; HeadlessAiOutput.
 - **Responsibilities:** Creates the adapter-specific request, sends it through the injected transport, applies bounded response handling, and returns normalized output or a defined failure.
 - **Non-goals:** It is not a dedicated thread, model, memory store, autonomous loop, or permission system.
@@ -21,7 +21,7 @@ The host owns task planning, credentials, permissions, response validation, budg
 
 ## Verification
 
-Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
+Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](../../tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
 
 ## Related documentation
 
