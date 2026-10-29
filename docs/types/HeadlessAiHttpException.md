@@ -10,7 +10,7 @@ HTTP failure carrying profile identity, status code, and a bounded response exce
 ## Declaration and ownership
 
 - **Declaration:** public class.
-- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiHttpException.cs](src/TheSingularityWorkshop.HeadlessAi/HeadlessAiHttpException.cs).
+- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiHttpException.cs](../../src/TheSingularityWorkshop.HeadlessAi/HeadlessAiHttpException.cs).
 - **Related types:** HeadlessAiAgent; HeadlessAiProfile.
 - **Responsibilities:** Makes endpoint failures diagnosable while preserving context about the selected profile.
 - **Non-goals:** It does not decide whether retrying is safe or whether a workflow should continue.
@@ -21,7 +21,7 @@ The host owns task planning, credentials, permissions, response validation, budg
 
 ## Verification
 
-Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterFailureTests.cs](tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterFailureTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
+Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterFailureTests.cs](../../tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterFailureTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
 
 ## Related documentation
 
