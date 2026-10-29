@@ -34,6 +34,11 @@ HeadlessAi gives a .NET application a direct HTTP path to an AI-capable endpoint
 | HeadlessAiProfile | [Type guide](docs/types/HeadlessAiProfile.md) | [UML](docs/UML/HeadlessAiProfileUML.md) |
 | HeadlessAiInput | [Type guide](docs/types/HeadlessAiInput.md) | [UML](docs/UML/HeadlessAiInputUML.md) |
 
+| HeadlessAiOutput | [Type guide](docs/types/HeadlessAiOutput.md) | [UML](docs/UML/HeadlessAiOutputUML.md) |
+| HeadlessAiHttpException | [Type guide](docs/types/HeadlessAiHttpException.md) | [UML](docs/UML/HeadlessAiHttpExceptionUML.md) |
+| IHeadlessAiAdapter | [Type guide](docs/types/IHeadlessAiAdapter.md) | [UML](docs/UML/IHeadlessAiAdapterUML.md) |
+| IHeadlessAiRequestHeaderProvider | [Type guide](docs/types/IHeadlessAiRequestHeaderProvider.md) | [UML](docs/UML/IHeadlessAiRequestHeaderProviderUML.md) |
+
 ## Related Workshop tools
 
 - [ProtocolAi](https://github.com/TrentBest/TheSingularityWorkshop.ProtocolAi) gives application-owned vocabulary values stable identities.
