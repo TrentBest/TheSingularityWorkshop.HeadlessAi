@@ -27,13 +27,14 @@ HeadlessAi gives a .NET application a direct HTTP path to an AI-capable endpoint
 
 ## Source-level type guides and UML
 
+These source-checked pages explain the core public contracts and host-owned use cases. Diagrams are authored static neighborhoods, not generated repository-wide inventories or runtime traces.
+
 | Type | Contract and purpose | UML and use cases |
 |---|---|---|
 | HeadlessAiAgent | [Type guide](docs/types/HeadlessAiAgent.md) | [UML](docs/UML/HeadlessAiAgentUML.md) |
 | HeadlessAiAgentTemplate | [Type guide](docs/types/HeadlessAiAgentTemplate.md) | [UML](docs/UML/HeadlessAiAgentTemplateUML.md) |
 | HeadlessAiProfile | [Type guide](docs/types/HeadlessAiProfile.md) | [UML](docs/UML/HeadlessAiProfileUML.md) |
 | HeadlessAiInput | [Type guide](docs/types/HeadlessAiInput.md) | [UML](docs/UML/HeadlessAiInputUML.md) |
-
 | HeadlessAiOutput | [Type guide](docs/types/HeadlessAiOutput.md) | [UML](docs/UML/HeadlessAiOutputUML.md) |
 | HeadlessAiHttpException | [Type guide](docs/types/HeadlessAiHttpException.md) | [UML](docs/UML/HeadlessAiHttpExceptionUML.md) |
 | IHeadlessAiAdapter | [Type guide](docs/types/IHeadlessAiAdapter.md) | [UML](docs/UML/IHeadlessAiAdapterUML.md) |
