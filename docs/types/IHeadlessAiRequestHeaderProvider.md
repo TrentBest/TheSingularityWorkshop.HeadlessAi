@@ -10,7 +10,7 @@ Optional request-time source of HTTP headers, commonly used for credentials supp
 ## Declaration and ownership
 
 - **Declaration:** public interface.
-- **Source:** [src/TheSingularityWorkshop.HeadlessAi/IHeadlessAiRequestHeaderProvider.cs](src/TheSingularityWorkshop.HeadlessAi/IHeadlessAiRequestHeaderProvider.cs).
+- **Source:** [src/TheSingularityWorkshop.HeadlessAi/IHeadlessAiRequestHeaderProvider.cs](../../src/TheSingularityWorkshop.HeadlessAi/IHeadlessAiRequestHeaderProvider.cs).
 - **Related types:** HeadlessAiAgentTemplate; HeadlessAiAgent.
 - **Responsibilities:** Lets headers be resolved per invocation instead of stored as secret-bearing profile data.
 - **Non-goals:** It is not a credential vault, rotation policy, or guarantee that a header is safe to log.
@@ -21,7 +21,7 @@ The host owns task planning, credentials, permissions, response validation, budg
 
 ## Verification
 
-Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
+Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](../../tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
 
 ## Related documentation
 
