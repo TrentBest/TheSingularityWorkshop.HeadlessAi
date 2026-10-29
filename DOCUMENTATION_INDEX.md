@@ -57,14 +57,13 @@ These packages solve different problems. HeadlessAi remains useful on its own; n
 ---
 
 <p align="center">
-  <a href="https://github.com/TrentBest">
-    <img src="https://github.com/TrentBest.png?size=200" alt="The Singularity Workshop on GitHub" width="200">
-  </a>
-</p>
-
-<p align="center">
   <a href="https://github.com/TrentBest">GitHub</a> ·
   <a href="https://coderlegion.com/">Coder Legion</a> ·
   <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
   <a href="https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J">PayPal</a>
 </p>
+
+---
+
+<!-- THE SINGULARITY WORKSHOP FOOTER -->
+<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop avatar" width="200" /></p>
