@@ -10,7 +10,7 @@ Provider-protocol seam for constructing requests and extracting normalized respo
 ## Declaration and ownership
 
 - **Declaration:** public interface.
-- **Source:** [src/TheSingularityWorkshop.HeadlessAi/IHeadlessAiAdapter.cs](src/TheSingularityWorkshop.HeadlessAi/IHeadlessAiAdapter.cs).
+- **Source:** [src/TheSingularityWorkshop.HeadlessAi/IHeadlessAiAdapter.cs](../../src/TheSingularityWorkshop.HeadlessAi/IHeadlessAiAdapter.cs).
 - **Related types:** HeadlessAiAgent; HeadlessAiAgentTemplate; RawTextHeadlessAiAdapter; JsonHeadlessAiAdapter; OpenAiResponsesAdapter; GeminiGenerateContentAdapter; AnthropicMessagesAdapter.
 - **Responsibilities:** Separates endpoint-specific wire formats from generic agent invocation.
 - **Non-goals:** It does not make provider protocols equivalent or supply authorization policy.
@@ -21,7 +21,7 @@ The host owns task planning, credentials, permissions, response validation, budg
 
 ## Verification
 
-Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterTests.cs](tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
+Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterTests.cs](../../tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
 
 ## Related documentation
 
