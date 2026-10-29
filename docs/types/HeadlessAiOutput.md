@@ -10,7 +10,7 @@ Normalized response content with HTTP status, media type, and optional metadata.
 ## Declaration and ownership
 
 - **Declaration:** public record.
-- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiOutput.cs](src/TheSingularityWorkshop.HeadlessAi/HeadlessAiOutput.cs).
+- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiOutput.cs](../../src/TheSingularityWorkshop.HeadlessAi/HeadlessAiOutput.cs).
 - **Related types:** HeadlessAiAgent; IHeadlessAiAdapter.
 - **Responsibilities:** Carries adapter-extracted output to the host for evaluation.
 - **Non-goals:** It does not certify truth, correctness, user intent, or permission to execute a command.
@@ -21,7 +21,7 @@ The host owns task planning, credentials, permissions, response validation, budg
 
 ## Verification
 
-Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterTests.cs](tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
+Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterTests.cs](../../tests/TheSingularityWorkshop.HeadlessAi.Tests/ProviderAdapterTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
 
 ## Related documentation
 
