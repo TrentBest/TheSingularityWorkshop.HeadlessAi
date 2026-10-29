@@ -124,6 +124,7 @@ Expected behavior: the program prints the response text extracted by the selecte
 
 - **[Security](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/security.md), [Performance](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/performance.md), and [Measurement Plan](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/measurement-plan.md)** — review trust boundaries and what evidence is required before making claims.
 - **[Documentation Index](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md)** — navigate the full guide set.
+- **[Source-level type guides and UML/use cases](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md#source-level-type-guides-and-uml)** — inspect public contracts, source-backed relationships, and host-owned use cases.
 
 ## Ecosystem fit and maturity
 
