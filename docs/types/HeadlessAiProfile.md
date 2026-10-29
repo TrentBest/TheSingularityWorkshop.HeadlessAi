@@ -10,7 +10,7 @@ Immutable endpoint configuration including URI, method, headers, settings, timeo
 ## Declaration and ownership
 
 - **Declaration:** public class.
-- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiProfile.cs](src/TheSingularityWorkshop.HeadlessAi/HeadlessAiProfile.cs).
+- **Source:** [src/TheSingularityWorkshop.HeadlessAi/HeadlessAiProfile.cs](../../src/TheSingularityWorkshop.HeadlessAi/HeadlessAiProfile.cs).
 - **Related types:** HeadlessAiAgent; HeadlessAiAgentTemplate; IHeadlessAiAdapter.
 - **Responsibilities:** Validates and snapshots configuration used by an adapter and agent.
 - **Non-goals:** It is not a secret vault or proof that an endpoint is trusted.
@@ -21,7 +21,7 @@ The host owns task planning, credentials, permissions, response validation, budg
 
 ## Verification
 
-Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
+Relevant evidence: [tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs](../../tests/TheSingularityWorkshop.HeadlessAi.Tests/HeadlessAiTests.cs). This page is source-authored and checked against the current declaration; it is not generated from reflection or compiler AST.
 
 ## Related documentation
 
