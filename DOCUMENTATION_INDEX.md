@@ -27,7 +27,7 @@ HeadlessAi gives a .NET application a direct HTTP path to an AI-capable endpoint
 
 ## Source-level type guides and UML
 
-These source-checked pages explain the core public contracts and host-owned use cases. Diagrams are authored static neighborhoods, not generated repository-wide inventories or runtime traces.
+These source-checked pages explain the public core and provider-adapter contracts, with host-owned use cases. Diagrams are authored static neighborhoods, not generated repository-wide inventories or runtime traces.
 
 | Type | Contract and purpose | UML and use cases |
 |---|---|---|
@@ -39,6 +39,12 @@ These source-checked pages explain the core public contracts and host-owned use 
 | HeadlessAiHttpException | [Type guide](docs/types/HeadlessAiHttpException.md) | [UML](docs/UML/HeadlessAiHttpExceptionUML.md) |
 | IHeadlessAiAdapter | [Type guide](docs/types/IHeadlessAiAdapter.md) | [UML](docs/UML/IHeadlessAiAdapterUML.md) |
 | IHeadlessAiRequestHeaderProvider | [Type guide](docs/types/IHeadlessAiRequestHeaderProvider.md) | [UML](docs/UML/IHeadlessAiRequestHeaderProviderUML.md) |
+| RawTextHeadlessAiAdapter | [Type guide](docs/types/RawTextHeadlessAiAdapter.md) | [UML](docs/UML/RawTextHeadlessAiAdapterUML.md) |
+| DelegateHeadlessAiAdapter | [Type guide](docs/types/DelegateHeadlessAiAdapter.md) | [UML](docs/UML/DelegateHeadlessAiAdapterUML.md) |
+| JsonHeadlessAiAdapter | [Type guide](docs/types/JsonHeadlessAiAdapter.md) | [UML](docs/UML/JsonHeadlessAiAdapterUML.md) |
+| OpenAiResponsesAdapter | [Type guide](docs/types/OpenAiResponsesAdapter.md) | [UML](docs/UML/OpenAiResponsesAdapterUML.md) |
+| GeminiGenerateContentAdapter | [Type guide](docs/types/GeminiGenerateContentAdapter.md) | [UML](docs/UML/GeminiGenerateContentAdapterUML.md) |
+| AnthropicMessagesAdapter | [Type guide](docs/types/AnthropicMessagesAdapter.md) | [UML](docs/UML/AnthropicMessagesAdapterUML.md) |
 
 ## Related Workshop tools
 
