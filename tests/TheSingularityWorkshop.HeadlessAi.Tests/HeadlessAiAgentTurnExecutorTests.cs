@@ -408,8 +408,8 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Equal("first-value", result.FinishReason);
         Assert.Equal("fixture-v2", result.ProviderVersion);
         Assert.Equal("first-value", result.ProviderMetadata["finish_reason"]);
-        Assert.Single(result.ProviderMetadata.Keys.Where(key =>
-            string.Equals(key, "finish_reason", StringComparison.OrdinalIgnoreCase)));
+        Assert.Single(result.ProviderMetadata.Keys,
+            key => string.Equals(key, "finish_reason", StringComparison.OrdinalIgnoreCase));
         result.Validate();
     }
 
