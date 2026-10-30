@@ -57,9 +57,14 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var executor = new HeadlessAiAgentTurnExecutor(
             new HeadlessAiAgentTemplate(profile, new FixtureAdapter("fixture-provider")), client);
 
-        var envelope = CreateEnvelope() with { TaskVersion = "repair-task-v3" };
+        var envelope = CreateEnvelope() with
+        {
+            ConversationId = "repair-conversation-17",
+            TaskVersion = "repair-task-v3"
+        };
         var result = await executor.ExecuteAsync(envelope);
 
+        Assert.Equal("repair-conversation-17", result.ConversationId);
         Assert.Equal("repair-task-v3", result.TaskVersion);
         Assert.Contains("\"taskId\":\"task-100\"", requestBody);
         Assert.Contains("\"repository\":\"TrentBest/HeadlessAi.Consumer\"", requestBody);
