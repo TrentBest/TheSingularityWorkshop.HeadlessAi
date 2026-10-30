@@ -248,11 +248,34 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var first = CreateExecutor(firstClient, "provider-a");
         var second = CreateExecutor(secondClient, "provider-b");
         var contextReferences = new List<string> { "context://original" };
-        var envelope = CreateEnvelope() with { ContextReferences = contextReferences };
+        var candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var evidence = new List<HeadlessAiEvidenceReference>
+        {
+            new()
+            {
+                Repository = "TrentBest/HeadlessAi.Consumer",
+                CommitSha = candidateSha,
+                WorkflowRunId = "run-snapshot",
+                Attempt = 1,
+                WorkflowName = "Build and Test",
+                Conclusion = "failure",
+                SourceUrl = "https://github.com/TrentBest/HeadlessAi.Consumer/actions/runs/100",
+                ObservedAt = DateTimeOffset.UtcNow,
+                BoundedSummary = "original evidence"
+            }
+        };
+        var envelope = CreateEnvelope() with
+        {
+            CandidateCommitSha = candidateSha,
+            ContextReferences = contextReferences,
+            Evidence = evidence
+        };
         var request = HeadlessAiAgentTurnRequest.Create(envelope, DateTimeOffset.UtcNow);
 
         contextReferences[0] = "context://mutated";
         contextReferences.Add("context://added-after-snapshot");
+        evidence[0] = evidence[0] with { BoundedSummary = "mutated evidence" };
+        evidence.Add(evidence[0]);
 
         var firstResult = await first.ExecuteAsync(request);
         var secondResult = await second.ExecuteAsync(request);
@@ -262,6 +285,10 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Contains("context://original", request.CanonicalPayload);
         Assert.DoesNotContain("context://mutated", request.CanonicalPayload);
         Assert.DoesNotContain("context://added-after-snapshot", request.CanonicalPayload);
+        Assert.Contains("original evidence", request.CanonicalPayload);
+        Assert.DoesNotContain("mutated evidence", request.CanonicalPayload);
+        Assert.Single(firstResult.Evidence);
+        Assert.Equal("original evidence", firstResult.Evidence[0].BoundedSummary);
         Assert.Equal(request.Fingerprint, firstResult.RequestFingerprint);
         Assert.Equal(firstResult.RequestFingerprint, secondResult.RequestFingerprint);
         Assert.NotEqual(firstResult.ProviderId, secondResult.ProviderId);
