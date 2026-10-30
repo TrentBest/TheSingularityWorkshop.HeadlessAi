@@ -46,6 +46,8 @@ public sealed record HeadlessAiAgentTurnComparison
         Require(CorrelationId, nameof(CorrelationId), 128);
         Require(Repository, nameof(Repository), 256);
         Require(RequestFingerprint, nameof(RequestFingerprint), 128);
+        if (!System.Text.RegularExpressions.Regex.IsMatch(RequestFingerprint, "^[0-9a-fA-F]{64}$"))
+            throw new ArgumentException("Request fingerprint must be a full 64-character SHA-256 value.", nameof(RequestFingerprint));
         if (CandidateCommitSha is not null && !IsSha(CandidateCommitSha))
             throw new ArgumentException("Candidate commit SHA must be a full 40-character SHA.", nameof(CandidateCommitSha));
         ArgumentNullException.ThrowIfNull(ProviderResults);
