@@ -268,4 +268,160 @@ public sealed class HeadlessAiAgentTurnContractTests
         Assert.Equal("{\"diagnosis\":\"test failure\"}", result.RawResponse);
         Assert.Equal("resp-1", result.ProviderMetadata["response_id"]);
     }
+
+
+    [Fact]
+    public void Envelope_RejectsMalformedRepositoryAndExpiryBeyondConfiguredLifetime()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { Repository = "owner/name/extra" }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            ExpiresAt = Now.AddHours(3)
+        }).Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RejectsCredentialInResponseSchemaAndContextReference()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            ResponseSchema = "api_key=abcdefghijklmnop"
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            ContextReferences = ["https://example.test/context?access_token=abcdefghijklmnop"]
+        }).Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RejectsOversizedContextAndEvidenceCollections()
+    {
+        var tooManyContext = Enumerable.Repeat("context://ref", 129).ToArray();
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            ContextReferences = tooManyContext
+        }).Validate(Now));
+
+        var tooManyEvidence = Enumerable.Range(0, 65)
+            .Select(index => ValidEnvelope().Evidence[0] with { WorkflowRunId = "run-" + index })
+            .ToArray();
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Evidence = tooManyEvidence
+        }).Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RejectsInvalidIssueAndPullRequestUrls()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { IssueUrl = "file:///tmp/issue" }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { PullRequestUrl = "http://example.test/pr/1" }).Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RejectsOversizedIdempotencyKeyAndContextReference()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            IdempotencyKey = new string('k', 257)
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            ContextReferences = [new string('x', 2_049)]
+        }).Validate(Now));
+    }
+
+    [Fact]
+    public void Limits_RejectsNonPositiveBoundsAndAllowsDocumentedZeroCounts()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new HeadlessAiAgentTurnLimits
+        {
+            MaxPromptCharacters = 0
+        }.Validate());
+        Assert.Throws<ArgumentOutOfRangeException>(() => new HeadlessAiAgentTurnLimits
+        {
+            MaxProviderAttempts = 0
+        }.Validate());
+        new HeadlessAiAgentTurnLimits
+        {
+            MaxEvidenceItems = 0,
+            MaxContextReferences = 0
+        }.Validate();
+    }
+
+    [Fact]
+    public void Evidence_RejectsInvalidAttemptAndOversizedSummary()
+    {
+        var invalidAttempt = ValidEnvelope().Evidence[0] with { Attempt = 0 };
+        Assert.Throws<ArgumentOutOfRangeException>(() => invalidAttempt.Validate("TrentBest/Example"));
+
+        var oversized = ValidEnvelope().Evidence[0] with { BoundedSummary = new string('x', 16_385) };
+        Assert.Throws<ArgumentException>(() => oversized.Validate("TrentBest/Example"));
+    }
+
+    [Fact]
+    public void Result_RejectsPriorProvenanceMismatchAndNegativeTokenUsage()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            PriorTurnId = "prior-turn"
+        }).Validate());
+        Assert.Throws<ArgumentOutOfRangeException>(() => (ValidResult() with
+        {
+            InputTokens = -1
+        }).Validate());
+    }
+
+    [Fact]
+    public void Result_RejectsOversizedRawResponseAndProviderMetadata()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            RawResponse = new string('x', 1_000_001)
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            ProviderMetadata = new Dictionary<string, string>
+            {
+                ["oversized"] = new string('x', 4_097)
+            }
+        }).Validate());
+    }
+
+    [Fact]
+    public void Result_RejectsEvidenceNotBoundToCurrentOrPriorCandidate()
+    {
+        var result = ValidResult() with
+        {
+            CandidateCommitSha = Sha,
+            Evidence =
+            [
+                ValidEnvelope().Evidence[0] with
+                {
+                    CommitSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                }
+            ]
+        };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+    }
+
+    private static HeadlessAiAgentTurnResult ValidResult() => new()
+    {
+        TurnId = "turn-valid",
+        TaskId = "task-42",
+        CorrelationId = "corr-42",
+        Repository = "TrentBest/Example",
+        AuthorizedBranch = "agent/fix-ci",
+        BaseCommitSha = Sha,
+        ProviderId = "fixture",
+        ModelId = "fixture-model",
+        RequestFingerprint = "sha256:request",
+        StartedAt = Now,
+        CompletedAt = Now.AddSeconds(1),
+        RawResponse = "{}",
+        Proposal = new HeadlessAiAgentTurnProposal { Diagnosis = "A bounded diagnosis." },
+        FinishReason = "completed"
+    };
+
 }
