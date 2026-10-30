@@ -144,13 +144,17 @@ public sealed class HeadlessAiAgentTurnExecutor
             CorrelationId = envelope.CorrelationId,
             ProviderId = providerId,
             ModelId = modelId,
+            ProviderVersion = metadata.TryGetValue("provider_version", out var providerVersion) ? providerVersion :
+                metadata.TryGetValue("api_version", out var apiVersion) ? apiVersion : null,
             RequestFingerprint = fingerprint,
             StartedAt = startedAt,
             CompletedAt = completedAt,
             RawResponse = output.Content,
             Proposal = proposal,
             ProviderMetadata = metadata,
-            FinishReason = errorCode is null ? "completed" : "invalid_response",
+            FinishReason = metadata.TryGetValue("finish_reason", out var finishReason) ? finishReason :
+                metadata.TryGetValue("stop_reason", out var stopReason) ? stopReason :
+                errorCode is null ? "completed" : "invalid_response",
             Diagnostic = diagnostic,
             ErrorCode = errorCode,
             InputTokens = ReadTokenCount(metadata, "input_tokens", "prompt_tokens"),
