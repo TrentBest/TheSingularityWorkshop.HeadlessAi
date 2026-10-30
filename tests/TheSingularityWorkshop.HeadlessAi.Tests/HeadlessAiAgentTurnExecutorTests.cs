@@ -291,7 +291,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             invocationCount++;
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("{\\"diagnosis\\":\\"same canonical request\\"}")
+                Content = new StringContent("""{"diagnosis":"same canonical request"}""")
             });
         }));
         var executor = CreateExecutor(client);
