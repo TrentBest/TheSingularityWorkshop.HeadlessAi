@@ -66,6 +66,13 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsBlankOptionalConversationAndTaskVersions()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { ConversationId = " " }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { TaskVersion = string.Empty }).Validate(Now));
+    }
+
+    [Fact]
     public void Envelope_RejectsExpiredTurn()
     {
         var envelope = ValidEnvelope() with { ExpiresAt = Now };
@@ -419,6 +426,18 @@ public sealed class HeadlessAiAgentTurnContractTests
 
         var oversized = ValidEnvelope().Evidence[0] with { BoundedSummary = new string('x', 16_385) };
         Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { Evidence = [oversized] }).Validate(Now));
+    }
+
+    [Fact]
+    public void Result_RejectsInvalidConversationTaskAndConfigurationIdentities()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidResult() with { ConversationId = " " }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with { TaskVersion = " " }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with { ConfigurationId = " " }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            ConfigurationId = new string('c', 129)
+        }).Validate());
     }
 
     [Fact]
