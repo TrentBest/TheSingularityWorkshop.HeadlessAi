@@ -311,4 +311,72 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         redelivery.Validate();
     }
 
+
+    [Fact]
+    public async Task ExecuteAsync_TransportFailureIsNormalizedWithoutRawExceptionPayload()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromException<HttpResponseMessage>(new HttpRequestException("connection unavailable"))));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal("transport_error", result.ErrorCode);
+        Assert.Equal("error", result.FinishReason);
+        Assert.Equal(string.Empty, result.RawResponse);
+        Assert.Contains("connection unavailable", result.Diagnostic);
+        result.Validate();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_TimeoutExceptionIsNormalized()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromException<HttpResponseMessage>(new TimeoutException("provider deadline elapsed"))));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal("timeout", result.ErrorCode);
+        Assert.Contains("provider deadline elapsed", result.Diagnostic);
+        result.Validate();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ResponseBodyAboveProfileLimitIsNormalized()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("response exceeds eight bytes")
+            })));
+        var profile = new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke"),
+            settings: new Dictionary<string, string> { ["model"] = "fixture-model" }, maxResponseBytes: 8);
+        var executor = new HeadlessAiAgentTurnExecutor(
+            new HeadlessAiAgentTemplate(profile, new FixtureAdapter("fixture-provider")), client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal("response_limit_exceeded", result.ErrorCode);
+        Assert.Equal(string.Empty, result.RawResponse);
+        result.Validate();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_InvalidNormalizedProposalIsRetainedAsNonActionableFailure()
+    {
+        const string raw = """{"confidence":1.5,"patchIntent":"unsafe proposal"}""";
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal(raw, result.RawResponse);
+        Assert.Equal("invalid_proposal", result.ErrorCode);
+        Assert.Null(result.Proposal.PatchIntent);
+        Assert.NotNull(result.Proposal.StopOrEscalateReason);
+        result.Validate();
+    }
+
 }
