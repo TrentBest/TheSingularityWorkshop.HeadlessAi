@@ -350,7 +350,6 @@ public sealed record HeadlessAiAgentTurnResult
     public long? OutputTokens { get; init; }
 
     /// <summary>Validates exchange identity, timing, metadata bounds, and normalized proposal.</summary>
-    /// <summary>Validates exchange identity, timing, metadata bounds, and normalized proposal.</summary>
     public void Validate()
     {
         ArgumentNullException.ThrowIfNull(ProviderMetadata);
@@ -387,8 +386,9 @@ public sealed record HeadlessAiAgentTurnResult
         if (InputTokens is < 0 || OutputTokens is < 0) throw new ArgumentOutOfRangeException(nameof(InputTokens));
         if (RawResponse is null || RawResponse.Length > 1_000_000)
             throw new ArgumentException("Raw provider response is required and limited to one million characters.", nameof(RawResponse));
-        if (ProviderMetadata.Count > 128 || ProviderMetadata.Any(p => p.Key.Length > 128 || p.Value.Length > 4_096))
-            throw new ArgumentException("Provider metadata exceeds the allowed bounds.", nameof(ProviderMetadata));
+        if (ProviderMetadata.Count > 128 || ProviderMetadata.Any(p =>
+                string.IsNullOrWhiteSpace(p.Key) || p.Key.Length > 128 || p.Value is null || p.Value.Length > 4_096))
+            throw new ArgumentException("Provider metadata keys and values must be non-empty and within the allowed bounds.", nameof(ProviderMetadata));
         Proposal.Validate();
     }
 }
