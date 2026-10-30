@@ -378,6 +378,24 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Limits_RejectsNegativeCountsAndNonPositiveSizeOrLifetimeBounds()
+    {
+        HeadlessAiAgentTurnLimits[] invalidLimits =
+        [
+            new() { MaxEvidenceItems = -1 },
+            new() { MaxContextReferences = -1 },
+            new() { MaxReferenceCharacters = 0 },
+            new() { MaxSerializedEnvelopeCharacters = 0 },
+            new() { MaxLifetime = TimeSpan.Zero },
+            new() { Timeout = TimeSpan.FromTicks(-1) },
+            new() { MaxConcurrentProviders = 0 }
+        ];
+
+        foreach (var limits in invalidLimits)
+            Assert.Throws<ArgumentOutOfRangeException>(() => (ValidEnvelope() with { Limits = limits }).Validate(Now));
+    }
+
+    [Fact]
     public void Evidence_RejectsInvalidAttemptAndOversizedSummary()
     {
         var invalidAttempt = ValidEnvelope().Evidence[0] with { Attempt = 0 };
