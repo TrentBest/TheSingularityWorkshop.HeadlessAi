@@ -65,8 +65,9 @@ public sealed record HeadlessAiAgentTurnEnvelope
         Require(TaskId, nameof(TaskId), 128);
         Require(CorrelationId, nameof(CorrelationId), 128);
         Require(Repository, nameof(Repository), 256);
-        if (!Repository.Contains('/') || Repository.StartsWith('/') || Repository.EndsWith('/'))
-            throw new ArgumentException("Repository must use owner/name form.", nameof(Repository));
+        var repositorySeparator = Repository.IndexOf('/');
+        if (repositorySeparator <= 0 || repositorySeparator != Repository.LastIndexOf('/') || repositorySeparator == Repository.Length - 1)
+            throw new ArgumentException("Repository must use exactly owner/name form.", nameof(Repository));
         Require(AuthorizedBranch, nameof(AuthorizedBranch), 256);
         if (string.Equals(AuthorizedBranch, "master", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(AuthorizedBranch, "development", StringComparison.OrdinalIgnoreCase))
@@ -353,7 +354,9 @@ public sealed record HeadlessAiAgentTurnResult
         if (CompletedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.");
         if (EnvelopeVersion != HeadlessAiAgentTurnEnvelope.CurrentVersion)
             throw new ArgumentOutOfRangeException(nameof(EnvelopeVersion));
-        if (string.IsNullOrWhiteSpace(Repository) || !Repository.Contains('/') ||
+        var resultRepositorySeparator = Repository?.IndexOf('/') ?? -1;
+        if (string.IsNullOrWhiteSpace(Repository) || resultRepositorySeparator <= 0 ||
+            resultRepositorySeparator != Repository.LastIndexOf('/') || resultRepositorySeparator == Repository.Length - 1 ||
             string.IsNullOrWhiteSpace(AuthorizedBranch) || string.Equals(AuthorizedBranch, "master", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(AuthorizedBranch, "development", StringComparison.OrdinalIgnoreCase) ||
             !Regex.IsMatch(BaseCommitSha ?? string.Empty, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
