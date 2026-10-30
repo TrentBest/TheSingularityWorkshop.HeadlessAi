@@ -14,6 +14,8 @@ public sealed record HeadlessAiAgentTurnEnvelope
 
     /// <summary>Stable task identifier owned by the host.</summary>
     public required string TaskId { get; init; }
+    /// <summary>Optional host-owned conversation identity for this resumable participant.</summary>
+    public string? ConversationId { get; init; }
     /// <summary>Optional host-owned version of the task definition, distinct from the envelope schema version.</summary>
     public string? TaskVersion { get; init; }
     /// <summary>Correlation identifier shared by all exchanges in one task.</summary>
@@ -65,6 +67,7 @@ public sealed record HeadlessAiAgentTurnEnvelope
         if (Version != CurrentVersion)
             throw new ArgumentOutOfRangeException(nameof(Version), $"Unsupported turn envelope version: {Version}.");
         Require(TaskId, nameof(TaskId), 128);
+        if (ConversationId is not null) Require(ConversationId, nameof(ConversationId), 128);
         if (TaskVersion is not null) Require(TaskVersion, nameof(TaskVersion), 128);
         Require(CorrelationId, nameof(CorrelationId), 128);
         Require(Repository, nameof(Repository), 256);
@@ -298,6 +301,8 @@ public sealed record HeadlessAiAgentTurnResult
     public required string TurnId { get; init; }
     /// <summary>Host-owned task identifier.</summary>
     public required string TaskId { get; init; }
+    /// <summary>Host-owned conversation identity carried by the originating request, when supplied.</summary>
+    public string? ConversationId { get; init; }
     /// <summary>Host-owned task-definition version carried by the originating request.</summary>
     public string? TaskVersion { get; init; }
     /// <summary>Correlation identifier shared by resumable turns.</summary>
@@ -369,6 +374,8 @@ public sealed record HeadlessAiAgentTurnResult
             (string.IsNullOrWhiteSpace(ConfigurationId) || ConfigurationId.Length > 128))
             throw new ArgumentException("Configuration identity must be non-empty and limited to 128 characters.", nameof(ConfigurationId));
         if (CompletedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.");
+        if (ConversationId is not null && (string.IsNullOrWhiteSpace(ConversationId) || ConversationId.Length > 128))
+            throw new ArgumentException("Conversation identity must be non-empty and limited to 128 characters.", nameof(ConversationId));
         if (TaskVersion is not null && (string.IsNullOrWhiteSpace(TaskVersion) || TaskVersion.Length > 128))
             throw new ArgumentException("Task version must be non-empty and limited to 128 characters.", nameof(TaskVersion));
         if (EnvelopeVersion != HeadlessAiAgentTurnEnvelope.CurrentVersion)
