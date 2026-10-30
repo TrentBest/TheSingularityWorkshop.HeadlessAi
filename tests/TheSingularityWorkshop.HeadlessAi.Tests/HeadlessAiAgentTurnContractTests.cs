@@ -93,6 +93,28 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsBearerCredentialInPrompt()
+    {
+        var envelope = ValidEnvelope() with { CanonicalPrompt = "Authorization: Bearer abcdefghijklmnop" };
+
+        Assert.Throws<ArgumentException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RejectsCredentialInEvidenceSummary()
+    {
+        var envelope = ValidEnvelope() with
+        {
+            Evidence =
+            [
+                ValidEnvelope().Evidence[0] with { BoundedSummary = "api_key=abcdefghijklmnop" }
+            ]
+        };
+
+        Assert.Throws<ArgumentException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
     public void Envelope_RejectsShortCommitSha()
     {
         var envelope = ValidEnvelope() with { BaseCommitSha = "abc123" };
