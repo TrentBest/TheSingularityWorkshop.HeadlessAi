@@ -9,27 +9,48 @@ namespace TheSingularityWorkshop.HeadlessAi;
 /// </summary>
 public sealed record HeadlessAiAgentTurnEnvelope
 {
+    /// <summary>Current supported turn envelope schema version.</summary>
     public const int CurrentVersion = 1;
 
+    /// <summary>Stable task identifier owned by the host.</summary>
     public required string TaskId { get; init; }
+    /// <summary>Correlation identifier shared by all exchanges in one task.</summary>
     public required string CorrelationId { get; init; }
+    /// <summary>Repository identity in owner/name form.</summary>
     public required string Repository { get; init; }
+    /// <summary>Feature branch authorized by the host for the candidate.</summary>
     public required string AuthorizedBranch { get; init; }
+    /// <summary>Full commit SHA from which the authorized branch was based.</summary>
     public required string BaseCommitSha { get; init; }
+    /// <summary>Current candidate SHA, when a candidate already exists.</summary>
     public string? CandidateCommitSha { get; init; }
+    /// <summary>Optional issue URL associated with the task.</summary>
     public string? IssueUrl { get; init; }
+    /// <summary>Optional pull request URL associated with the task.</summary>
     public string? PullRequestUrl { get; init; }
+    /// <summary>Requested model role label; it does not grant authority.</summary>
     public required string Role { get; init; }
+    /// <summary>Task instructions supplied by the host.</summary>
     public required string Instructions { get; init; }
+    /// <summary>Canonical prompt shared by providers in a comparison.</summary>
     public required string CanonicalPrompt { get; init; }
+    /// <summary>Optional expected response schema description.</summary>
     public string? ResponseSchema { get; init; }
+    /// <summary>Absolute expiry after which the host must reject this turn.</summary>
     public required DateTimeOffset ExpiresAt { get; init; }
+    /// <summary>Prior turn identifier for a resumable exchange.</summary>
     public string? PriorTurnId { get; init; }
+    /// <summary>Prior candidate SHA whose CI result is being continued.</summary>
     public string? PriorCandidateCommitSha { get; init; }
+    /// <summary>Host-generated idempotency key for duplicate-delivery protection.</summary>
     public string? IdempotencyKey { get; init; }
+    /// <summary>Envelope schema version.</summary>
     public int Version { get; init; } = CurrentVersion;
+    /// <summary>Resource, retry, concurrency, and timeout bounds.</summary>
     public HeadlessAiAgentTurnLimits Limits { get; init; } = new();
+    /// <summary>Untrusted CI evidence references with preserved provenance.</summary>
     public IReadOnlyList<HeadlessAiEvidenceReference> Evidence { get; init; } = Array.Empty<HeadlessAiEvidenceReference>();
+    /// <summary>Bounded external context references; content retrieval remains host-owned.</summary>
     public IReadOnlyList<string> ContextReferences { get; init; } = Array.Empty<string>();
 
     /// <summary>Validates structural bounds and provenance shape before an envelope is sent.</summary>
@@ -87,14 +108,23 @@ public sealed record HeadlessAiAgentTurnEnvelope
 /// <summary>Explicit resource and time bounds for a single model turn.</summary>
 public sealed record HeadlessAiAgentTurnLimits
 {
+    /// <summary>Maximum instruction text length.</summary>
     public int MaxInstructionCharacters { get; init; } = 16_384;
+    /// <summary>Maximum canonical prompt length.</summary>
     public int MaxPromptCharacters { get; init; } = 64_000;
+    /// <summary>Maximum number of evidence references.</summary>
     public int MaxEvidenceItems { get; init; } = 64;
+    /// <summary>Maximum number of context references.</summary>
     public int MaxContextReferences { get; init; } = 128;
+    /// <summary>Maximum length of each context reference.</summary>
     public int MaxReferenceCharacters { get; init; } = 2_048;
+    /// <summary>Maximum allowed envelope lifetime from validation time.</summary>
     public TimeSpan MaxLifetime { get; init; } = TimeSpan.FromHours(2);
+    /// <summary>Per-provider invocation timeout.</summary>
     public TimeSpan Timeout { get; init; } = TimeSpan.FromMinutes(2);
+    /// <summary>Maximum provider attempts permitted by the host policy.</summary>
     public int MaxProviderAttempts { get; init; } = 1;
+    /// <summary>Maximum provider fan-out concurrency permitted by the host policy.</summary>
     public int MaxConcurrentProviders { get; init; } = 4;
 
     internal void Validate()
@@ -113,15 +143,25 @@ public sealed record HeadlessAiAgentTurnLimits
 public sealed record HeadlessAiEvidenceReference
 {
     public required string Repository { get; init; }
+    /// <summary>Full SHA to which this evidence applies.</summary>
     public required string CommitSha { get; init; }
+    /// <summary>CI provider's workflow run identifier.</summary>
     public required string WorkflowRunId { get; init; }
+    /// <summary>Workflow run attempt number.</summary>
     public required int Attempt { get; init; }
+    /// <summary>Workflow display name.</summary>
     public required string WorkflowName { get; init; }
+    /// <summary>Optional job name within the workflow.</summary>
     public string? JobName { get; init; }
+    /// <summary>Optional step name within the job.</summary>
     public string? StepName { get; init; }
+    /// <summary>CI-reported conclusion, preserved as untrusted source data.</summary>
     public required string Conclusion { get; init; }
+    /// <summary>HTTPS URL of the source evidence.</summary>
     public required string SourceUrl { get; init; }
+    /// <summary>Time at which the host observed this evidence.</summary>
     public required DateTimeOffset ObservedAt { get; init; }
+    /// <summary>Optional bounded evidence excerpt; may contain untrusted text.</summary>
     public string? BoundedSummary { get; init; }
 
     internal void Validate(string expectedRepository)
@@ -150,13 +190,21 @@ public sealed record HeadlessAiEvidenceReference
 /// </summary>
 public sealed record HeadlessAiAgentTurnProposal
 {
+    /// <summary>Model-proposed diagnosis; not a verified fact.</summary>
     public string? Diagnosis { get; init; }
+    /// <summary>Model-proposed patch intent; not an executable patch.</summary>
     public string? PatchIntent { get; init; }
+    /// <summary>Questions the model proposes asking the host or owner.</summary>
     public IReadOnlyList<string> Questions { get; init; } = Array.Empty<string>();
+    /// <summary>Model-reported confidence in the proposal, from zero to one.</summary>
     public double? Confidence { get; init; }
+    /// <summary>Model-reported uncertainty and missing information.</summary>
     public string? Uncertainty { get; init; }
+    /// <summary>Reason to stop or request human intervention.</summary>
     public string? StopOrEscalateReason { get; init; }
+    /// <summary>Suggested operational status for the host to evaluate.</summary>
     public string? OperationalStatus { get; init; }
+    /// <summary>Human decision or authorization requested by the model.</summary>
     public string? HumanDecisionRequired { get; init; }
 
     public void Validate()
@@ -185,23 +233,38 @@ public sealed record HeadlessAiAgentTurnProposal
 /// </summary>
 public sealed record HeadlessAiAgentTurnResult
 {
+    /// <summary>Unique identifier for this exchange turn.</summary>
     public required string TurnId { get; init; }
     public required string TaskId { get; init; }
     public required string CorrelationId { get; init; }
+    /// <summary>Provider adapter identity.</summary>
     public required string ProviderId { get; init; }
+    /// <summary>Provider model identifier.</summary>
     public required string ModelId { get; init; }
+    /// <summary>Optional provider or API version.</summary>
     public string? ProviderVersion { get; init; }
+    /// <summary>Stable fingerprint of the canonical request package.</summary>
     public required string RequestFingerprint { get; init; }
+    /// <summary>Invocation start timestamp.</summary>
     public required DateTimeOffset StartedAt { get; init; }
+    /// <summary>Invocation completion timestamp.</summary>
     public required DateTimeOffset CompletedAt { get; init; }
+    /// <summary>Original raw provider response, retained separately from normalized fields.</summary>
     public required string RawResponse { get; init; }
+    /// <summary>Normalized, untrusted proposal derived from the raw response.</summary>
     public required HeadlessAiAgentTurnProposal Proposal { get; init; }
+    /// <summary>Provider-reported metadata preserved without reinterpretation.</summary>
     public IReadOnlyDictionary<string, string> ProviderMetadata { get; init; } =
         new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
+    /// <summary>Provider-reported finish or stop reason.</summary>
     public string? FinishReason { get; init; }
+    /// <summary>Optional diagnostic text for the exchange.</summary>
     public string? Diagnostic { get; init; }
+    /// <summary>Optional provider-neutral error code.</summary>
     public string? ErrorCode { get; init; }
+    /// <summary>Provider-reported input token count, when available.</summary>
     public long? InputTokens { get; init; }
+    /// <summary>Provider-reported output token count, when available.</summary>
     public long? OutputTokens { get; init; }
 
     public void Validate()
