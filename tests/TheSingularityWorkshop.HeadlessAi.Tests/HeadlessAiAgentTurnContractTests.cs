@@ -50,6 +50,14 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsConversationIdentityAboveBound()
+    {
+        var envelope = ValidEnvelope() with { ConversationId = new string('c', 129) };
+
+        Assert.Throws<ArgumentException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
     public void Envelope_RejectsTaskVersionAboveBound()
     {
         var envelope = ValidEnvelope() with { TaskVersion = new string('v', 129) };
