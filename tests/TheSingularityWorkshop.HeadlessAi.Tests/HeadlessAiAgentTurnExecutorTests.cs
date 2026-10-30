@@ -413,6 +413,27 @@ public sealed class HeadlessAiAgentTurnExecutorTests
 
 
     [Fact]
+    public async Task ExecuteAsync_LeavesTokenUsageUnknownWhenProviderOmitsIt()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"diagnosis":"usage not reported"}""")
+            })));
+        var metadata = new Dictionary<string, string> { ["response_id"] = "fixture-response" };
+        var template = new HeadlessAiAgentTemplate(
+            new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
+            new FixtureAdapter("fixture-provider", metadata));
+        var executor = new HeadlessAiAgentTurnExecutor(template, client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Null(result.InputTokens);
+        Assert.Null(result.OutputTokens);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_UsesFallbackTokenMetadataWhenPrimaryValuesAreInvalid()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
