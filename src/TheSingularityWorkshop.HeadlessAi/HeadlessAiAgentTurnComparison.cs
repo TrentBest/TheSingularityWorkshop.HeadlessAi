@@ -13,6 +13,8 @@ public sealed record HeadlessAiAgentTurnComparison
     public int Version { get; init; } = CurrentVersion;
     /// <summary>Host-owned task identifier shared by every provider result.</summary>
     public required string TaskId { get; init; }
+    /// <summary>Host-owned conversation identity shared by every provider result, when supplied.</summary>
+    public string? ConversationId { get; init; }
     /// <summary>Host-owned task-definition version shared by every provider result, when supplied.</summary>
     public string? TaskVersion { get; init; }
     /// <summary>Correlation identifier shared by every provider result.</summary>
@@ -39,6 +41,7 @@ public sealed record HeadlessAiAgentTurnComparison
         if (Version != CurrentVersion)
             throw new ArgumentOutOfRangeException(nameof(Version), $"Unsupported comparison version: {Version}.");
         Require(TaskId, nameof(TaskId), 128);
+        if (ConversationId is not null) Require(ConversationId, nameof(ConversationId), 128);
         if (TaskVersion is not null) Require(TaskVersion, nameof(TaskVersion), 128);
         Require(CorrelationId, nameof(CorrelationId), 128);
         Require(Repository, nameof(Repository), 256);
@@ -58,12 +61,13 @@ public sealed record HeadlessAiAgentTurnComparison
             ArgumentNullException.ThrowIfNull(result);
             result.Validate();
             if (!string.Equals(result.TaskId, TaskId, StringComparison.Ordinal) ||
+                !string.Equals(result.ConversationId, ConversationId, StringComparison.Ordinal) ||
                 !string.Equals(result.TaskVersion, TaskVersion, StringComparison.Ordinal) ||
                 !string.Equals(result.CorrelationId, CorrelationId, StringComparison.Ordinal) ||
                 !string.Equals(result.Repository, Repository, StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(result.RequestFingerprint, RequestFingerprint, StringComparison.Ordinal) ||
                 !string.Equals(result.CandidateCommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase))
-                throw new ArgumentException("Every provider result must belong to the same task, task version, correlation, repository, candidate, and canonical request.");
+                throw new ArgumentException("Every provider result must belong to the same task, conversation, task version, correlation, repository, candidate, and canonical request.");
             if (!providerIds.Add(result.ProviderId))
                 throw new ArgumentException("A provider may appear only once in a comparison.", nameof(ProviderResults));
             if (!resultsByTurn.TryAdd(result.TurnId, result))
