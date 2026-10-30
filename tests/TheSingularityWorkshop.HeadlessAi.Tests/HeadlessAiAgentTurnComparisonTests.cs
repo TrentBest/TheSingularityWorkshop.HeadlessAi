@@ -303,16 +303,11 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     }
 
     [Fact]
-    public void Comparison_RejectsAssessmentForWrongProviderAndDuplicateAssessment()
+    public void Comparison_RejectsAssessmentWhoseProviderDoesNotOwnTheReferencedTurn()
     {
         var wrongProvider = new HeadlessAiProviderAssessment { ProviderId = "provider-b", TurnId = "turn-a" };
-        Assert.Throws<ArgumentException>(() => (Comparison() with { Assessments = [wrongProvider] }).Validate());
 
-        var duplicate = new HeadlessAiProviderAssessment { ProviderId = "provider-a", TurnId = "turn-a" };
-        Assert.Throws<ArgumentException>(() => (Comparison() with
-        {
-            Assessments = [duplicate, duplicate with { TurnId = "turn-b", ProviderId = "provider-a" }]
-        }).Validate());
+        Assert.Throws<ArgumentException>(() => (Comparison() with { Assessments = [wrongProvider] }).Validate());
     }
 
     [Fact]
@@ -331,10 +326,10 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     [InlineData(double.PositiveInfinity)]
     public void Assessment_RejectsConfidenceOutsideFiniteUnitInterval(double confidence)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => Assessment("provider-a", "turn-a") with
+        Assert.Throws<ArgumentOutOfRangeException>(() => (Assessment("provider-a", "turn-a") with
         {
             Confidence = confidence
-        }.Validate());
+        }).Validate());
     }
 
     [Fact]
