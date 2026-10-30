@@ -77,6 +77,9 @@ public sealed record HeadlessAiAgentTurnEnvelope
         Require(Role, nameof(Role), 128);
         Require(Instructions, nameof(Instructions), Limits.MaxInstructionCharacters);
         Require(CanonicalPrompt, nameof(CanonicalPrompt), Limits.MaxPromptCharacters);
+        RejectCredentialLikeText(Instructions, nameof(Instructions));
+        RejectCredentialLikeText(CanonicalPrompt, nameof(CanonicalPrompt));
+        if (ResponseSchema is not null) RejectCredentialLikeText(ResponseSchema, nameof(ResponseSchema));
         if (ExpiresAt <= now) throw new ArgumentException("The turn envelope has expired.", nameof(ExpiresAt));
         if (ExpiresAt - now > Limits.MaxLifetime)
             throw new ArgumentException("The turn expiry exceeds the configured maximum lifetime.", nameof(ExpiresAt));
@@ -89,9 +92,15 @@ public sealed record HeadlessAiAgentTurnEnvelope
             ArgumentNullException.ThrowIfNull(item);
             item.Validate(Repository);
         }
-        foreach (var reference in ContextReferences) Require(reference, nameof(ContextReferences), Limits.MaxReferenceCharacters);
+        foreach (var reference in ContextReferences)
+        {
+            Require(reference, nameof(ContextReferences), Limits.MaxReferenceCharacters);
+            RejectCredentialLikeText(reference, nameof(ContextReferences));
+        }
         if (IssueUrl is not null) ValidateHttpsUrl(IssueUrl, nameof(IssueUrl));
         if (PullRequestUrl is not null) ValidateHttpsUrl(PullRequestUrl, nameof(PullRequestUrl));
+        foreach (var item in Evidence)
+            if (item.BoundedSummary is not null) RejectCredentialLikeText(item.BoundedSummary, nameof(Evidence));
         if (PriorTurnId is not null) Require(PriorTurnId, nameof(PriorTurnId), 128);
         if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
     }
@@ -100,6 +109,18 @@ public sealed record HeadlessAiAgentTurnEnvelope
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length > max)
             throw new ArgumentException($"{name} must contain between 1 and {max} characters.", name);
+    }
+
+    private static void RejectCredentialLikeText(string value, string name)
+    {
+        string[] patterns =
+        [
+            @"(?i)\\bBearer\\s+\\S{12,}",
+            @"(?i)\\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password)\\s*[:=]\\s*['"" ]?[^\\s,'"" ]{8,}",
+            @"\\b(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})\\b"
+        ];
+        if (patterns.Any(pattern => Regex.IsMatch(value, pattern, RegexOptions.CultureInvariant)))
+            throw new ArgumentException("Prompt and evidence payloads must not contain credentials; use the host-managed header provider.", name);
     }
 
     private static void ValidateSha(string sha, string name)
@@ -128,6 +149,8 @@ public sealed record HeadlessAiAgentTurnLimits
     public int MaxContextReferences { get; init; } = 128;
     /// <summary>Maximum length of each context reference.</summary>
     public int MaxReferenceCharacters { get; init; } = 2_048;
+    /// <summary>Maximum serialized envelope length before transport.</summary>
+    public int MaxSerializedEnvelopeCharacters { get; init; } = 256_000;
     /// <summary>Maximum allowed envelope lifetime from validation time.</summary>
     public TimeSpan MaxLifetime { get; init; } = TimeSpan.FromHours(2);
     /// <summary>Per-provider invocation timeout.</summary>
@@ -140,7 +163,7 @@ public sealed record HeadlessAiAgentTurnLimits
     internal void Validate()
     {
         if (MaxInstructionCharacters <= 0 || MaxPromptCharacters <= 0 || MaxEvidenceItems < 0 ||
-            MaxContextReferences < 0 || MaxReferenceCharacters <= 0 || MaxLifetime <= TimeSpan.Zero ||
+            MaxContextReferences < 0 || MaxReferenceCharacters <= 0 || MaxSerializedEnvelopeCharacters <= 0 || MaxLifetime <= TimeSpan.Zero ||
             Timeout <= TimeSpan.Zero || MaxProviderAttempts < 1 || MaxConcurrentProviders < 1)
             throw new ArgumentOutOfRangeException(nameof(HeadlessAiAgentTurnLimits), "Turn limits must be positive (counts may be zero where documented).");
     }
