@@ -354,10 +354,10 @@ public sealed class HeadlessAiAgentTurnContractTests
     public void Evidence_RejectsInvalidAttemptAndOversizedSummary()
     {
         var invalidAttempt = ValidEnvelope().Evidence[0] with { Attempt = 0 };
-        Assert.Throws<ArgumentOutOfRangeException>(() => invalidAttempt.Validate("TrentBest/Example"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => (ValidEnvelope() with { Evidence = [invalidAttempt] }).Validate(Now));
 
         var oversized = ValidEnvelope().Evidence[0] with { BoundedSummary = new string('x', 16_385) };
-        Assert.Throws<ArgumentException>(() => oversized.Validate("TrentBest/Example"));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { Evidence = [oversized] }).Validate(Now));
     }
 
     [Fact]
