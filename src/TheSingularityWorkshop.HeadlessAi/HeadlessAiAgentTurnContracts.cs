@@ -253,6 +253,10 @@ public sealed record HeadlessAiAgentTurnProposal
     public string? OperationalStatus { get; init; }
     /// <summary>Concise description of the work currently being performed or proposed by the agent.</summary>
     public string? CurrentAction { get; init; }
+    /// <summary>Current blocker reported by the model; it is not independently verified.</summary>
+    public string? Blocker { get; init; }
+    /// <summary>When or under what condition the host should next update the operational status.</summary>
+    public string? NextExpectedUpdate { get; init; }
     /// <summary>Human decision or authorization requested by the model.</summary>
     public string? HumanDecisionRequired { get; init; }
 
@@ -270,6 +274,8 @@ public sealed record HeadlessAiAgentTurnProposal
         Check(StopOrEscalateReason, 4_096, nameof(StopOrEscalateReason));
         Check(OperationalStatus, 2_048, nameof(OperationalStatus));
         Check(CurrentAction, 2_048, nameof(CurrentAction));
+        Check(Blocker, 4_096, nameof(Blocker));
+        Check(NextExpectedUpdate, 2_048, nameof(NextExpectedUpdate));
         Check(HumanDecisionRequired, 4_096, nameof(HumanDecisionRequired));
     }
 
