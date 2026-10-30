@@ -73,6 +73,31 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_AcceptsTurnWithoutCandidateOrOptionalEvidenceDetails()
+    {
+        var envelope = ValidEnvelope() with
+        {
+            CandidateCommitSha = null,
+            Evidence = []
+        };
+
+        envelope.Validate(Now);
+    }
+
+    [Fact]
+    public void Envelope_AcceptsEvidenceWithoutOptionalJobStepOrSummary()
+    {
+        var evidence = ValidEnvelope().Evidence[0] with
+        {
+            JobName = null,
+            StepName = null,
+            BoundedSummary = null
+        };
+
+        (ValidEnvelope() with { Evidence = [evidence] }).Validate(Now);
+    }
+
+    [Fact]
     public void Envelope_RejectsExpiredTurn()
     {
         var envelope = ValidEnvelope() with { ExpiresAt = Now };
@@ -241,6 +266,19 @@ public sealed class HeadlessAiAgentTurnContractTests
         var proposal = new HeadlessAiAgentTurnProposal { Confidence = 1.1 };
 
         Assert.Throws<ArgumentOutOfRangeException>(proposal.Validate);
+    }
+
+    [Fact]
+    public void Proposal_RejectsNaNConfidenceAndNullQuestions()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new HeadlessAiAgentTurnProposal
+        {
+            Confidence = double.NaN
+        }.Validate());
+        Assert.Throws<ArgumentNullException>(() => new HeadlessAiAgentTurnProposal
+        {
+            Questions = null!
+        }.Validate());
     }
 
     [Fact]
@@ -426,6 +464,14 @@ public sealed class HeadlessAiAgentTurnContractTests
 
         var oversized = ValidEnvelope().Evidence[0] with { BoundedSummary = new string('x', 16_385) };
         Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { Evidence = [oversized] }).Validate(Now));
+    }
+
+    [Fact]
+    public void Result_RejectsNullEvidenceMetadataAndProposalCollections()
+    {
+        Assert.Throws<ArgumentNullException>(() => (ValidResult() with { Evidence = null! }).Validate());
+        Assert.Throws<ArgumentNullException>(() => (ValidResult() with { ProviderMetadata = null! }).Validate());
+        Assert.Throws<ArgumentNullException>(() => (ValidResult() with { Proposal = null! }).Validate());
     }
 
     [Fact]
