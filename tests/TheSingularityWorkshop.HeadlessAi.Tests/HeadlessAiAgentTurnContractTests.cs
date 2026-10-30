@@ -66,6 +66,33 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsCanonicalBranches()
+    {
+        var envelope = ValidEnvelope() with { AuthorizedBranch = "development" };
+
+        Assert.Throws<ArgumentException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RejectsInvalidResourceLimits()
+    {
+        var envelope = ValidEnvelope() with
+        {
+            Limits = new HeadlessAiAgentTurnLimits { Timeout = TimeSpan.Zero }
+        };
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RejectsNullEvidenceCollection()
+    {
+        var envelope = ValidEnvelope() with { Evidence = null! };
+
+        Assert.Throws<ArgumentNullException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
     public void Envelope_RejectsShortCommitSha()
     {
         var envelope = ValidEnvelope() with { BaseCommitSha = "abc123" };
