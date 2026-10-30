@@ -58,6 +58,7 @@ public sealed record HeadlessAiAgentTurnComparison
             ArgumentNullException.ThrowIfNull(result);
             result.Validate();
             if (!string.Equals(result.TaskId, TaskId, StringComparison.Ordinal) ||
+                !string.Equals(result.TaskVersion, TaskVersion, StringComparison.Ordinal) ||
                 !string.Equals(result.CorrelationId, CorrelationId, StringComparison.Ordinal) ||
                 !string.Equals(result.Repository, Repository, StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(result.RequestFingerprint, RequestFingerprint, StringComparison.Ordinal) ||
