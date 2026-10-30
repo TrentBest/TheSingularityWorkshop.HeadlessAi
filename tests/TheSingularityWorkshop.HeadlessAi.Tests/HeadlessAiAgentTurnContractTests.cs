@@ -229,6 +229,7 @@ public sealed class HeadlessAiAgentTurnContractTests
             Confidence = 0.82,
             Uncertainty = "The repository host configuration is not visible.",
             OperationalStatus = "blocked",
+            CurrentAction = "Waiting for the host to restore the CI secret.",
             StopOrEscalateReason = "Required authorization is unavailable.",
             HumanDecisionRequired = "Restore the CI secret through the approved host settings."
         };
@@ -236,7 +237,21 @@ public sealed class HeadlessAiAgentTurnContractTests
         proposal.Validate();
 
         Assert.Equal("blocked", proposal.OperationalStatus);
+        Assert.Equal("Waiting for the host to restore the CI secret.", proposal.CurrentAction);
         Assert.Equal("Restore the CI secret through the approved host settings.", proposal.HumanDecisionRequired);
+    }
+
+    [Fact]
+    public void Proposal_RejectsOversizedOperationalStatusAndCurrentAction()
+    {
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal
+        {
+            OperationalStatus = new string('x', 2_049)
+        }.Validate());
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal
+        {
+            CurrentAction = new string('x', 2_049)
+        }.Validate());
     }
 
     [Fact]
