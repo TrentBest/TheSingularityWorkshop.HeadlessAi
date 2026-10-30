@@ -148,8 +148,18 @@ public sealed class HeadlessAiAgentTurnExecutor
             diagnostic = ex.Message;
         }
 
-        var metadata = output.Metadata?.ToDictionary(pair => pair.Key, pair => pair.Value,
-            StringComparer.OrdinalIgnoreCase) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        // Provider metadata is untrusted. Keep the first spelling when a provider supplies
+        // keys that differ only by casing; a case-insensitive dictionary must not make an
+        // otherwise successful invocation throw during result normalization.
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (output.Metadata is not null)
+        {
+            foreach (var pair in output.Metadata)
+            {
+                if (!metadata.ContainsKey(pair.Key))
+                    metadata.Add(pair.Key, pair.Value);
+            }
+        }
         return new HeadlessAiAgentTurnResult
         {
             TurnId = Guid.NewGuid().ToString("N"),
