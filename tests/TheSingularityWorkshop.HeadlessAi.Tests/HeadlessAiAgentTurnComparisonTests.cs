@@ -12,6 +12,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
         {
             TurnId = turnId,
             TaskId = "task-1",
+            ConversationId = "conversation-1",
             TaskVersion = "task-v1",
             CorrelationId = "correlation-1",
             Repository = "TrentBest/Example",
@@ -30,6 +31,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     private static HeadlessAiAgentTurnComparison Comparison() => new()
     {
         TaskId = "task-1",
+        ConversationId = "conversation-1",
         TaskVersion = "task-v1",
         CorrelationId = "correlation-1",
         Repository = "TrentBest/Example",
@@ -47,6 +49,21 @@ public sealed class HeadlessAiAgentTurnComparisonTests
         Assert.Equal(2, comparison.ProviderResults.Count);
         Assert.Equal(comparison.ProviderResults[0].RequestFingerprint,
             comparison.ProviderResults[1].RequestFingerprint);
+    }
+
+    [Fact]
+    public void Comparison_RejectsDifferentConversationIdentities()
+    {
+        var comparison = Comparison() with
+        {
+            ProviderResults =
+            [
+                Result("provider-a", "turn-a"),
+                Result("provider-b", "turn-b") with { ConversationId = "conversation-2" }
+            ]
+        };
+
+        Assert.Throws<ArgumentException>(comparison.Validate);
     }
 
     [Fact]
