@@ -281,4 +281,34 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             HttpRequestMessage request, CancellationToken cancellationToken)
             => send(request, cancellationToken);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_RepeatedDeliveryPreservesIdempotencyProvenanceWithoutClaimingDeduplication()
+    {
+        var invocationCount = 0;
+        using var client = new HttpClient(new StubHandler((_, _) =>
+        {
+            invocationCount++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\\"diagnosis\\":\\"same canonical request\\"}")
+            });
+        }));
+        var executor = CreateExecutor(client);
+        var envelope = CreateEnvelope() with { IdempotencyKey = "task-100-delivery-1" };
+
+        var first = await executor.ExecuteAsync(envelope);
+        var redelivery = await executor.ExecuteAsync(envelope);
+
+        Assert.Equal(2, invocationCount);
+        Assert.Equal(envelope.IdempotencyKey, first.IdempotencyKey);
+        Assert.Equal(first.IdempotencyKey, redelivery.IdempotencyKey);
+        Assert.Equal(first.RequestFingerprint, redelivery.RequestFingerprint);
+        Assert.NotEqual(first.TurnId, redelivery.TurnId);
+        Assert.Equal(first.TaskId, redelivery.TaskId);
+        Assert.Equal(first.CorrelationId, redelivery.CorrelationId);
+        first.Validate();
+        redelivery.Validate();
+    }
+
 }
