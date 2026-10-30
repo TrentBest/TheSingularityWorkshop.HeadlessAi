@@ -52,6 +52,13 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     }
 
     [Fact]
+    public void Comparison_RejectsBlankOptionalConversationAndTaskVersions()
+    {
+        Assert.Throws<ArgumentException>(() => (Comparison() with { ConversationId = " " }).Validate());
+        Assert.Throws<ArgumentException>(() => (Comparison() with { TaskVersion = string.Empty }).Validate());
+    }
+
+    [Fact]
     public void Comparison_RejectsDifferentConversationIdentities()
     {
         var comparison = Comparison() with
