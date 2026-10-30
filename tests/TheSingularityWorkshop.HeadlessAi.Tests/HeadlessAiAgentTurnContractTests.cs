@@ -147,6 +147,48 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsEvidenceForUnrelatedCommit()
+    {
+        var envelope = ValidEnvelope() with
+        {
+            Evidence =
+            [
+                ValidEnvelope().Evidence[0] with
+                {
+                    CommitSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                }
+            ]
+        };
+
+        Assert.Throws<ArgumentException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RequiresPriorTurnAndPriorCandidateTogether()
+    {
+        var envelope = ValidEnvelope() with { PriorTurnId = "turn-before" };
+
+        Assert.Throws<ArgumentException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_AllowsPriorEvidenceWhenResumingWithNewCandidate()
+    {
+        var priorSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var envelope = ValidEnvelope() with
+        {
+            PriorTurnId = "turn-before",
+            PriorCandidateCommitSha = priorSha,
+            Evidence =
+            [
+                ValidEnvelope().Evidence[0] with { CommitSha = priorSha }
+            ]
+        };
+
+        envelope.Validate(Now);
+    }
+
+    [Fact]
     public void Envelope_RejectsNonHttpsEvidenceReference()
     {
         var envelope = ValidEnvelope() with
