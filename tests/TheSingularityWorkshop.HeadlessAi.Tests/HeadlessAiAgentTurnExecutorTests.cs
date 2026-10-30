@@ -392,6 +392,33 @@ public sealed class HeadlessAiAgentTurnExecutorTests
 
 
     [Fact]
+    public async Task ExecuteAsync_UsesFallbackTokenMetadataWhenPrimaryValuesAreInvalid()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"diagnosis":"token metadata fallback"}""")
+            })));
+        var metadata = new Dictionary<string, string>
+        {
+            ["input_tokens"] = "-1",
+            ["prompt_tokens"] = "9",
+            ["output_tokens"] = "not-a-number",
+            ["completion_tokens"] = "7"
+        };
+        var template = new HeadlessAiAgentTemplate(
+            new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
+            new FixtureAdapter("fixture-provider", metadata));
+        var executor = new HeadlessAiAgentTurnExecutor(template, client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal(9, result.InputTokens);
+        Assert.Equal(7, result.OutputTokens);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_CaseCollidingProviderMetadataIsNormalizedWithoutThrowing()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
@@ -431,6 +458,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var result = await executor.ExecuteAsync(CreateEnvelope());
 
         Assert.Equal("transport_error", result.ErrorCode);
+        Assert.Equal("fixture-profile", result.ConfigurationId);
         Assert.Equal("error", result.FinishReason);
         Assert.Equal(string.Empty, result.RawResponse);
         Assert.Contains("connection unavailable", result.Diagnostic);
