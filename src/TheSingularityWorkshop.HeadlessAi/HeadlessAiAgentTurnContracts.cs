@@ -40,7 +40,7 @@ public sealed record HeadlessAiAgentTurnEnvelope
         Require(TaskId, nameof(TaskId), 128);
         Require(CorrelationId, nameof(CorrelationId), 128);
         Require(Repository, nameof(Repository), 256);
-        if (!Repository.Contains('/', StringComparison.Ordinal) || Repository.StartsWith('/') || Repository.EndsWith('/'))
+        if (!Repository.Contains('/') || Repository.StartsWith('/') || Repository.EndsWith('/'))
             throw new ArgumentException("Repository must use owner/name form.", nameof(Repository));
         Require(AuthorizedBranch, nameof(AuthorizedBranch), 256);
         ValidateSha(BaseCommitSha, nameof(BaseCommitSha));
@@ -211,7 +211,7 @@ public sealed record HeadlessAiAgentTurnResult
             string.IsNullOrWhiteSpace(ModelId) || string.IsNullOrWhiteSpace(RequestFingerprint))
             throw new ArgumentException("Turn identity, provider, model, and request fingerprint are required.");
         if (CompletedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.");
-        if (InputTokens < 0 || OutputTokens < 0) throw new ArgumentOutOfRangeException(nameof(InputTokens));
+        if (InputTokens is < 0 || OutputTokens is < 0) throw new ArgumentOutOfRangeException(nameof(InputTokens));
         if (RawResponse is null || RawResponse.Length > 1_000_000)
             throw new ArgumentException("Raw provider response is required and limited to one million characters.", nameof(RawResponse));
         if (ProviderMetadata.Count > 128 || ProviderMetadata.Any(p => p.Key.Length > 128 || p.Value.Length > 4_096))
