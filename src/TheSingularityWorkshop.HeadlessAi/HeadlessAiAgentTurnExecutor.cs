@@ -179,6 +179,7 @@ public sealed class HeadlessAiAgentTurnExecutor
             Evidence = envelope.Evidence.ToArray(),
             ProviderId = providerId,
             ModelId = modelId,
+            ConfigurationId = _template.Profile.Id,
             ProviderVersion = metadata.TryGetValue("provider_version", out var providerVersion) ? providerVersion :
                 metadata.TryGetValue("api_version", out var apiVersion) ? apiVersion : null,
             RequestFingerprint = fingerprint,
@@ -218,6 +219,7 @@ public sealed class HeadlessAiAgentTurnExecutor
             Evidence = envelope.Evidence.ToArray(),
             ProviderId = providerId,
             ModelId = modelId,
+            ConfigurationId = _template.Profile.Id,
             RequestFingerprint = fingerprint,
             StartedAt = startedAt,
             CompletedAt = _timeProvider.GetUtcNow(),
