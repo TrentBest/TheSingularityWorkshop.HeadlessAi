@@ -142,6 +142,7 @@ public sealed record HeadlessAiAgentTurnLimits
 /// </summary>
 public sealed record HeadlessAiEvidenceReference
 {
+    /// <summary>Repository identity reported by the CI evidence source.</summary>
     public required string Repository { get; init; }
     /// <summary>Full SHA to which this evidence applies.</summary>
     public required string CommitSha { get; init; }
