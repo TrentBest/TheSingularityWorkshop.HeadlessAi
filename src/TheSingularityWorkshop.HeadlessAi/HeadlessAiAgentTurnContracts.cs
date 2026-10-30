@@ -288,6 +288,28 @@ public sealed record HeadlessAiAgentTurnResult
     public required string TaskId { get; init; }
     /// <summary>Correlation identifier shared by resumable turns.</summary>
     public required string CorrelationId { get; init; }
+    /// <summary>Version of the envelope that produced this result.</summary>
+    public int EnvelopeVersion { get; init; } = HeadlessAiAgentTurnEnvelope.CurrentVersion;
+    /// <summary>Repository identity in owner/name form.</summary>
+    public required string Repository { get; init; }
+    /// <summary>Authorized isolated feature branch for the exchange.</summary>
+    public required string AuthorizedBranch { get; init; }
+    /// <summary>Full base commit SHA for the task.</summary>
+    public required string BaseCommitSha { get; init; }
+    /// <summary>Current candidate commit SHA, when supplied.</summary>
+    public string? CandidateCommitSha { get; init; }
+    /// <summary>Prior turn identifier for a resumed exchange.</summary>
+    public string? PriorTurnId { get; init; }
+    /// <summary>Prior candidate SHA for a resumed exchange.</summary>
+    public string? PriorCandidateCommitSha { get; init; }
+    /// <summary>Host-generated idempotency key for this exchange.</summary>
+    public string? IdempotencyKey { get; init; }
+    /// <summary>Issue URL associated with the task, when supplied.</summary>
+    public string? IssueUrl { get; init; }
+    /// <summary>Pull request URL associated with the task, when supplied.</summary>
+    public string? PullRequestUrl { get; init; }
+    /// <summary>CI evidence references carried by the originating envelope.</summary>
+    public IReadOnlyList<HeadlessAiEvidenceReference> Evidence { get; init; } = Array.Empty<HeadlessAiEvidenceReference>();
     /// <summary>Provider adapter identity.</summary>
     public required string ProviderId { get; init; }
     /// <summary>Provider model identifier.</summary>
@@ -329,6 +351,28 @@ public sealed record HeadlessAiAgentTurnResult
             string.IsNullOrWhiteSpace(ModelId) || string.IsNullOrWhiteSpace(RequestFingerprint))
             throw new ArgumentException("Turn identity, provider, model, and request fingerprint are required.");
         if (CompletedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.");
+        if (EnvelopeVersion != HeadlessAiAgentTurnEnvelope.CurrentVersion)
+            throw new ArgumentOutOfRangeException(nameof(EnvelopeVersion));
+        if (string.IsNullOrWhiteSpace(Repository) || !Repository.Contains('/') ||
+            string.IsNullOrWhiteSpace(AuthorizedBranch) || string.Equals(AuthorizedBranch, "master", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(AuthorizedBranch, "development", StringComparison.OrdinalIgnoreCase) ||
+            !Regex.IsMatch(BaseCommitSha ?? string.Empty, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
+            throw new ArgumentException("Result repository, isolated branch, and base commit provenance are required.");
+        if (CandidateCommitSha is not null && !Regex.IsMatch(CandidateCommitSha, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
+            throw new ArgumentException("Candidate commit SHA must be a full SHA.", nameof(CandidateCommitSha));
+        if ((PriorTurnId is null) != (PriorCandidateCommitSha is null))
+            throw new ArgumentException("Prior turn ID and prior candidate SHA must be supplied together.");
+        if (PriorCandidateCommitSha is not null && !Regex.IsMatch(PriorCandidateCommitSha, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
+            throw new ArgumentException("Prior candidate commit SHA must be a full SHA.", nameof(PriorCandidateCommitSha));
+        ArgumentNullException.ThrowIfNull(Evidence);
+        foreach (var item in Evidence)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            item.Validate(Repository);
+            if (!(CandidateCommitSha is not null && string.Equals(item.CommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase)) &&
+                !(PriorCandidateCommitSha is not null && string.Equals(item.CommitSha, PriorCandidateCommitSha, StringComparison.OrdinalIgnoreCase)))
+                throw new ArgumentException("Result evidence must remain bound to the current or prior candidate SHA.", nameof(Evidence));
+        }
         if (InputTokens is < 0 || OutputTokens is < 0) throw new ArgumentOutOfRangeException(nameof(InputTokens));
         if (RawResponse is null || RawResponse.Length > 1_000_000)
             throw new ArgumentException("Raw provider response is required and limited to one million characters.", nameof(RawResponse));
