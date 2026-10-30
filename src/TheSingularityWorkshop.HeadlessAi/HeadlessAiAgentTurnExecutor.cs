@@ -65,7 +65,7 @@ public sealed class HeadlessAiAgentTurnExecutor
             var output = await agent.SendAsync(new HeadlessAiInput(canonicalRequest), timeoutSource.Token)
                 .ConfigureAwait(false);
             var completedAt = _timeProvider.GetUtcNow();
-            return CreateSuccess(envelope, output, canonicalRequest, fingerprint, providerId, modelId, startedAt, completedAt);
+            return CreateSuccess(envelope, output, fingerprint, providerId, modelId, startedAt, completedAt);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -99,7 +99,7 @@ public sealed class HeadlessAiAgentTurnExecutor
     }
 
     private HeadlessAiAgentTurnResult CreateSuccess(HeadlessAiAgentTurnEnvelope envelope, HeadlessAiOutput output,
-        string canonicalRequest, string fingerprint, string providerId, string modelId,
+        string fingerprint, string providerId, string modelId,
         DateTimeOffset startedAt, DateTimeOffset completedAt)
     {
         HeadlessAiAgentTurnProposal proposal;
@@ -132,8 +132,8 @@ public sealed class HeadlessAiAgentTurnExecutor
             diagnostic = ex.Message;
         }
 
-        var metadata = new Dictionary<string, string>(output.Metadata ?? new Dictionary<string, string>(),
-            StringComparer.OrdinalIgnoreCase);
+        var metadata = output.Metadata?.ToDictionary(pair => pair.Key, pair => pair.Value,
+            StringComparer.OrdinalIgnoreCase) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         return new HeadlessAiAgentTurnResult
         {
             TurnId = Guid.NewGuid().ToString("N"),
