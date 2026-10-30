@@ -108,6 +108,29 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_RejectsEnvelopeAboveSerializedCharacterLimitBeforeSending()
+    {
+        var attempts = 0;
+        using var client = new HttpClient(new StubHandler((_, _) =>
+        {
+            attempts++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\\"diagnosis\\":\\"unexpected\\"}")
+            });
+        }));
+        var executor = CreateExecutor(client);
+        var envelope = CreateEnvelope() with
+        {
+            Limits = new HeadlessAiAgentTurnLimits { MaxSerializedEnvelopeCharacters = 10 }
+        };
+
+        await Assert.ThrowsAsync<ArgumentException>(() => executor.ExecuteAsync(envelope));
+
+        Assert.Equal(0, attempts);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_PropagatesCallerCancellation()
     {
         using var client = new HttpClient(new StubHandler(async (_, cancellationToken) =>
