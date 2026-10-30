@@ -68,6 +68,9 @@ public sealed record HeadlessAiAgentTurnEnvelope
         if (!Repository.Contains('/') || Repository.StartsWith('/') || Repository.EndsWith('/'))
             throw new ArgumentException("Repository must use owner/name form.", nameof(Repository));
         Require(AuthorizedBranch, nameof(AuthorizedBranch), 256);
+        if (string.Equals(AuthorizedBranch, "master", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(AuthorizedBranch, "development", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Agent turns must target an isolated feature branch, never master or development.", nameof(AuthorizedBranch));
         ValidateSha(BaseCommitSha, nameof(BaseCommitSha));
         if (CandidateCommitSha is not null) ValidateSha(CandidateCommitSha, nameof(CandidateCommitSha));
         if (PriorCandidateCommitSha is not null) ValidateSha(PriorCandidateCommitSha, nameof(PriorCandidateCommitSha));
