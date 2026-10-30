@@ -146,6 +146,10 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Contains(firstResult.TurnId, requests[1]);
         Assert.Contains(priorSha, requests[1]);
         Assert.Contains("run-200", requests[1]);
+        Assert.Equal(nextSha, resumedResult.CandidateCommitSha);
+        Assert.Equal(firstResult.TurnId, resumedResult.PriorTurnId);
+        Assert.Single(resumedResult.Evidence);
+        Assert.Equal(priorSha, resumedResult.Evidence[0].CommitSha);
         Assert.NotEqual(firstResult.RequestFingerprint, resumedResult.RequestFingerprint);
     }
 
