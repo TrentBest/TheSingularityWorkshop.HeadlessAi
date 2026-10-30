@@ -249,4 +249,206 @@ public sealed class HeadlessAiAgentTurnComparisonTests
 
         Assert.Throws<ArgumentException>(comparison.Validate);
     }
+
+
+    [Fact]
+    public void Comparison_RejectsUnsupportedVersionAndInvalidCandidateSha()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => (Comparison() with { Version = 2 }).Validate());
+        Assert.Throws<ArgumentException>(() => (Comparison() with { CandidateCommitSha = "not-a-sha" }).Validate());
+    }
+
+    [Fact]
+    public void Comparison_RejectsEmptyAndOversizedProviderSets()
+    {
+        Assert.Throws<ArgumentException>(() => (Comparison() with { ProviderResults = [] }).Validate());
+        var tooMany = Enumerable.Range(0, 33)
+            .Select(index => Result("provider-" + index, "turn-" + index))
+            .ToArray();
+        Assert.Throws<ArgumentException>(() => (Comparison() with { ProviderResults = tooMany }).Validate());
+    }
+
+    [Theory]
+    [InlineData("task")]
+    [InlineData("correlation")]
+    [InlineData("repository")]
+    [InlineData("candidate")]
+    public void Comparison_RejectsProviderResultWithMismatchedProvenance(string mismatch)
+    {
+        var second = Result("provider-b", "turn-b");
+        second = mismatch switch
+        {
+            "task" => second with { TaskId = "other-task" },
+            "correlation" => second with { CorrelationId = "other-correlation" },
+            "repository" => second with { Repository = "Other/Repository" },
+            "candidate" => second with { CandidateCommitSha = Sha },
+            _ => second
+        };
+
+        Assert.Throws<ArgumentException>(() => (Comparison() with
+        {
+            ProviderResults = [Result("provider-a", "turn-a"), second]
+        }).Validate());
+    }
+
+    [Fact]
+    public void Comparison_RejectsDuplicateTurnIds()
+    {
+        var comparison = Comparison() with
+        {
+            ProviderResults = [Result("provider-a", "same-turn"), Result("provider-b", "same-turn")]
+        };
+
+        Assert.Throws<ArgumentException>(comparison.Validate);
+    }
+
+    [Fact]
+    public void Comparison_RejectsAssessmentForWrongProviderAndDuplicateAssessment()
+    {
+        var wrongProvider = new HeadlessAiProviderAssessment { ProviderId = "provider-b", TurnId = "turn-a" };
+        Assert.Throws<ArgumentException>(() => (Comparison() with { Assessments = [wrongProvider] }).Validate());
+
+        var duplicate = new HeadlessAiProviderAssessment { ProviderId = "provider-a", TurnId = "turn-a" };
+        Assert.Throws<ArgumentException>(() => (Comparison() with
+        {
+            Assessments = [duplicate, duplicate with { TurnId = "turn-b", ProviderId = "provider-a" }]
+        }).Validate());
+    }
+
+    [Fact]
+    public void Comparison_RejectsDuplicateFindingIdsAcrossAssessments()
+    {
+        var first = Assessment("provider-a", "turn-a", Finding("shared", "provider-a"));
+        var second = Assessment("provider-b", "turn-b", Finding("shared", "provider-b"));
+
+        Assert.Throws<ArgumentException>(() => (Comparison() with { Assessments = [first, second] }).Validate());
+    }
+
+    [Theory]
+    [InlineData(-0.01)]
+    [InlineData(1.01)]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    public void Assessment_RejectsConfidenceOutsideFiniteUnitInterval(double confidence)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => Assessment("provider-a", "turn-a") with
+        {
+            Confidence = confidence
+        }.Validate());
+    }
+
+    [Fact]
+    public void Assessment_RejectsInvalidFindingAttributionAndOversizedText()
+    {
+        Assert.Throws<ArgumentException>(() => Assessment("provider-a", "turn-a",
+            Finding("finding", "provider-b")).Validate());
+        Assert.Throws<ArgumentException>(() => Assessment("provider-a", "turn-a",
+            new HeadlessAiProviderFinding
+            {
+                FindingId = "finding",
+                ProviderId = "provider-a",
+                Statement = new string('x', 8_193)
+            }).Validate());
+        Assert.Throws<ArgumentException>(() => (Assessment("provider-a", "turn-a") with
+        {
+            Uncertainty = new string('x', 4_097)
+        }).Validate());
+    }
+
+    [Fact]
+    public void Assessment_RejectsEmptyAndOversizedTextEntries()
+    {
+        Assert.Throws<ArgumentException>(() => (Assessment("provider-a", "turn-a") with
+        {
+            Omissions = [" "]
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (Assessment("provider-a", "turn-a") with
+        {
+            EvidenceQualityNotes = [new string('x', 4_097)]
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (Assessment("provider-a", "turn-a") with
+        {
+            ProposedNextActions = [new string('x', 2_049)]
+        }).Validate());
+        var tooMany = Enumerable.Repeat("note", 129).ToArray();
+        Assert.Throws<ArgumentException>(() => (Assessment("provider-a", "turn-a") with
+        {
+            Omissions = tooMany
+        }).Validate());
+    }
+
+    [Theory]
+    [InlineData("unknown")]
+    [InlineData("")]
+    public void Relationship_RejectsUnsupportedKind(string kind)
+    {
+        var relationship = Relationship(kind, ["finding-a", "finding-b"]);
+        var comparison = WithTwoFindings(relationship);
+        Assert.Throws<ArgumentException>(comparison.Validate);
+    }
+
+    [Fact]
+    public void Relationship_RejectsDuplicateOrOutOfRangeFindingIds()
+    {
+        Assert.Throws<ArgumentException>(WithTwoFindings(
+            Relationship("agreement", ["finding-a", "finding-a"])).Validate);
+        var tooMany = Enumerable.Range(0, 33).Select(index => "finding-" + index).ToArray();
+        Assert.Throws<ArgumentException>(WithTwoFindings(
+            Relationship("agreement", tooMany)).Validate);
+    }
+
+    [Fact]
+    public void Relationship_RejectsMissingOrOversizedExplanation()
+    {
+        Assert.Throws<ArgumentException>(WithTwoFindings(
+            Relationship("agreement", ["finding-a", "finding-b"]) with { Explanation = " " }).Validate);
+        Assert.Throws<ArgumentException>(WithTwoFindings(
+            Relationship("agreement", ["finding-a", "finding-b"]) with
+            {
+                Explanation = new string('x', 4_097)
+            }).Validate);
+    }
+
+    [Fact]
+    public void Comparison_RejectsNullCollectionsAndNullEntries()
+    {
+        Assert.Throws<ArgumentNullException>(() => (Comparison() with
+        {
+            ProviderResults = null!
+        }).Validate());
+        Assert.Throws<ArgumentNullException>(() => (Comparison() with
+        {
+            Assessments = [null!]
+        }).Validate());
+        Assert.Throws<ArgumentNullException>(() => (Comparison() with
+        {
+            FindingRelationships = [null!]
+        }).Validate());
+        Assert.Throws<ArgumentNullException>(() => (Comparison() with
+        {
+            ProviderResults = [null!]
+        }).Validate());
+    }
+
+    private static HeadlessAiProviderAssessment Assessment(
+        string provider, string turn, params HeadlessAiProviderFinding[] findings)
+        => new() { ProviderId = provider, TurnId = turn, Findings = findings };
+
+    private static HeadlessAiProviderFinding Finding(string id, string provider)
+        => new() { FindingId = id, ProviderId = provider, Statement = "A bounded provider finding." };
+
+    private static HeadlessAiAgentTurnFindingRelationship Relationship(string kind, IReadOnlyList<string> ids)
+        => new() { Kind = kind, FindingIds = ids, Explanation = "A recorded cross-provider relationship." };
+
+    private static HeadlessAiAgentTurnComparison WithTwoFindings(HeadlessAiAgentTurnFindingRelationship relationship)
+        => Comparison() with
+        {
+            Assessments =
+            [
+                Assessment("provider-a", "turn-a", Finding("finding-a", "provider-a")),
+                Assessment("provider-b", "turn-b", Finding("finding-b", "provider-b"))
+            ],
+            FindingRelationships = [relationship]
+        };
+
 }
