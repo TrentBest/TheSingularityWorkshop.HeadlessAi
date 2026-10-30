@@ -50,6 +50,14 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsTaskVersionAboveBound()
+    {
+        var envelope = ValidEnvelope() with { TaskVersion = new string('v', 129) };
+
+        Assert.Throws<ArgumentException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
     public void Envelope_RejectsExpiredTurn()
     {
         var envelope = ValidEnvelope() with { ExpiresAt = Now };
