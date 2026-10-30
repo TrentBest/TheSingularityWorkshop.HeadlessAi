@@ -68,6 +68,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Equal(0.9, result.Proposal.Confidence);
         Assert.Equal("fixture-provider", result.ProviderId);
         Assert.Equal("fixture-model", result.ModelId);
+        Assert.Equal("fixture-profile", result.ConfigurationId);
         Assert.Equal("v1", result.ProviderVersion);
         Assert.Equal("stop", result.FinishReason);
         Assert.Equal(12, result.InputTokens);
