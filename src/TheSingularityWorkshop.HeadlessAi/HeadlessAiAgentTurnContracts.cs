@@ -115,7 +115,7 @@ public sealed record HeadlessAiAgentTurnEnvelope
     {
         string[] patterns =
         [
-            @"(?i)\bBearer\s+\\S{12,}",
+            @"(?i)\bBearer\s+\S{12,}",
             @"(?i)\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password)\s*[:=]\s*['"" ]?[^\s,'"" ]{8,}",
             @"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})\b"
         ];
