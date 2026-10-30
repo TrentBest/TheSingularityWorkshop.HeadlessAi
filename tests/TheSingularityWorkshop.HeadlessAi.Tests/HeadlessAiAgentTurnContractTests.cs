@@ -401,6 +401,19 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Result_RejectsEmptyMetadataKeysAndNullMetadataValues()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            ProviderMetadata = new Dictionary<string, string> { [string.Empty] = "value" }
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            ProviderMetadata = new Dictionary<string, string> { ["null-value"] = null! }
+        }).Validate());
+    }
+
+    [Fact]
     public void Result_RejectsOversizedRawResponseAndProviderMetadata()
     {
         Assert.Throws<ArgumentException>(() => (ValidResult() with
