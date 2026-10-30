@@ -7,7 +7,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     private const string Sha = "0123456789abcdef0123456789abcdef01234567";
     private static readonly DateTimeOffset Now = new(2026, 10, 30, 12, 0, 0, TimeSpan.Zero);
 
-    private static HeadlessAiAgentTurnResult Result(string provider, string turnId, string fingerprint = "same-request")
+    private static HeadlessAiAgentTurnResult Result(string provider, string turnId, string fingerprint = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         => new()
         {
             TurnId = turnId,
@@ -35,7 +35,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
         TaskVersion = "task-v1",
         CorrelationId = "correlation-1",
         Repository = "TrentBest/Example",
-        RequestFingerprint = "same-request",
+        RequestFingerprint = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         ProviderResults = [Result("provider-a", "turn-a"), Result("provider-b", "turn-b")]
     };
 
@@ -89,11 +89,20 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     }
 
     [Fact]
+    public void Comparison_RejectsMalformedRequestFingerprint()
+    {
+        Assert.Throws<ArgumentException>(() => (Comparison() with
+        {
+            RequestFingerprint = "not-a-sha256-digest"
+        }).Validate());
+    }
+
+    [Fact]
     public void Comparison_RejectsDifferentRequestFingerprints()
     {
         var comparison = Comparison() with
         {
-            ProviderResults = [Result("provider-a", "turn-a"), Result("provider-b", "turn-b", "different-request")]
+            ProviderResults = [Result("provider-a", "turn-a"), Result("provider-b", "turn-b", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")]
         };
 
         Assert.Throws<ArgumentException>(comparison.Validate);
