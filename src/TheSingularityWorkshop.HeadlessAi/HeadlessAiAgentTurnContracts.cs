@@ -93,12 +93,15 @@ public sealed record HeadlessAiAgentTurnEnvelope
             throw new ArgumentException("Evidence item count exceeds the configured limit.", nameof(Evidence));
         if (ContextReferences.Count > Limits.MaxContextReferences)
             throw new ArgumentException("Context reference count exceeds the configured limit.", nameof(ContextReferences));
-        var evidenceCommitSha = CandidateCommitSha ?? PriorCandidateCommitSha;
         foreach (var item in Evidence)
         {
             ArgumentNullException.ThrowIfNull(item);
             item.Validate(Repository);
-            if (evidenceCommitSha is null || !string.Equals(item.CommitSha, evidenceCommitSha, StringComparison.OrdinalIgnoreCase))
+            var matchesCurrent = CandidateCommitSha is not null &&
+                string.Equals(item.CommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase);
+            var matchesPrior = PriorCandidateCommitSha is not null &&
+                string.Equals(item.CommitSha, PriorCandidateCommitSha, StringComparison.OrdinalIgnoreCase);
+            if (!matchesCurrent && !matchesPrior)
                 throw new ArgumentException("CI evidence must be bound to the current or prior candidate SHA.", nameof(Evidence));
         }
         foreach (var reference in ContextReferences)
