@@ -56,6 +56,10 @@ public sealed record HeadlessAiAgentTurnEnvelope
     /// <summary>Validates structural bounds and provenance shape before an envelope is sent.</summary>
     public void Validate(DateTimeOffset now)
     {
+        ArgumentNullException.ThrowIfNull(Limits);
+        ArgumentNullException.ThrowIfNull(Evidence);
+        ArgumentNullException.ThrowIfNull(ContextReferences);
+        Limits.Validate();
         if (Version != CurrentVersion)
             throw new ArgumentOutOfRangeException(nameof(Version), $"Unsupported turn envelope version: {Version}.");
         Require(TaskId, nameof(TaskId), 128);
@@ -77,13 +81,16 @@ public sealed record HeadlessAiAgentTurnEnvelope
             throw new ArgumentException("Evidence item count exceeds the configured limit.", nameof(Evidence));
         if (ContextReferences.Count > Limits.MaxContextReferences)
             throw new ArgumentException("Context reference count exceeds the configured limit.", nameof(ContextReferences));
-        foreach (var item in Evidence) item.Validate(Repository);
+        foreach (var item in Evidence)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            item.Validate(Repository);
+        }
         foreach (var reference in ContextReferences) Require(reference, nameof(ContextReferences), Limits.MaxReferenceCharacters);
         if (IssueUrl is not null) ValidateHttpsUrl(IssueUrl, nameof(IssueUrl));
         if (PullRequestUrl is not null) ValidateHttpsUrl(PullRequestUrl, nameof(PullRequestUrl));
         if (PriorTurnId is not null) Require(PriorTurnId, nameof(PriorTurnId), 128);
         if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
-        Limits.Validate();
     }
 
     private static void Require(string value, string name, int max)
@@ -209,8 +216,10 @@ public sealed record HeadlessAiAgentTurnProposal
     public string? HumanDecisionRequired { get; init; }
 
     /// <summary>Validates proposal bounds without treating any field as trusted or executable.</summary>
+    /// <summary>Validates proposal bounds without treating any field as trusted or executable.</summary>
     public void Validate()
     {
+        ArgumentNullException.ThrowIfNull(Questions);
         if (Confidence is < 0 or > 1 || (Confidence.HasValue && double.IsNaN(Confidence.Value)))
             throw new ArgumentOutOfRangeException(nameof(Confidence), "Confidence must be between zero and one.");
         if (Questions.Count > 64 || Questions.Any(q => string.IsNullOrWhiteSpace(q) || q.Length > 2_048))
@@ -272,8 +281,11 @@ public sealed record HeadlessAiAgentTurnResult
     public long? OutputTokens { get; init; }
 
     /// <summary>Validates exchange identity, timing, metadata bounds, and normalized proposal.</summary>
+    /// <summary>Validates exchange identity, timing, metadata bounds, and normalized proposal.</summary>
     public void Validate()
     {
+        ArgumentNullException.ThrowIfNull(ProviderMetadata);
+        ArgumentNullException.ThrowIfNull(Proposal);
         if (string.IsNullOrWhiteSpace(TurnId) || string.IsNullOrWhiteSpace(TaskId) ||
             string.IsNullOrWhiteSpace(CorrelationId) || string.IsNullOrWhiteSpace(ProviderId) ||
             string.IsNullOrWhiteSpace(ModelId) || string.IsNullOrWhiteSpace(RequestFingerprint))
