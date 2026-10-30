@@ -50,6 +50,8 @@ public sealed class HeadlessAiAgentTurnExecutor
         envelope.Validate(startedAt);
 
         var canonicalRequest = JsonSerializer.Serialize(envelope, JsonOptions);
+        if (canonicalRequest.Length > envelope.Limits.MaxSerializedEnvelopeCharacters)
+            throw new ArgumentException("Serialized turn envelope exceeds the configured character limit.", nameof(envelope));
         var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalRequest))).ToLowerInvariant();
         var providerId = _template.Adapter.Id;
         var modelId = _template.Profile.Settings.TryGetValue("model", out var configuredModel) &&
