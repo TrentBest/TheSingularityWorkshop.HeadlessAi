@@ -164,6 +164,7 @@ public sealed class HeadlessAiAgentTurnExecutor
         {
             TurnId = Guid.NewGuid().ToString("N"),
             TaskId = envelope.TaskId,
+            ConversationId = envelope.ConversationId,
             TaskVersion = envelope.TaskVersion,
             CorrelationId = envelope.CorrelationId,
             EnvelopeVersion = envelope.Version,
@@ -204,6 +205,7 @@ public sealed class HeadlessAiAgentTurnExecutor
         {
             TurnId = Guid.NewGuid().ToString("N"),
             TaskId = envelope.TaskId,
+            ConversationId = envelope.ConversationId,
             TaskVersion = envelope.TaskVersion,
             CorrelationId = envelope.CorrelationId,
             EnvelopeVersion = envelope.Version,
