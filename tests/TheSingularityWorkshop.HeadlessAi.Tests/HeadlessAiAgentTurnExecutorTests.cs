@@ -120,7 +120,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             attempts++;
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("{\\"diagnosis\\":\\"unexpected\\"}")
+                Content = new StringContent("""{"diagnosis":"unexpected"}""")
             });
         }));
         var executor = CreateExecutor(client);
