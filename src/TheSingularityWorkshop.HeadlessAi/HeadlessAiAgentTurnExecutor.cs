@@ -41,18 +41,33 @@ public sealed class HeadlessAiAgentTurnExecutor
     /// <param name="envelope">Validated task turn, including bounded evidence references.</param>
     /// <param name="cancellationToken">Host cancellation token.</param>
     /// <returns>A normalized exchange result; provider and transport failures are represented as error results.</returns>
-    public async Task<HeadlessAiAgentTurnResult> ExecuteAsync(
+    public Task<HeadlessAiAgentTurnResult> ExecuteAsync(
         HeadlessAiAgentTurnEnvelope envelope,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(envelope);
+        var request = HeadlessAiAgentTurnRequest.Create(envelope, _timeProvider.GetUtcNow());
+        return ExecuteAsync(request, cancellationToken);
+    }
+
+    /// <summary>
+    /// Executes a previously created immutable request snapshot. Share the same request instance
+    /// across provider executors to guarantee identical canonical input and fingerprint.
+    /// </summary>
+    /// <param name="request">Validated immutable canonical request snapshot.</param>
+    /// <param name="cancellationToken">Host cancellation token.</param>
+    /// <returns>A normalized exchange result bound to the shared request fingerprint.</returns>
+    public async Task<HeadlessAiAgentTurnResult> ExecuteAsync(
+        HeadlessAiAgentTurnRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
         var startedAt = _timeProvider.GetUtcNow();
+        var envelope = request.Envelope;
         envelope.Validate(startedAt);
 
-        var canonicalRequest = JsonSerializer.Serialize(envelope, JsonOptions);
-        if (canonicalRequest.Length > envelope.Limits.MaxSerializedEnvelopeCharacters)
-            throw new ArgumentException("Serialized turn envelope exceeds the configured character limit.", nameof(envelope));
-        var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalRequest))).ToLowerInvariant();
+        var canonicalRequest = request.CanonicalPayload;
+        var fingerprint = request.Fingerprint;
         var providerId = _template.Adapter.Id;
         var modelId = _template.Profile.Settings.TryGetValue("model", out var configuredModel) &&
             !string.IsNullOrWhiteSpace(configuredModel)
