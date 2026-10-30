@@ -334,19 +334,20 @@ public sealed class HeadlessAiAgentTurnContractTests
     [Fact]
     public void Limits_RejectsNonPositiveBoundsAndAllowsDocumentedZeroCounts()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new HeadlessAiAgentTurnLimits
+        Assert.Throws<ArgumentOutOfRangeException>(() => (ValidEnvelope() with
         {
-            MaxPromptCharacters = 0
-        }.Validate());
-        Assert.Throws<ArgumentOutOfRangeException>(() => new HeadlessAiAgentTurnLimits
+            Limits = new HeadlessAiAgentTurnLimits { MaxPromptCharacters = 0 }
+        }).Validate(Now));
+        Assert.Throws<ArgumentOutOfRangeException>(() => (ValidEnvelope() with
         {
-            MaxProviderAttempts = 0
-        }.Validate());
-        new HeadlessAiAgentTurnLimits
+            Limits = new HeadlessAiAgentTurnLimits { MaxProviderAttempts = 0 }
+        }).Validate(Now));
+        (ValidEnvelope() with
         {
-            MaxEvidenceItems = 0,
-            MaxContextReferences = 0
-        }.Validate();
+            Evidence = [],
+            ContextReferences = [],
+            Limits = new HeadlessAiAgentTurnLimits { MaxEvidenceItems = 0, MaxContextReferences = 0 }
+        }).Validate(Now);
     }
 
     [Fact]
