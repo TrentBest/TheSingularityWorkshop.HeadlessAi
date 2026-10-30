@@ -248,6 +248,27 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.NotEqual(firstResult.ProviderId, secondResult.ProviderId);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_PreservesCompleteCodeRedOperationalPayload()
+    {
+        const string raw = """{"operationalStatus":"blocked","currentAction":"Waiting for CI credentials","blocker":"The host secret is unavailable","nextExpectedUpdate":"After the host confirms secret restoration","stopOrEscalateReason":"The provider cannot continue without host authorization","humanDecisionRequired":"Restore the CI secret through approved settings"}""";
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Null(result.ErrorCode);
+        Assert.Equal("blocked", result.Proposal.OperationalStatus);
+        Assert.Equal("Waiting for CI credentials", result.Proposal.CurrentAction);
+        Assert.Equal("The host secret is unavailable", result.Proposal.Blocker);
+        Assert.Equal("After the host confirms secret restoration", result.Proposal.NextExpectedUpdate);
+        Assert.Equal("The provider cannot continue without host authorization", result.Proposal.StopOrEscalateReason);
+        Assert.Equal("Restore the CI secret through approved settings", result.Proposal.HumanDecisionRequired);
+        Assert.Equal(raw, result.RawResponse);
+        result.Validate();
+    }
+
     private sealed class FixtureAdapter(string id) : IHeadlessAiAdapter
     {
         public string Id { get; } = id;
