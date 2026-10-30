@@ -12,6 +12,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
         {
             TurnId = turnId,
             TaskId = "task-1",
+            TaskVersion = "task-v1",
             CorrelationId = "correlation-1",
             Repository = "TrentBest/Example",
             AuthorizedBranch = "agent/fix",
@@ -29,6 +30,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     private static HeadlessAiAgentTurnComparison Comparison() => new()
     {
         TaskId = "task-1",
+        TaskVersion = "task-v1",
         CorrelationId = "correlation-1",
         Repository = "TrentBest/Example",
         RequestFingerprint = "same-request",
@@ -45,6 +47,21 @@ public sealed class HeadlessAiAgentTurnComparisonTests
         Assert.Equal(2, comparison.ProviderResults.Count);
         Assert.Equal(comparison.ProviderResults[0].RequestFingerprint,
             comparison.ProviderResults[1].RequestFingerprint);
+    }
+
+    [Fact]
+    public void Comparison_RejectsDifferentTaskVersions()
+    {
+        var comparison = Comparison() with
+        {
+            ProviderResults =
+            [
+                Result("provider-a", "turn-a"),
+                Result("provider-b", "turn-b") with { TaskVersion = "task-v2" }
+            ]
+        };
+
+        Assert.Throws<ArgumentException>(comparison.Validate);
     }
 
     [Fact]
