@@ -75,6 +75,81 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_HttpProviderFailureIsNormalizedWithoutAutomaticRetry()
+    {
+        var attempts = 0;
+        using var client = new HttpClient(new StubHandler((_, _) =>
+        {
+            attempts++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+            {
+                Content = new StringContent("rate limited")
+            });
+        }));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal(1, attempts);
+        Assert.Equal("http_429", result.ErrorCode);
+        Assert.Equal("rate limited", result.RawResponse);
+        Assert.Null(result.Proposal.PatchIntent);
+        result.Validate();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ResumesFromExplicitPriorTurnAndCandidateEvidence()
+    {
+        var requests = new List<string>();
+        const string raw = "{\"diagnosis\":\"continued from prior CI attempt\"}";
+        using var client = new HttpClient(new StubHandler(async (request, cancellationToken) =>
+        {
+            requests.Add(await request.Content!.ReadAsStringAsync(cancellationToken));
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(raw)
+            };
+        }));
+        var executor = CreateExecutor(client);
+        var firstEnvelope = CreateEnvelope() with { IdempotencyKey = "task-100-repair-1" };
+        var firstResult = await executor.ExecuteAsync(firstEnvelope);
+        const string priorSha = "0123456789abcdef0123456789abcdef01234567";
+        const string nextSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var resumedEnvelope = CreateEnvelope() with
+        {
+            CandidateCommitSha = nextSha,
+            PriorTurnId = firstResult.TurnId,
+            PriorCandidateCommitSha = priorSha,
+            IdempotencyKey = "task-100-repair-2",
+            Evidence =
+            [
+                new HeadlessAiEvidenceReference
+                {
+                    Repository = "TrentBest/HeadlessAi.Consumer",
+                    CommitSha = priorSha,
+                    WorkflowRunId = "run-200",
+                    Attempt = 2,
+                    WorkflowName = "Build and Test",
+                    JobName = "test",
+                    Conclusion = "failure",
+                    SourceUrl = "https://github.com/TrentBest/HeadlessAi.Consumer/actions/runs/200",
+                    ObservedAt = DateTimeOffset.UtcNow,
+                    BoundedSummary = "The previous candidate failed one test."
+                }
+            ]
+        };
+
+        var resumedResult = await executor.ExecuteAsync(resumedEnvelope);
+
+        Assert.Equal(firstResult.TaskId, resumedResult.TaskId);
+        Assert.Equal(firstResult.CorrelationId, resumedResult.CorrelationId);
+        Assert.Contains(firstResult.TurnId, requests[1]);
+        Assert.Contains(priorSha, requests[1]);
+        Assert.Contains("run-200", requests[1]);
+        Assert.NotEqual(firstResult.RequestFingerprint, resumedResult.RequestFingerprint);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_MalformedProviderJsonIsPreservedButProducesNoActionableProposal()
     {
         const string raw = "not-json";
