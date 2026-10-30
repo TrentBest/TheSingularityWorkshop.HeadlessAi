@@ -230,20 +230,39 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_UsesSameFingerprintForSameEnvelopeAcrossProviders()
+    public async Task ExecuteAsync_SharedImmutableRequestKeepsIdenticalPayloadAcrossProviders()
     {
         const string raw = "{\"diagnosis\":\"same input\"}";
-        using var firstClient = new HttpClient(new StubHandler((_, _) => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })));
-        using var secondClient = new HttpClient(new StubHandler((_, _) => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })));
+        string? firstPayload = null;
+        string? secondPayload = null;
+        using var firstClient = new HttpClient(new StubHandler(async (request, cancellationToken) =>
+        {
+            firstPayload = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) };
+        }));
+        using var secondClient = new HttpClient(new StubHandler(async (request, cancellationToken) =>
+        {
+            secondPayload = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) };
+        }));
         var first = CreateExecutor(firstClient, "provider-a");
         var second = CreateExecutor(secondClient, "provider-b");
-        var envelope = CreateEnvelope();
+        var contextReferences = new List<string> { "context://original" };
+        var envelope = CreateEnvelope() with { ContextReferences = contextReferences };
+        var request = HeadlessAiAgentTurnRequest.Create(envelope, DateTimeOffset.UtcNow);
 
-        var firstResult = await first.ExecuteAsync(envelope);
-        var secondResult = await second.ExecuteAsync(envelope);
+        contextReferences[0] = "context://mutated";
+        contextReferences.Add("context://added-after-snapshot");
 
+        var firstResult = await first.ExecuteAsync(request);
+        var secondResult = await second.ExecuteAsync(request);
+
+        Assert.Equal(request.CanonicalPayload, firstPayload);
+        Assert.Equal(firstPayload, secondPayload);
+        Assert.Contains("context://original", request.CanonicalPayload);
+        Assert.DoesNotContain("context://mutated", request.CanonicalPayload);
+        Assert.DoesNotContain("context://added-after-snapshot", request.CanonicalPayload);
+        Assert.Equal(request.Fingerprint, firstResult.RequestFingerprint);
         Assert.Equal(firstResult.RequestFingerprint, secondResult.RequestFingerprint);
         Assert.NotEqual(firstResult.ProviderId, secondResult.ProviderId);
     }
