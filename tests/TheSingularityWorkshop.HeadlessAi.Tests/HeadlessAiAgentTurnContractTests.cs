@@ -340,7 +340,7 @@ public sealed class HeadlessAiAgentTurnContractTests
             BaseCommitSha = Sha,
             ProviderId = "fixture",
             ModelId = "fixture-model",
-            RequestFingerprint = "sha256:request",
+            RequestFingerprint = new string('a', 64),
             StartedAt = Now,
             CompletedAt = Now.AddSeconds(1),
             RawResponse = "{\"diagnosis\":\"test failure\"}",
@@ -483,6 +483,15 @@ public sealed class HeadlessAiAgentTurnContractTests
         Assert.Throws<ArgumentException>(() => (ValidResult() with
         {
             ConfigurationId = new string('c', 129)
+        }).Validate());
+    }
+
+    [Fact]
+    public void Result_RejectsMalformedRequestFingerprint()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            RequestFingerprint = "sha256:not-a-full-digest"
         }).Validate());
     }
 
