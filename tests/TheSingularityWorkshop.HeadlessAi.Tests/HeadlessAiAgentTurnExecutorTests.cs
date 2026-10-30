@@ -315,9 +315,20 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         result.Validate();
     }
 
-    private sealed class FixtureAdapter(string id) : IHeadlessAiAdapter
+    private sealed class FixtureAdapter(
+        string id,
+        IReadOnlyDictionary<string, string>? metadata = null) : IHeadlessAiAdapter
     {
         public string Id { get; } = id;
+        private readonly IReadOnlyDictionary<string, string> _metadata = metadata ??
+            new Dictionary<string, string>
+            {
+                ["response_id"] = "fixture-response",
+                ["input_tokens"] = "12",
+                ["output_tokens"] = "8",
+                ["provider_version"] = "v1",
+                ["finish_reason"] = "stop"
+            };
 
         public HttpRequestMessage CreateRequest(HeadlessAiProfile profile, HeadlessAiInput input)
             => new(HttpMethod.Post, profile.Endpoint)
@@ -330,14 +341,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         {
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
             return new HeadlessAiOutput(content, response.StatusCode, response.Content.Headers.ContentType?.MediaType,
-                new Dictionary<string, string>
-                {
-                    ["response_id"] = "fixture-response",
-                    ["input_tokens"] = "12",
-                    ["output_tokens"] = "8",
-                    ["provider_version"] = "v1",
-                    ["finish_reason"] = "stop"
-                });
+                _metadata);
         }
     }
 
@@ -378,6 +382,36 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         redelivery.Validate();
     }
 
+
+    [Fact]
+    public async Task ExecuteAsync_CaseCollidingProviderMetadataIsNormalizedWithoutThrowing()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"diagnosis":"metadata is supplemental"}""")
+            })));
+        var metadata = new Dictionary<string, string>
+        {
+            ["finish_reason"] = "first-value",
+            ["FINISH_REASON"] = "second-value",
+            ["provider_version"] = "fixture-v2"
+        };
+        var template = new HeadlessAiAgentTemplate(
+            new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
+            new FixtureAdapter("fixture-provider", metadata));
+        var executor = new HeadlessAiAgentTurnExecutor(template, client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Null(result.ErrorCode);
+        Assert.Equal("first-value", result.FinishReason);
+        Assert.Equal("fixture-v2", result.ProviderVersion);
+        Assert.Equal("first-value", result.ProviderMetadata["finish_reason"]);
+        Assert.Single(result.ProviderMetadata.Keys.Where(key =>
+            string.Equals(key, "finish_reason", StringComparison.OrdinalIgnoreCase)));
+        result.Validate();
+    }
 
     [Fact]
     public async Task ExecuteAsync_TransportFailureIsNormalizedWithoutRawExceptionPayload()
