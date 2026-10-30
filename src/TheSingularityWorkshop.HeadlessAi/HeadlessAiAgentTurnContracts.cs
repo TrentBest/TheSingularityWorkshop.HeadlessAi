@@ -74,12 +74,18 @@ public sealed record HeadlessAiAgentTurnEnvelope
         ValidateSha(BaseCommitSha, nameof(BaseCommitSha));
         if (CandidateCommitSha is not null) ValidateSha(CandidateCommitSha, nameof(CandidateCommitSha));
         if (PriorCandidateCommitSha is not null) ValidateSha(PriorCandidateCommitSha, nameof(PriorCandidateCommitSha));
+        if ((PriorTurnId is null) != (PriorCandidateCommitSha is null))
+            throw new ArgumentException("Resumable turns must supply both the prior turn ID and prior candidate SHA.");
         Require(Role, nameof(Role), 128);
         Require(Instructions, nameof(Instructions), Limits.MaxInstructionCharacters);
         Require(CanonicalPrompt, nameof(CanonicalPrompt), Limits.MaxPromptCharacters);
         RejectCredentialLikeText(Instructions, nameof(Instructions));
         RejectCredentialLikeText(CanonicalPrompt, nameof(CanonicalPrompt));
-        if (ResponseSchema is not null) RejectCredentialLikeText(ResponseSchema, nameof(ResponseSchema));
+        if (ResponseSchema is not null)
+        {
+            Require(ResponseSchema, nameof(ResponseSchema), 16_384);
+            RejectCredentialLikeText(ResponseSchema, nameof(ResponseSchema));
+        }
         if (ExpiresAt <= now) throw new ArgumentException("The turn envelope has expired.", nameof(ExpiresAt));
         if (ExpiresAt - now > Limits.MaxLifetime)
             throw new ArgumentException("The turn expiry exceeds the configured maximum lifetime.", nameof(ExpiresAt));
@@ -87,10 +93,13 @@ public sealed record HeadlessAiAgentTurnEnvelope
             throw new ArgumentException("Evidence item count exceeds the configured limit.", nameof(Evidence));
         if (ContextReferences.Count > Limits.MaxContextReferences)
             throw new ArgumentException("Context reference count exceeds the configured limit.", nameof(ContextReferences));
+        var evidenceCommitSha = CandidateCommitSha ?? PriorCandidateCommitSha;
         foreach (var item in Evidence)
         {
             ArgumentNullException.ThrowIfNull(item);
             item.Validate(Repository);
+            if (evidenceCommitSha is null || !string.Equals(item.CommitSha, evidenceCommitSha, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("CI evidence must be bound to the current or prior candidate SHA.", nameof(Evidence));
         }
         foreach (var reference in ContextReferences)
         {
