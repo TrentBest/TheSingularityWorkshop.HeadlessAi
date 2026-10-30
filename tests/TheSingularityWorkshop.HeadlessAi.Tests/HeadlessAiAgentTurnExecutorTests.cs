@@ -66,6 +66,10 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Equal(0.9, result.Proposal.Confidence);
         Assert.Equal("fixture-provider", result.ProviderId);
         Assert.Equal("fixture-model", result.ModelId);
+        Assert.Equal("v1", result.ProviderVersion);
+        Assert.Equal("stop", result.FinishReason);
+        Assert.Equal(12, result.InputTokens);
+        Assert.Equal(8, result.OutputTokens);
         Assert.Equal(64, result.RequestFingerprint.Length);
         result.Validate();
     }
@@ -184,7 +188,9 @@ public sealed class HeadlessAiAgentTurnExecutorTests
                 {
                     ["response_id"] = "fixture-response",
                     ["input_tokens"] = "12",
-                    ["output_tokens"] = "8"
+                    ["output_tokens"] = "8",
+                    ["provider_version"] = "v1",
+                    ["finish_reason"] = "stop"
                 });
         }
     }
