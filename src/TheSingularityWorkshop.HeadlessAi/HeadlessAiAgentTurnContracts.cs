@@ -249,12 +249,13 @@ public sealed record HeadlessAiAgentTurnProposal
     public string? Uncertainty { get; init; }
     /// <summary>Reason to stop or request human intervention.</summary>
     public string? StopOrEscalateReason { get; init; }
-    /// <summary>Suggested operational status for the host to evaluate.</summary>
+    /// <summary>Suggested operational status for the host to evaluate; it does not change workflow state.</summary>
     public string? OperationalStatus { get; init; }
+    /// <summary>Concise description of the work currently being performed or proposed by the agent.</summary>
+    public string? CurrentAction { get; init; }
     /// <summary>Human decision or authorization requested by the model.</summary>
     public string? HumanDecisionRequired { get; init; }
 
-    /// <summary>Validates proposal bounds without treating any field as trusted or executable.</summary>
     /// <summary>Validates proposal bounds without treating any field as trusted or executable.</summary>
     public void Validate()
     {
@@ -268,6 +269,7 @@ public sealed record HeadlessAiAgentTurnProposal
         Check(Uncertainty, 4_096, nameof(Uncertainty));
         Check(StopOrEscalateReason, 4_096, nameof(StopOrEscalateReason));
         Check(OperationalStatus, 2_048, nameof(OperationalStatus));
+        Check(CurrentAction, 2_048, nameof(CurrentAction));
         Check(HumanDecisionRequired, 4_096, nameof(HumanDecisionRequired));
     }
 
