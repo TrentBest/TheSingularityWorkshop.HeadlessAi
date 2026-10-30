@@ -238,6 +238,27 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public void RequestFingerprint_BindsConversationAndTaskVersionIdentity()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var baseline = CreateEnvelope() with
+        {
+            ConversationId = "conversation-1",
+            TaskVersion = "task-v1"
+        };
+        var original = HeadlessAiAgentTurnRequest.Create(baseline, now);
+        var otherConversation = HeadlessAiAgentTurnRequest.Create(
+            baseline with { ConversationId = "conversation-2" }, now);
+        var otherTaskVersion = HeadlessAiAgentTurnRequest.Create(
+            baseline with { TaskVersion = "task-v2" }, now);
+
+        Assert.NotEqual(original.Fingerprint, otherConversation.Fingerprint);
+        Assert.NotEqual(original.Fingerprint, otherTaskVersion.Fingerprint);
+        Assert.Contains("\"conversationId\":\"conversation-1\"", original.CanonicalPayload);
+        Assert.Contains("\"taskVersion\":\"task-v1\"", original.CanonicalPayload);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_SharedImmutableRequestKeepsIdenticalPayloadAcrossProviders()
     {
         const string raw = "{\"diagnosis\":\"same input\"}";
