@@ -28,14 +28,14 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     private static HeadlessAiAgentTurnExecutor CreateExecutor(
-        HttpMessageHandler handler, string adapterId = "fixture-provider")
+        HttpClient client, string adapterId = "fixture-provider")
     {
         var profile = new HeadlessAiProfile(
             "fixture-profile",
             new Uri("https://provider.example.test/invoke"),
             settings: new Dictionary<string, string> { ["model"] = "fixture-model" });
         var template = new HeadlessAiAgentTemplate(profile, new FixtureAdapter(adapterId));
-        return new HeadlessAiAgentTurnExecutor(template, new HttpClient(handler));
+        return new HeadlessAiAgentTurnExecutor(template, client);
     }
 
     [Fact]
@@ -74,8 +74,9 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     public async Task ExecuteAsync_MalformedProviderJsonIsPreservedButProducesNoActionableProposal()
     {
         const string raw = "not-json";
-        var executor = CreateExecutor(new StubHandler((_, _) => Task.FromResult(
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })));
+        var executor = CreateExecutor(client);
 
         var result = await executor.ExecuteAsync(CreateEnvelope());
 
@@ -90,12 +91,13 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     public async Task ExecuteAsync_TimeoutReturnsBoundedFailureResultWithoutRetrying()
     {
         var attempts = 0;
-        var executor = CreateExecutor(new StubHandler(async (_, cancellationToken) =>
+        using var client = new HttpClient(new StubHandler(async (_, cancellationToken) =>
         {
             attempts++;
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }));
+        var executor = CreateExecutor(client);
 
         var result = await executor.ExecuteAsync(CreateEnvelope(TimeSpan.FromMilliseconds(20)));
 
@@ -108,11 +110,12 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     [Fact]
     public async Task ExecuteAsync_PropagatesCallerCancellation()
     {
-        var executor = CreateExecutor(new StubHandler(async (_, cancellationToken) =>
+        using var client = new HttpClient(new StubHandler(async (_, cancellationToken) =>
         {
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }));
+        var executor = CreateExecutor(client);
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
 
@@ -124,10 +127,12 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     public async Task ExecuteAsync_UsesSameFingerprintForSameEnvelopeAcrossProviders()
     {
         const string raw = "{\"diagnosis\":\"same input\"}";
-        var first = CreateExecutor(new StubHandler((_, _) => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })), "provider-a");
-        var second = CreateExecutor(new StubHandler((_, _) => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })), "provider-b");
+        using var firstClient = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })));
+        using var secondClient = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })));
+        var first = CreateExecutor(firstClient, "provider-a");
+        var second = CreateExecutor(secondClient, "provider-b");
         var envelope = CreateEnvelope();
 
         var firstResult = await first.ExecuteAsync(envelope);
