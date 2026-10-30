@@ -208,6 +208,7 @@ public sealed record HeadlessAiAgentTurnProposal
     /// <summary>Human decision or authorization requested by the model.</summary>
     public string? HumanDecisionRequired { get; init; }
 
+    /// <summary>Validates proposal bounds without treating any field as trusted or executable.</summary>
     public void Validate()
     {
         if (Confidence is < 0 or > 1 || (Confidence.HasValue && double.IsNaN(Confidence.Value)))
@@ -236,7 +237,9 @@ public sealed record HeadlessAiAgentTurnResult
 {
     /// <summary>Unique identifier for this exchange turn.</summary>
     public required string TurnId { get; init; }
+    /// <summary>Host-owned task identifier.</summary>
     public required string TaskId { get; init; }
+    /// <summary>Correlation identifier shared by resumable turns.</summary>
     public required string CorrelationId { get; init; }
     /// <summary>Provider adapter identity.</summary>
     public required string ProviderId { get; init; }
@@ -268,6 +271,7 @@ public sealed record HeadlessAiAgentTurnResult
     /// <summary>Provider-reported output token count, when available.</summary>
     public long? OutputTokens { get; init; }
 
+    /// <summary>Validates exchange identity, timing, metadata bounds, and normalized proposal.</summary>
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(TurnId) || string.IsNullOrWhiteSpace(TaskId) ||
