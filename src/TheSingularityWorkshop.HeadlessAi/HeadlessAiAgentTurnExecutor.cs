@@ -84,7 +84,8 @@ public sealed class HeadlessAiAgentTurnExecutor
         catch (HeadlessAiHttpException ex)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
-                $"http_{(int)ex.StatusCode}", ex.Message, ex.ResponseExcerpt);
+                ex.StatusCode is { } statusCode ? $"http_{(int)statusCode}" : "http_error",
+                ex.Message, ex.ResponseExcerpt);
         }
         catch (HttpRequestException ex)
         {
