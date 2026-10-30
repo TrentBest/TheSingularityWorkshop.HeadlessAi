@@ -565,7 +565,7 @@ public sealed class HeadlessAiAgentTurnContractTests
         BaseCommitSha = Sha,
         ProviderId = "fixture",
         ModelId = "fixture-model",
-        RequestFingerprint = "sha256:request",
+        RequestFingerprint = new string('a', 64),
         StartedAt = Now,
         CompletedAt = Now.AddSeconds(1),
         RawResponse = "{}",
