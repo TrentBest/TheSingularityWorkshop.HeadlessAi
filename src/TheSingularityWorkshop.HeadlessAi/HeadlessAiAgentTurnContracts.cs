@@ -370,6 +370,8 @@ public sealed record HeadlessAiAgentTurnResult
             string.IsNullOrWhiteSpace(CorrelationId) || string.IsNullOrWhiteSpace(ProviderId) ||
             string.IsNullOrWhiteSpace(ModelId) || string.IsNullOrWhiteSpace(RequestFingerprint))
             throw new ArgumentException("Turn identity, provider, model, and request fingerprint are required.");
+        if (!Regex.IsMatch(RequestFingerprint, "^[0-9a-fA-F]{64}$", RegexOptions.CultureInvariant))
+            throw new ArgumentException("Request fingerprint must be a full 64-character SHA-256 value.", nameof(RequestFingerprint));
         if (ConfigurationId is not null &&
             (string.IsNullOrWhiteSpace(ConfigurationId) || ConfigurationId.Length > 128))
             throw new ArgumentException("Configuration identity must be non-empty and limited to 128 characters.", nameof(ConfigurationId));
