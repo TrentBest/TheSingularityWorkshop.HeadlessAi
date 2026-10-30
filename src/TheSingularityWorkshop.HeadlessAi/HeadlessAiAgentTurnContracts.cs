@@ -328,6 +328,8 @@ public sealed record HeadlessAiAgentTurnResult
     public required string ProviderId { get; init; }
     /// <summary>Provider model identifier.</summary>
     public required string ModelId { get; init; }
+    /// <summary>Host configuration/profile identity used for this invocation; excludes settings and credentials.</summary>
+    public string? ConfigurationId { get; init; }
     /// <summary>Optional provider or API version.</summary>
     public string? ProviderVersion { get; init; }
     /// <summary>Stable fingerprint of the canonical request package.</summary>
@@ -363,6 +365,9 @@ public sealed record HeadlessAiAgentTurnResult
             string.IsNullOrWhiteSpace(CorrelationId) || string.IsNullOrWhiteSpace(ProviderId) ||
             string.IsNullOrWhiteSpace(ModelId) || string.IsNullOrWhiteSpace(RequestFingerprint))
             throw new ArgumentException("Turn identity, provider, model, and request fingerprint are required.");
+        if (ConfigurationId is not null &&
+            (string.IsNullOrWhiteSpace(ConfigurationId) || ConfigurationId.Length > 128))
+            throw new ArgumentException("Configuration identity must be non-empty and limited to 128 characters.", nameof(ConfigurationId));
         if (CompletedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.");
         if (TaskVersion is not null && (string.IsNullOrWhiteSpace(TaskVersion) || TaskVersion.Length > 128))
             throw new ArgumentException("Task version must be non-empty and limited to 128 characters.", nameof(TaskVersion));
