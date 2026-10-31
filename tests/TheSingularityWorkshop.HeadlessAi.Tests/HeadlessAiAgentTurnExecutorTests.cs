@@ -491,6 +491,43 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_InvalidAndExcessiveProviderMetadataIsDiscardedWithinContractBounds()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"diagnosis":"metadata is supplemental"}""")
+            })));
+        var metadata = new Dictionary<string, string>
+        {
+            [" "] = "blank key",
+            [new string('k', 129)] = "oversized key",
+            ["null-value"] = null!,
+            ["oversized-value"] = new string('v', 4_097)
+        };
+        for (var index = 0; index < 130; index++)
+            metadata[$"valid-{index:D3}"] = "retained";
+
+        var template = new HeadlessAiAgentTemplate(
+            new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
+            new FixtureAdapter("fixture-provider", metadata));
+        var executor = new HeadlessAiAgentTurnExecutor(template, client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Null(result.ErrorCode);
+        Assert.Equal(128, result.ProviderMetadata.Count);
+        Assert.DoesNotContain(" ", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain(new string('k', 129), result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("null-value", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("oversized-value", result.ProviderMetadata.Keys);
+        Assert.Contains("valid-000", result.ProviderMetadata.Keys);
+        Assert.Contains("valid-127", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("valid-128", result.ProviderMetadata.Keys);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_TransportFailureIsNormalizedWithoutRawExceptionPayload()
     {
         using var client = new HttpClient(new StubHandler((_, _) =>
