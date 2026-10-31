@@ -198,6 +198,29 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(corrupted, Now));
     }
 
+    [Fact]
+    public void Frame_RejectsStreamThatReportsMoreBytesThanTheProvidedBuffer()
+    {
+        using var invalid = new OverReportingBinaryStream();
+
+        Assert.Throws<InvalidDataException>(() =>
+            HeadlessAiAgentTurnBinaryCodec.UnpackRequest(invalid, Now));
+    }
+
+    private sealed class OverReportingBinaryStream : IBinaryStream
+    {
+        public bool CanRead => true;
+        public bool CanWrite => false;
+        public long Position { get; set; }
+        public long Length => 0;
+
+        public int Read(Span<byte> buffer) => checked(buffer.Length + 1);
+
+        public void Write(ReadOnlySpan<byte> buffer) => throw new NotSupportedException();
+        public void Flush() { }
+        public void Dispose() { }
+    }
+
     private sealed class PartialReadBinaryStream : IBinaryStream
     {
         private readonly byte[] _bytes;
