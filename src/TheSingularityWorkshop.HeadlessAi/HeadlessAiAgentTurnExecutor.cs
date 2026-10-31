@@ -84,6 +84,10 @@ public sealed class HeadlessAiAgentTurnExecutor
                     "invalid_adapter_response",
                     "The provider adapter returned no response content.", string.Empty);
             var completedAt = _timeProvider.GetUtcNow();
+            if (IsCredentialMetadata("provider_response", output.Content))
+                return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
+                    "sensitive_response",
+                    "The provider response contained credential-shaped material and was discarded.", string.Empty);
             if (output.Content.Length > 1_000_000)
                 return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                     "response_limit_exceeded",
