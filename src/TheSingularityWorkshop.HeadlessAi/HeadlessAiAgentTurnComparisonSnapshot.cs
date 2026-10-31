@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -48,7 +49,9 @@ public sealed class HeadlessAiAgentTurnComparisonSnapshot
         ArgumentNullException.ThrowIfNull(comparison);
         comparison.Validate();
 
-        var canonicalPayload = JsonSerializer.Serialize(comparison, JsonOptions);
+        var boundedWriter = new BoundedBufferWriter(MaxSerializedCharacters);
+        JsonSerializer.Serialize(boundedWriter, comparison, JsonOptions);
+        var canonicalPayload = Encoding.UTF8.GetString(boundedWriter.WrittenSpan);
         if (canonicalPayload.Length > MaxSerializedCharacters)
             throw new ArgumentException("Serialized comparison exceeds the 40-million-character snapshot limit.", nameof(comparison));
 
@@ -59,5 +62,55 @@ public sealed class HeadlessAiAgentTurnComparisonSnapshot
         var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalPayload)))
             .ToLowerInvariant();
         return new HeadlessAiAgentTurnComparisonSnapshot(snapshot, canonicalPayload, fingerprint);
+    }
+
+    private sealed class BoundedBufferWriter : IBufferWriter<byte>
+    {
+        private readonly int _maximumBytes;
+        private byte[] _buffer = new byte[16 * 1024];
+        private int _written;
+
+        public BoundedBufferWriter(int maximumBytes)
+        {
+            _maximumBytes = maximumBytes;
+        }
+
+        public ReadOnlySpan<byte> WrittenSpan => _buffer.AsSpan(0, _written);
+
+        public void Advance(int count)
+        {
+            if (count < 0 || count > _buffer.Length - _written)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            _written += count;
+        }
+
+        public Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            EnsureCapacity(sizeHint);
+            return _buffer.AsMemory(_written);
+        }
+
+        public Span<byte> GetSpan(int sizeHint = 0)
+        {
+            EnsureCapacity(sizeHint);
+            return _buffer.AsSpan(_written);
+        }
+
+        private void EnsureCapacity(int sizeHint)
+        {
+            if (sizeHint < 0)
+                throw new ArgumentOutOfRangeException(nameof(sizeHint));
+
+            var required = checked(_written + Math.Max(sizeHint, 1));
+            if (required > _maximumBytes)
+                throw new ArgumentException(
+                    "Serialized comparison exceeds the 40-million-character snapshot limit.");
+
+            if (required <= _buffer.Length)
+                return;
+
+            var doubled = Math.Min(_maximumBytes, _buffer.Length * 2);
+            Array.Resize(ref _buffer, Math.Max(required, doubled));
+        }
     }
 }
