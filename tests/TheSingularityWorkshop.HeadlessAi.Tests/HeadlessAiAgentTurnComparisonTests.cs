@@ -646,6 +646,27 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     }
 
     [Fact]
+    public void ComparisonSnapshot_StopsSerializationAtAggregatePayloadLimit()
+    {
+        var evidenceSummary = new string('e', 16_384);
+        var evidence = Enumerable.Range(0, 64)
+            .Select(_ => Evidence(evidenceSummary))
+            .ToArray();
+        var rawResponse = new string('r', 1_000_000);
+        var providerResults = Enumerable.Range(0, 32)
+            .Select(index => Result($"provider-{index}", $"turn-{index}") with
+            {
+                CandidateCommitSha = Sha,
+                Evidence = evidence,
+                RawResponse = rawResponse
+            })
+            .ToArray();
+        var comparison = Comparison() with { ProviderResults = providerResults };
+
+        Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnComparisonSnapshot.Create(comparison));
+    }
+
+    [Fact]
     public void ComparisonSnapshot_RejectsInvalidComparisonBeforeSnapshotting()
     {
         var invalid = Comparison() with
