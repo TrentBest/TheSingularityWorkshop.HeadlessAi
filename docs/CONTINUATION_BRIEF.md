@@ -54,13 +54,14 @@ The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload len
 - Repository: `TrentBest/TheSingularityWorkshop.HeadlessAi`.
 - Active work: PR [#11 — Add versioned resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/11).
 - PR #11 is open and draft, from `feature/resumable-agent-turn-contracts` into `development`.
-- Latest code/test head recorded here: `c630fb8168bedfc80dd659e9b48178c0601bbcf3`.
-- [Run #485](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41173879337) passed restore, build, tests with coverage, Codecov upload, pack, package audit, clean-consumer verification, and artifact upload after expanding evidence-provenance mismatch coverage.
-- [Run #486](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41173964512) passed the same verification pipeline after canonical provider-metadata ordering and its regression test.
-- The refreshed Codecov PR comment reports 94.36090% patch coverage with 45 changed lines missing coverage. File-level counts remain available in the PR comment; exact line-level details are not exposed through the available GitHub connection. Do not add tests solely to chase 100%; inspect meaningful behavioral gaps.
-- The latest runs contain only the verification job; no NuGet publication was performed.
+- Verified head before this documentation/test update: `c87386f0deb5f2f9f8a34dadc6811f2d59727c9f`.
+- [Run #487](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41174034167) completed successfully on that exact head. The `verify` job passed restore, build, tests with coverage, Codecov upload, pack, package audit, clean-consumer verification, and artifact upload.
+- The `publish_nuget` job was skipped. No package was published.
+- The previous Codecov comment recorded 94.36090% patch coverage and 45 changed lines missing coverage; that report predates the latest changes and is not represented as current coverage.
+- A targeted binary-codec review found that comparison snapshots had round-trip coverage but lacked malformed-frame regression coverage equivalent to the request-frame tests. The current update adds comparison-specific tests for unsupported versions, payload tampering, wrong frame kind, truncated headers/payloads, invalid UTF-8 with a matching digest, oversized declared lengths, noncanonical JSON with a matching digest, and invalid comparison provenance with a correctly framed/checksummed payload.
+- The implementation itself already shares the bounded frame reader/writer and revalidates comparison snapshots on unpack; this was a coverage gap, not a demonstrated codec defect.
 
-No merge, release, NuGet publication, or writes to `master` / `development` are authorized by this brief.
+No merge, release, NuGet publication, or writes to `master` / `development` are included.
 
 ## Next logical work
 

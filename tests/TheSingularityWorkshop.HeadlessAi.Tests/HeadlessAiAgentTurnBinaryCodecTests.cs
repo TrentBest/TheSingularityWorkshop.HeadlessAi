@@ -360,4 +360,101 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         public void Dispose() { }
     }
 
+
+    [Fact]
+    public void ComparisonFrame_RejectsUnsupportedVersion()
+    {
+        var bytes = PackComparisonFrame();
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(5, 2), 99);
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+    }
+
+    [Fact]
+    public void ComparisonFrame_RejectsPayloadTampering()
+    {
+        var bytes = PackComparisonFrame();
+        bytes[^1] ^= 0x01;
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+    }
+
+    [Fact]
+    public void ComparisonFrame_RejectsRequestFrameKind()
+    {
+        var bytes = PackRequestFrame();
+        using var wrongKind = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(wrongKind));
+    }
+
+    [Fact]
+    public void ComparisonFrame_RejectsTruncatedHeaderAndPayload()
+    {
+        var bytes = PackComparisonFrame();
+        using var truncatedHeader = new MemoryBinaryStream(bytes[..20]);
+        using var truncatedPayload = new MemoryBinaryStream(bytes[..^1]);
+
+        Assert.Throws<EndOfStreamException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(truncatedHeader));
+        Assert.Throws<EndOfStreamException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(truncatedPayload));
+    }
+
+    [Fact]
+    public void ComparisonFrame_RejectsInvalidUtf8EvenWhenDigestMatches()
+    {
+        var bytes = PackComparisonFrame();
+        bytes[43] = 0xff;
+        SHA256.HashData(bytes.AsSpan(43), bytes.AsSpan(11, 32));
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+    }
+
+    [Fact]
+    public void ComparisonFrame_RejectsPayloadLengthAboveTheComparisonLimitBeforeAllocating()
+    {
+        var bytes = PackComparisonFrame();
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(7, 4), 40_000_001);
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+    }
+
+    [Fact]
+    public void ComparisonFrame_RejectsNonCanonicalJsonEvenWhenDigestMatches()
+    {
+        var original = PackComparisonFrame();
+        var payload = original[43..].Concat(new byte[] { (byte)' ' }).ToArray();
+        var framed = Reframe(original, payload);
+        using var corrupted = new MemoryBinaryStream(framed);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+    }
+
+    [Fact]
+    public void ComparisonFrame_RejectsInvalidComparisonEvenWhenFrameDigestMatches()
+    {
+        var original = PackComparisonFrame();
+        var json = System.Text.Encoding.UTF8.GetString(original, 43, original.Length - 43);
+        const string originalCorrelation = "\"correlationId\":\"correlation-1\"";
+        const string changedCorrelation = "\"correlationId\":\"different-correlation\"";
+        Assert.Contains(originalCorrelation, json);
+        var payload = System.Text.Encoding.UTF8.GetBytes(
+            json.Replace(originalCorrelation, changedCorrelation, StringComparison.Ordinal));
+        var framed = Reframe(original, payload);
+        using var corrupted = new MemoryBinaryStream(framed);
+
+        Assert.ThrowsAny<Exception>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+    }
+
+    private static byte[] PackComparisonFrame()
+    {
+        var snapshot = HeadlessAiAgentTurnComparisonSnapshot.Create(Comparison());
+        using var stream = new MemoryBinaryStream();
+        HeadlessAiAgentTurnBinaryCodec.PackComparison(snapshot, stream);
+        return stream.ToArray();
+    }
+
 }
