@@ -99,7 +99,7 @@ public sealed class HeadlessAiAgentTurnExecutor
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
                 "The turn exceeded its configured timeout.", string.Empty);
         }
-        catch (TimeoutException ex)
+        catch (TimeoutException)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
                 "The provider request timed out.", string.Empty);
@@ -110,12 +110,12 @@ public sealed class HeadlessAiAgentTurnExecutor
                 ex.StatusCode is { } statusCode ? $"http_{(int)statusCode}" : "http_error",
                 "The provider returned a non-success HTTP response.", SanitizeErrorResponseExcerpt(ex.ResponseExcerpt));
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                 "transport_error", "The provider transport request failed.", string.Empty);
         }
-        catch (InvalidDataException ex)
+        catch (InvalidDataException)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                 "response_limit_exceeded", "The provider response exceeded a configured size limit.", string.Empty);
@@ -135,7 +135,7 @@ public sealed class HeadlessAiAgentTurnExecutor
                 ?? throw new JsonException("The provider returned an empty proposal.");
             proposal.Validate();
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
             proposal = new HeadlessAiAgentTurnProposal
             {
@@ -145,7 +145,7 @@ public sealed class HeadlessAiAgentTurnExecutor
             errorCode = "malformed_response";
             diagnostic = "The provider response was not valid JSON for the requested proposal schema.";
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
             proposal = new HeadlessAiAgentTurnProposal
             {
@@ -153,7 +153,7 @@ public sealed class HeadlessAiAgentTurnExecutor
                 StopOrEscalateReason = "An invalid provider proposal must be reviewed; no action is proposed."
             };
             errorCode = "invalid_proposal";
-            diagnostic = "The provider proposal failed contract validation." ;
+            diagnostic = "The provider proposal failed contract validation.";
         }
 
         // Provider metadata is untrusted. Keep the first spelling when a provider supplies
