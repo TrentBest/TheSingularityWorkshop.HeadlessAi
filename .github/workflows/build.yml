@@ -93,7 +93,7 @@ jobs:
               assert value('readme') == 'README.md', f"Unexpected package README metadata: {value('readme')}"
               dependency_nodes = root.findall('.//{*}dependency')
               approved_dependencies = {
-                  'TheSingularityWorkshop.FSM_Serialization': '[1.0.0, )',
+                  'TheSingularityWorkshop.FSM_Serialization': '1.0.0',
               }
               actual_dependencies = {node.attrib.get('id'): node.attrib.get('version') for node in dependency_nodes}
               assert actual_dependencies == approved_dependencies, (
