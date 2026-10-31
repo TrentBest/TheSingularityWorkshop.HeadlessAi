@@ -607,7 +607,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     public async Task ExecuteAsync_TransportFailureIsNormalizedWithoutRawExceptionPayload()
     {
         using var client = new HttpClient(new StubHandler((_, _) =>
-            Task.FromException<HttpResponseMessage>(new HttpRequestException("connection unavailable"))));
+            Task.FromException<HttpResponseMessage>(new HttpRequestException("connection unavailable: internal-route-detail-987654"))));
         var executor = CreateExecutor(client);
 
         var result = await executor.ExecuteAsync(CreateEnvelope());
@@ -616,7 +616,8 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Equal("fixture-profile", result.ConfigurationId);
         Assert.Equal("error", result.FinishReason);
         Assert.Equal(string.Empty, result.RawResponse);
-        Assert.Contains("connection unavailable", result.Diagnostic);
+        Assert.Equal("The provider transport request failed.", result.Diagnostic);
+        Assert.DoesNotContain("internal-route-detail-987654", result.Diagnostic);
         result.Validate();
     }
 
@@ -624,13 +625,14 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     public async Task ExecuteAsync_TimeoutExceptionIsNormalized()
     {
         using var client = new HttpClient(new StubHandler((_, _) =>
-            Task.FromException<HttpResponseMessage>(new TimeoutException("provider deadline elapsed"))));
+            Task.FromException<HttpResponseMessage>(new TimeoutException("provider deadline elapsed; internal-header-detail-987654"))));
         var executor = CreateExecutor(client);
 
         var result = await executor.ExecuteAsync(CreateEnvelope());
 
         Assert.Equal("timeout", result.ErrorCode);
-        Assert.Contains("provider deadline elapsed", result.Diagnostic);
+        Assert.Equal("The provider request timed out.", result.Diagnostic);
+        Assert.DoesNotContain("internal-header-detail-987654", result.Diagnostic);
         result.Validate();
     }
 
