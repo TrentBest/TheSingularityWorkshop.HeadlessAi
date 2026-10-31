@@ -30,6 +30,8 @@ The envelope is data, not authority. Validation requires an isolated feature bra
 Create the envelope in the host, validate and snapshot it once, then pass that same request snapshot to each provider executor. Sharing the request guarantees that every provider receives identical canonical input and the same request fingerprint.
 
 ```csharp
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using TheSingularityWorkshop.HeadlessAi;
 
@@ -54,15 +56,15 @@ var request = HeadlessAiAgentTurnRequest.Create(envelope, now);
 using var httpClient = new HttpClient();
 var profile = new HeadlessAiProfile(
     id: "provider-profile",
-    endpoint: new Uri("https://provider.example.test/invoke"),
+    endpoint: new Uri("https://api.openai.com/v1/responses"),
     settings: new Dictionary<string, string> { ["model"] = "configured-model" });
 
-var template = new HeadlessAiAgentTemplate(profile, yourProtocolAdapter);
+var template = new HeadlessAiAgentTemplate(profile, new OpenAiResponsesAdapter());
 var executor = new HeadlessAiAgentTurnExecutor(template, httpClient);
 var result = await executor.ExecuteAsync(request);
 ```
 
-Replace the example endpoint and adapter with the provider's documented protocol and configure authentication through the host's request-time header provider. This is an integration shape, not a live-provider sample.
+Configure authentication through the host's request-time header provider before running this example. The adapter and endpoint shown target the OpenAI Responses API; the sample omits the credential provider for brevity.
 
 The executor performs one invocation. It does not retry automatically. Host cancellation propagates; the envelope's timeout bounds the invocation. Transport and provider failures are normalized into result data where defined. A malformed or invalid model proposal remains non-actionable; consumers must validate all output independently.
 
