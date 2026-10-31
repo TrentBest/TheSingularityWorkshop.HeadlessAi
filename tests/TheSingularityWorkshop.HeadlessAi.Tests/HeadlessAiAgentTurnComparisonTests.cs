@@ -378,6 +378,19 @@ public sealed class HeadlessAiAgentTurnComparisonTests
         }).Validate());
     }
 
+    [Theory]
+    [InlineData("issue")]
+    [InlineData("pull-request")]
+    public void Result_RejectsNonHttpsTaskLinks(string link)
+    {
+        var result = Result("provider-a", "turn-a");
+        result = link == "issue"
+            ? result with { IssueUrl = "http://github.com/TrentBest/Example/issues/1" }
+            : result with { PullRequestUrl = "/TrentBest/Example/pull/1" };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+    }
+
     [Fact]
     public void Comparison_RejectsDuplicateTurnIds()
     {
