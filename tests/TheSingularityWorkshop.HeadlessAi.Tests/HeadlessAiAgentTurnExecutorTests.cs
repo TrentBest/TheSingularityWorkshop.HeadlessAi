@@ -528,6 +528,42 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_CredentialShapedProviderMetadataIsDiscarded()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"diagnosis":"metadata is supplemental"}""")
+            })));
+        var metadata = new Dictionary<string, string>
+        {
+            ["authorization"] = "Bearer provider-secret-value-12345",
+            ["x-api-key"] = "provider-secret-value-12345",
+            ["client_secret"] = "provider-secret-value-12345",
+            ["access_token"] = "provider-secret-value-12345",
+            ["diagnostic"] = "Bearer provider-secret-value-12345",
+            ["input_tokens"] = "12",
+            ["finish_reason"] = "stop"
+        };
+        var template = new HeadlessAiAgentTemplate(
+            new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
+            new FixtureAdapter("fixture-provider", metadata));
+        var executor = new HeadlessAiAgentTurnExecutor(template, client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.DoesNotContain("authorization", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("x-api-key", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("client_secret", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("access_token", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("diagnostic", result.ProviderMetadata.Keys);
+        Assert.Equal("12", result.ProviderMetadata["input_tokens"]);
+        Assert.Equal(12, result.InputTokens);
+        Assert.Equal("stop", result.FinishReason);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_TransportFailureIsNormalizedWithoutRawExceptionPayload()
     {
         using var client = new HttpClient(new StubHandler((_, _) =>
