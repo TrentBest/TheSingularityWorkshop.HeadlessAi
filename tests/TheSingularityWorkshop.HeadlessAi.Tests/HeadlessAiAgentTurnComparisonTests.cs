@@ -329,32 +329,45 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     [InlineData("idempotency-key")]
     [InlineData("issue-url")]
     [InlineData("pull-request-url")]
-    [InlineData("evidence")]
+    [InlineData("evidence-repository")]
+    [InlineData("evidence-commit")]
+    [InlineData("evidence-run-id")]
+    [InlineData("evidence-attempt")]
+    [InlineData("evidence-workflow-name")]
+    [InlineData("evidence-job-name")]
+    [InlineData("evidence-step-name")]
+    [InlineData("evidence-conclusion")]
+    [InlineData("evidence-source-url")]
     [InlineData("evidence-observed-offset")]
+    [InlineData("evidence-summary")]
     public void Comparison_RejectsProviderResultWithMismatchedProvenance(string mismatch)
     {
         var first = Result("provider-a", "turn-a");
         var second = Result("provider-b", "turn-b");
-        if (mismatch is "evidence" or "evidence-observed-offset")
+        if (mismatch.StartsWith("evidence-", StringComparison.Ordinal))
         {
             first = first with
             {
                 CandidateCommitSha = Sha,
                 Evidence = [Evidence("first-provider evidence")]
             };
-            second = second with
+            var evidence = Evidence("first-provider evidence");
+            evidence = mismatch switch
             {
-                CandidateCommitSha = Sha,
-                Evidence =
-                [
-                    mismatch == "evidence"
-                        ? Evidence("different provider evidence")
-                        : Evidence("first-provider evidence") with
-                        {
-                            ObservedAt = Now.ToOffset(TimeSpan.FromHours(-7))
-                        }
-                ]
+                "evidence-repository" => evidence with { Repository = "TRENTBEST/EXAMPLE" },
+                "evidence-commit" => evidence with { CommitSha = Sha.ToUpperInvariant() },
+                "evidence-run-id" => evidence with { WorkflowRunId = "run-456" },
+                "evidence-attempt" => evidence with { Attempt = 2 },
+                "evidence-workflow-name" => evidence with { WorkflowName = "CI (alternate)" },
+                "evidence-job-name" => evidence with { JobName = "Build" },
+                "evidence-step-name" => evidence with { StepName = "Test" },
+                "evidence-conclusion" => evidence with { Conclusion = "failure" },
+                "evidence-source-url" => evidence with { SourceUrl = "https://github.com/TrentBest/Example/actions/runs/456" },
+                "evidence-observed-offset" => evidence with { ObservedAt = Now.ToOffset(TimeSpan.FromHours(-7)) },
+                "evidence-summary" => evidence with { BoundedSummary = "different provider evidence" },
+                _ => evidence
             };
+            second = second with { CandidateCommitSha = Sha, Evidence = [evidence] };
         }
 
         second = mismatch switch
