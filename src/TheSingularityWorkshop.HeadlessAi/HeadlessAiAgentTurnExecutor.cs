@@ -167,7 +167,8 @@ public sealed class HeadlessAiAgentTurnExecutor
                 // Provider metadata is supplemental. Drop malformed or oversized entries
                 // rather than allowing untrusted adapter data to invalidate the result.
                 if (string.IsNullOrWhiteSpace(pair.Key) || pair.Key.Length > 128 ||
-                    pair.Value is null || pair.Value.Length > 4_096)
+                    pair.Value is null || pair.Value.Length > 4_096 ||
+                    IsCredentialMetadata(pair.Key, pair.Value))
                     continue;
                 if (metadata.ContainsKey(pair.Key))
                     continue;
@@ -251,6 +252,27 @@ public sealed class HeadlessAiAgentTurnExecutor
             Diagnostic = diagnostic,
             ErrorCode = errorCode
         };
+
+    private static bool IsCredentialMetadata(string key, string value)
+    {
+        var normalizedKey = key.Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .Replace(".", string.Empty, StringComparison.Ordinal);
+
+        if (normalizedKey.Contains("authorization", StringComparison.OrdinalIgnoreCase) ||
+            normalizedKey.Contains("apikey", StringComparison.OrdinalIgnoreCase) ||
+            normalizedKey.Contains("accesstoken", StringComparison.OrdinalIgnoreCase) ||
+            normalizedKey.Contains("refreshtoken", StringComparison.OrdinalIgnoreCase) ||
+            normalizedKey.Contains("clientsecret", StringComparison.OrdinalIgnoreCase) ||
+            normalizedKey.Contains("password", StringComparison.OrdinalIgnoreCase) ||
+            normalizedKey.Contains("credential", StringComparison.OrdinalIgnoreCase) ||
+            normalizedKey.Contains("secret", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return System.Text.RegularExpressions.Regex.IsMatch(value,
+            @"(?i)\\bBearer\\s+\\S{12,}|\\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password)\\s*[:=]\\s*['"" ]?[^\\s,'"" ]{8,}",
+            System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+    }
 
     private static long? ReadTokenCount(IReadOnlyDictionary<string, string> metadata, params string[] keys)
     {
