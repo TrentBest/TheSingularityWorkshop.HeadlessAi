@@ -542,6 +542,28 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_ResponseWithinProfileLimitButAboveResultLimitIsNormalized()
+    {
+        var oversized = new string('x', 1_000_001);
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(oversized)
+            })));
+        var profile = new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke"),
+            maxResponseBytes: 2_000_000);
+        var executor = new HeadlessAiAgentTurnExecutor(
+            new HeadlessAiAgentTemplate(profile, new FixtureAdapter("fixture-provider")), client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal("response_limit_exceeded", result.ErrorCode);
+        Assert.Equal(string.Empty, result.RawResponse);
+        Assert.Null(result.Proposal.PatchIntent);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_InvalidNormalizedProposalIsRetainedAsNonActionableFailure()
     {
         const string raw = """{"confidence":1.5,"patchIntent":"unsafe proposal"}""";
