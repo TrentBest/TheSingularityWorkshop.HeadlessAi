@@ -50,6 +50,17 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsOversizedTaskUrl()
+    {
+        var envelope = ValidEnvelope() with
+        {
+            IssueUrl = "https://example.com/" + new string('a', 2_048)
+        };
+
+        Assert.Throws<ArgumentException>(() => envelope.Validate(Now));
+    }
+
+    [Fact]
     public void Envelope_RejectsConversationIdentityAboveBound()
     {
         var envelope = ValidEnvelope() with { ConversationId = new string('c', 129) };
