@@ -132,7 +132,17 @@ jobs:
           consumer_dir="$(mktemp -d)"
           trap 'rm -rf "$consumer_dir"' EXIT
           dotnet new console --framework net8.0 --output "$consumer_dir" --no-restore
-          dotnet add "$consumer_dir" package "$package_id" --version "$package_version" --source "$PWD/artifacts" --source "https://api.nuget.org/v3/index.json"
+          cat > "$consumer_dir/NuGet.Config" <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <clear />
+              <add key="local-artifacts" value="$PWD/artifacts" />
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+            </packageSources>
+          </configuration>
+          EOF
+          dotnet add "$consumer_dir" package "$package_id" --version "$package_version"
           dotnet build "$consumer_dir" --configuration Release
 
       - name: Upload package artifact
