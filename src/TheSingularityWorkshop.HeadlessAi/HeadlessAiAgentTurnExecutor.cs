@@ -108,7 +108,7 @@ public sealed class HeadlessAiAgentTurnExecutor
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                 ex.StatusCode is { } statusCode ? $"http_{(int)statusCode}" : "http_error",
-                ex.Message, ex.ResponseExcerpt);
+                ex.Message, SanitizeErrorResponseExcerpt(ex.ResponseExcerpt));
         }
         catch (HttpRequestException ex)
         {
@@ -252,6 +252,14 @@ public sealed class HeadlessAiAgentTurnExecutor
             Diagnostic = diagnostic,
             ErrorCode = errorCode
         };
+
+    private static string SanitizeErrorResponseExcerpt(string? excerpt)
+    {
+        if (string.IsNullOrEmpty(excerpt) || IsCredentialMetadata("response_excerpt", excerpt))
+            return string.Empty;
+
+        return excerpt;
+    }
 
     private static bool IsCredentialMetadata(string key, string value)
     {
