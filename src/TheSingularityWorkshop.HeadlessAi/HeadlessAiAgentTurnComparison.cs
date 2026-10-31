@@ -94,6 +94,9 @@ public sealed record HeadlessAiAgentTurnComparison
             }
         }
 
+        if (FindingRelationships.Count > 512)
+            throw new ArgumentException("A comparison is limited to 512 finding relationships.", nameof(FindingRelationships));
+
         foreach (var relationship in FindingRelationships)
         {
             ArgumentNullException.ThrowIfNull(relationship);
@@ -212,8 +215,9 @@ public sealed record HeadlessAiAgentTurnFindingRelationship
             throw new ArgumentException("Relationship kind must be agreement or disagreement.", nameof(Kind));
         ArgumentNullException.ThrowIfNull(FindingIds);
         if (FindingIds.Count < 2 || FindingIds.Count > 32 ||
+            FindingIds.Any(string.IsNullOrWhiteSpace) ||
             FindingIds.Distinct(StringComparer.Ordinal).Count() != FindingIds.Count)
-            throw new ArgumentException("A finding relationship requires two to 32 distinct finding IDs.", nameof(FindingIds));
+            throw new ArgumentException("A finding relationship requires two to 32 non-empty, distinct finding IDs.", nameof(FindingIds));
         var providers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var id in FindingIds)
         {
