@@ -77,8 +77,8 @@ public sealed record HeadlessAiAgentTurnComparison
                 !string.Equals(result.IdempotencyKey, firstResult.IdempotencyKey, StringComparison.Ordinal) ||
                 !string.Equals(result.IssueUrl, firstResult.IssueUrl, StringComparison.Ordinal) ||
                 !string.Equals(result.PullRequestUrl, firstResult.PullRequestUrl, StringComparison.Ordinal) ||
-                !result.Evidence.SequenceEqual(firstResult.Evidence))
-                throw new ArgumentException("Every provider result must belong to the same task, conversation, task version, correlation, repository, candidate, and canonical request.");
+                !HaveSameEvidence(result.Evidence, firstResult.Evidence))
+                throw new ArgumentException("Every provider result must preserve identical task, request, repository, branch, commit, resume, idempotency, issue, pull-request, and CI evidence provenance.");
             if (!providerIds.Add(result.ProviderId))
                 throw new ArgumentException("A provider may appear only once in a comparison.", nameof(ProviderResults));
             if (!resultsByTurn.TryAdd(result.TurnId, result))
@@ -111,6 +111,34 @@ public sealed record HeadlessAiAgentTurnComparison
             ArgumentNullException.ThrowIfNull(relationship);
             relationship.Validate(findingsById);
         }
+    }
+
+    private static bool HaveSameEvidence(
+        IReadOnlyList<HeadlessAiEvidenceReference> left,
+        IReadOnlyList<HeadlessAiEvidenceReference> right)
+    {
+        if (left.Count != right.Count)
+            return false;
+
+        for (var index = 0; index < left.Count; index++)
+        {
+            var first = left[index];
+            var second = right[index];
+            if (!string.Equals(first.Repository, second.Repository, StringComparison.Ordinal) ||
+                !string.Equals(first.CommitSha, second.CommitSha, StringComparison.Ordinal) ||
+                !string.Equals(first.WorkflowRunId, second.WorkflowRunId, StringComparison.Ordinal) ||
+                first.Attempt != second.Attempt ||
+                !string.Equals(first.WorkflowName, second.WorkflowName, StringComparison.Ordinal) ||
+                !string.Equals(first.JobName, second.JobName, StringComparison.Ordinal) ||
+                !string.Equals(first.StepName, second.StepName, StringComparison.Ordinal) ||
+                !string.Equals(first.Conclusion, second.Conclusion, StringComparison.Ordinal) ||
+                !string.Equals(first.SourceUrl, second.SourceUrl, StringComparison.Ordinal) ||
+                !first.ObservedAt.EqualsExact(second.ObservedAt) ||
+                !string.Equals(first.BoundedSummary, second.BoundedSummary, StringComparison.Ordinal))
+                return false;
+        }
+
+        return true;
     }
 
     private static void Require(string value, string name, int max)
