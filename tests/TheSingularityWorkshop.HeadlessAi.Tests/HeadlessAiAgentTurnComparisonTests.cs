@@ -661,7 +661,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
                 RawResponse = rawResponse
             })
             .ToArray();
-        var comparison = Comparison() with { ProviderResults = providerResults };
+        var comparison = Comparison() with { CandidateCommitSha = Sha, ProviderResults = providerResults };
 
         var exception = Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnComparisonSnapshot.Create(comparison));
         Assert.Contains("40-million-byte", exception.Message);
