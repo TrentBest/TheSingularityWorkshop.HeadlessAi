@@ -228,10 +228,15 @@ public sealed record HeadlessAiEvidenceReference
         if (Attempt < 1) throw new ArgumentOutOfRangeException(nameof(Attempt));
         if (string.IsNullOrWhiteSpace(WorkflowName) || WorkflowName.Length > 256)
             throw new ArgumentException("Workflow name is required and bounded.", nameof(WorkflowName));
+        if (JobName?.Length > 256)
+            throw new ArgumentException("Job name exceeds 256 characters.", nameof(JobName));
+        if (StepName?.Length > 256)
+            throw new ArgumentException("Step name exceeds 256 characters.", nameof(StepName));
         if (string.IsNullOrWhiteSpace(Conclusion) || Conclusion.Length > 64)
             throw new ArgumentException("Conclusion is required and bounded.", nameof(Conclusion));
-        if (!Uri.TryCreate(SourceUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
-            throw new ArgumentException("Evidence source must be an absolute HTTPS URL.", nameof(SourceUrl));
+        if (string.IsNullOrWhiteSpace(SourceUrl) || SourceUrl.Length > 2_048 ||
+            !Uri.TryCreate(SourceUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+            throw new ArgumentException("Evidence source must be an absolute HTTPS URL limited to 2048 characters.", nameof(SourceUrl));
         if (BoundedSummary?.Length > 16_384)
             throw new ArgumentException("Evidence summary exceeds 16384 characters.", nameof(BoundedSummary));
     }
@@ -366,10 +371,13 @@ public sealed record HeadlessAiAgentTurnResult
     {
         ArgumentNullException.ThrowIfNull(ProviderMetadata);
         ArgumentNullException.ThrowIfNull(Proposal);
-        if (string.IsNullOrWhiteSpace(TurnId) || string.IsNullOrWhiteSpace(TaskId) ||
-            string.IsNullOrWhiteSpace(CorrelationId) || string.IsNullOrWhiteSpace(ProviderId) ||
-            string.IsNullOrWhiteSpace(ModelId) || string.IsNullOrWhiteSpace(RequestFingerprint))
-            throw new ArgumentException("Turn identity, provider, model, and request fingerprint are required.");
+        Require(TurnId, nameof(TurnId), 128);
+        Require(TaskId, nameof(TaskId), 128);
+        Require(CorrelationId, nameof(CorrelationId), 128);
+        Require(ProviderId, nameof(ProviderId), 128);
+        Require(ModelId, nameof(ModelId), 256);
+        if (string.IsNullOrWhiteSpace(RequestFingerprint))
+            throw new ArgumentException("Request fingerprint is required.", nameof(RequestFingerprint));
         if (!Regex.IsMatch(RequestFingerprint, "^[0-9a-fA-F]{64}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Request fingerprint must be a full 64-character SHA-256 value.", nameof(RequestFingerprint));
         if (ConfigurationId is not null &&
@@ -385,19 +393,24 @@ public sealed record HeadlessAiAgentTurnResult
         if (EnvelopeVersion != HeadlessAiAgentTurnEnvelope.CurrentVersion)
             throw new ArgumentOutOfRangeException(nameof(EnvelopeVersion));
         var resultRepositorySeparator = Repository?.IndexOf('/') ?? -1;
-        if (string.IsNullOrWhiteSpace(Repository) || resultRepositorySeparator <= 0 ||
+        if (string.IsNullOrWhiteSpace(Repository) || Repository.Length > 256 || resultRepositorySeparator <= 0 ||
             resultRepositorySeparator != Repository.LastIndexOf('/') || resultRepositorySeparator == Repository.Length - 1 ||
-            string.IsNullOrWhiteSpace(AuthorizedBranch) || string.Equals(AuthorizedBranch, "master", StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(AuthorizedBranch) || AuthorizedBranch.Length > 256 ||
+            string.Equals(AuthorizedBranch, "master", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(AuthorizedBranch, "development", StringComparison.OrdinalIgnoreCase) ||
             !Regex.IsMatch(BaseCommitSha ?? string.Empty, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
-            throw new ArgumentException("Result repository, isolated branch, and base commit provenance are required.");
+            throw new ArgumentException("Result repository, isolated branch, and base commit provenance are required and bounded.");
         if (CandidateCommitSha is not null && !Regex.IsMatch(CandidateCommitSha, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Candidate commit SHA must be a full SHA.", nameof(CandidateCommitSha));
         if ((PriorTurnId is null) != (PriorCandidateCommitSha is null))
             throw new ArgumentException("Prior turn ID and prior candidate SHA must be supplied together.");
+        if (PriorTurnId is not null) Require(PriorTurnId, nameof(PriorTurnId), 128);
+        if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
         if (PriorCandidateCommitSha is not null && !Regex.IsMatch(PriorCandidateCommitSha, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Prior candidate commit SHA must be a full SHA.", nameof(PriorCandidateCommitSha));
         ArgumentNullException.ThrowIfNull(Evidence);
+        if (Evidence.Count > 64)
+            throw new ArgumentException("Result evidence is limited to 64 items.", nameof(Evidence));
         foreach (var item in Evidence)
         {
             ArgumentNullException.ThrowIfNull(item);
@@ -409,6 +422,9 @@ public sealed record HeadlessAiAgentTurnResult
         if (InputTokens is < 0 || OutputTokens is < 0) throw new ArgumentOutOfRangeException(nameof(InputTokens));
         if (RawResponse is null || RawResponse.Length > 1_000_000)
             throw new ArgumentException("Raw provider response is required and limited to one million characters.", nameof(RawResponse));
+        CheckOptionalText(FinishReason, 256, nameof(FinishReason));
+        CheckOptionalText(Diagnostic, 4_096, nameof(Diagnostic));
+        CheckOptionalText(ErrorCode, 128, nameof(ErrorCode));
         if (ProviderMetadata.Count > 128 || ProviderMetadata.Any(p =>
                 string.IsNullOrWhiteSpace(p.Key) || p.Key.Length > 128 || p.Value is null || p.Value.Length > 4_096))
             throw new ArgumentException("Provider metadata keys and values must be non-empty and within the allowed bounds.", nameof(ProviderMetadata));
@@ -418,7 +434,20 @@ public sealed record HeadlessAiAgentTurnResult
     private static void ValidateOptionalHttpsUrl(string? value, string name)
     {
         if (value is not null &&
-            (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps))
-            throw new ArgumentException($"{name} must be an absolute HTTPS URL when supplied.", name);
+            (value.Length > 2_048 || !Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+             uri.Scheme != Uri.UriSchemeHttps))
+            throw new ArgumentException($"{name} must be an absolute HTTPS URL limited to 2048 characters when supplied.", name);
+    }
+
+    private static void Require(string value, string name, int max)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length > max)
+            throw new ArgumentException($"{name} must contain between 1 and {max} characters.", name);
+    }
+
+    private static void CheckOptionalText(string? value, int max, string name)
+    {
+        if (value?.Length > max)
+            throw new ArgumentException($"{name} exceeds {max} characters.", name);
     }
 }
