@@ -584,4 +584,159 @@ public sealed class HeadlessAiAgentTurnContractTests
         FinishReason = "completed"
     };
 
+
+    [Fact]
+    public void Envelope_RejectsNullLimitsAndNullContextReferences()
+    {
+        Assert.Throws<ArgumentNullException>(() => (ValidEnvelope() with { Limits = null! }).Validate(Now));
+        Assert.Throws<ArgumentNullException>(() => (ValidEnvelope() with { ContextReferences = null! }).Validate(Now));
+    }
+
+    [Fact]
+    public void Envelope_RejectsCredentialPatternsInInstructionsAndSchema()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Instructions = "client_secret=abcdefghijklmnop"
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            ResponseSchema = "ghp_abcdefghijklmnopqrstuvwxyz123456"
+        }).Validate(Now));
+    }
+
+    [Fact]
+    public void Evidence_RejectsOversizedOptionalNamesAndInvalidSourceUrl()
+    {
+        var evidence = ValidEnvelope().Evidence[0];
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Evidence = [evidence with { JobName = new string('j', 257) }]
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Evidence = [evidence with { StepName = new string('s', 257) }]
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Evidence = [evidence with { SourceUrl = "/relative/evidence" }]
+        }).Validate(Now));
+    }
+
+    [Fact]
+    public void Proposal_RejectsOversizedDiagnosisPatchIntentUncertaintyAndEscalation()
+    {
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal
+        {
+            Diagnosis = new string('d', 16_385)
+        }.Validate());
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal
+        {
+            PatchIntent = new string('p', 16_385)
+        }.Validate());
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal
+        {
+            Uncertainty = new string('u', 4_097)
+        }.Validate());
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal
+        {
+            StopOrEscalateReason = new string('e', 4_097)
+        }.Validate());
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal
+        {
+            HumanDecisionRequired = new string('h', 4_097)
+        }.Validate());
+    }
+
+    [Fact]
+    public void Result_RejectsInvalidTimeVersionAndOptionalUrls()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            CompletedAt = Now.AddSeconds(-1)
+        }).Validate());
+        Assert.Throws<ArgumentOutOfRangeException>(() => (ValidResult() with
+        {
+            EnvelopeVersion = 99
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            IssueUrl = "http://example.test/issue"
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            PullRequestUrl = "/relative/pr"
+        }).Validate());
+    }
+
+    [Fact]
+    public void Result_RejectsInvalidRepositoryBranchAndCandidateProvenance()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            Repository = "owner/name/extra"
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            AuthorizedBranch = "master"
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            CandidateCommitSha = "short"
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            PriorTurnId = "prior",
+            PriorCandidateCommitSha = "short"
+        }).Validate());
+    }
+
+    [Fact]
+    public void Result_RejectsNullEvidenceEntriesAndExcessEvidence()
+    {
+        Assert.Throws<ArgumentNullException>(() => (ValidResult() with
+        {
+            Evidence = [null!]
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            Evidence = Enumerable.Repeat(ValidEnvelope().Evidence[0], 65).ToArray()
+        }).Validate());
+    }
+
+    [Fact]
+    public void Result_RejectsOversizedDiagnosticFinishReasonAndErrorCode()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            FinishReason = new string('f', 257)
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            Diagnostic = new string('d', 4_097)
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            ErrorCode = new string('e', 129)
+        }).Validate());
+    }
+
+    [Fact]
+    public void Result_RejectsProviderMetadataBeyondCountAndKeyBounds()
+    {
+        var tooMany = Enumerable.Range(0, 129)
+            .ToDictionary(index => "key-" + index, _ => "value");
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            ProviderMetadata = tooMany
+        }).Validate());
+        Assert.Throws<ArgumentException>(() => (ValidResult() with
+        {
+            ProviderMetadata = new Dictionary<string, string>
+            {
+                [new string('k', 129)] = "value"
+            }
+        }).Validate());
+    }
+
 }
