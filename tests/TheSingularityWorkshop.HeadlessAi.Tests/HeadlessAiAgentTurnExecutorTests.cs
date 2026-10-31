@@ -382,6 +382,27 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.NotEqual(firstResult.ProviderId, secondResult.ProviderId);
     }
 
+    [Theory]
+    [InlineData("""{"diagnosis":"provider echoed \\"api_key\\": \\"provider-secret-value-12345\\""}""")]
+    [InlineData("""{"diagnosis":"provider echoed https://provider.example.test/?token=opaque-query-value-12345"}""")]
+    [InlineData("""{"diagnosis":"provider echoed Bearer provider-secret-value-12345"}""")]
+    public async Task ExecuteAsync_CredentialBearingSuccessfulResponseIsDiscarded(string raw)
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(raw) })));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal("sensitive_response", result.ErrorCode);
+        Assert.Equal(string.Empty, result.RawResponse);
+        Assert.Null(result.Proposal.PatchIntent);
+        Assert.Contains("credential-shaped material", result.Diagnostic);
+        Assert.DoesNotContain("provider-secret-value-12345", result.Diagnostic);
+        Assert.DoesNotContain("opaque-query-value-12345", result.Diagnostic);
+        result.Validate();
+    }
+
     [Fact]
     public async Task ExecuteAsync_PreservesCompleteCodeRedOperationalPayload()
     {
