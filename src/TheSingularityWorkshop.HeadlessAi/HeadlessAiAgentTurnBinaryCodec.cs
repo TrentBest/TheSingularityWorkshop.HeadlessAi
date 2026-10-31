@@ -135,6 +135,8 @@ public static class HeadlessAiAgentTurnBinaryCodec
             var read = stream.Read(destination[offset..]);
             if (read <= 0)
                 throw new EndOfStreamException("The binary frame ended before the complete field was read.");
+            if (read > destination.Length - offset)
+                throw new InvalidDataException("The binary stream reported more bytes than the supplied buffer can hold.");
             offset += read;
         }
     }
