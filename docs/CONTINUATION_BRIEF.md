@@ -54,14 +54,14 @@ The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload len
 - Repository: `TrentBest/TheSingularityWorkshop.HeadlessAi`.
 - Active work: PR [#11 — Add versioned resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/11).
 - PR #11 is open and draft, from `feature/resumable-agent-turn-contracts` into `development`.
-- Verified head before this documentation/test update: `c87386f0deb5f2f9f8a34dadc6811f2d59727c9f`.
-- [Run #487](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41174034167) completed successfully on that exact head. The `verify` job passed restore, build, tests with coverage, Codecov upload, pack, package audit, clean-consumer verification, and artifact upload.
-- The `publish_nuget` job was skipped. No package was published.
-- The previous Codecov comment recorded 94.36090% patch coverage and 45 changed lines missing coverage; that report predates the latest changes and is not represented as current coverage.
-- A targeted binary-codec review found that comparison snapshots had round-trip coverage but lacked malformed-frame regression coverage equivalent to the request-frame tests. The current update adds comparison-specific tests for unsupported versions, payload tampering, wrong frame kind, truncated headers/payloads, invalid UTF-8 with a matching digest, oversized declared lengths, noncanonical JSON with a matching digest, and invalid comparison provenance with a correctly framed/checksummed payload.
-- The implementation itself already shares the bounded frame reader/writer and revalidates comparison snapshots on unpack; this was a coverage gap, not a demonstrated codec defect.
+- Latest implementation/test head: `6f9ccc25a37d9dcfdd10003bec9ef280ab9152eb`.
+- [Run #489](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41249187201) passed on that exact head: restore, build, all 208 tests, coverage preparation/upload, pack, package audit, clean-consumer verification, and artifact upload.
+- Run #488 exposed one faulty test fixture: its tampering helper changed the top-level correlation and both provider correlations together, leaving a valid comparison. The fixture was corrected to alter only one provider result; the narrowed assertion now verifies rejection of the provenance mismatch. Run #489 passed after that correction.
+- The comparison-frame regression suite now covers round-trip, unsupported versions, payload tampering, wrong frame kind, truncated header/payload, invalid UTF-8 with a matching digest, over-limit declared payload length, noncanonical JSON with a matching digest, and invalid comparison provenance with a correctly framed/checksummed payload.
+- The codec implementation itself uses the shared bounded frame reader/writer and revalidates comparison snapshots during unpack. The audit found a test-coverage gap, not a demonstrated implementation defect.
+- The earlier Codecov report of 94.36090% patch coverage / 45 changed lines missing coverage predates these tests and is not current coverage.
 
-No merge, release, NuGet publication, or writes to `master` / `development` are included.
+The `publish_nuget` job was skipped in run #489. No package was published. No merge, release, NuGet publication, or writes to `master` / `development` are included.
 
 ## Next logical work
 
