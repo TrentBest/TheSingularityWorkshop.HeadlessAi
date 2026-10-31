@@ -79,6 +79,10 @@ public sealed class HeadlessAiAgentTurnExecutor
             var agent = _template.CreateAgent(_httpClient);
             var output = await agent.SendAsync(new HeadlessAiInput(canonicalRequest), timeoutSource.Token)
                 .ConfigureAwait(false);
+            if (output is null || output.Content is null)
+                return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
+                    "invalid_adapter_response",
+                    "The provider adapter returned no response content.", string.Empty);
             var completedAt = _timeProvider.GetUtcNow();
             if (output.Content.Length > 1_000_000)
                 return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
