@@ -392,6 +392,55 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     }
 
     [Fact]
+    public void Result_RejectsStandaloneEvidenceCollectionAboveContractLimit()
+    {
+        var result = Result("provider-a", "turn-a") with
+        {
+            CandidateCommitSha = Sha,
+            Evidence = Enumerable.Repeat(Evidence("bounded evidence"), 65).ToArray()
+        };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+    }
+
+    [Fact]
+    public void Result_RejectsOversizedStandaloneIdentity()
+    {
+        var result = Result("provider-a", "turn-a") with
+        {
+            TaskId = new string('t', 129)
+        };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+    }
+
+    [Fact]
+    public void Result_RejectsOversizedEvidenceSourceMetadata()
+    {
+        var result = Result("provider-a", "turn-a") with
+        {
+            CandidateCommitSha = Sha,
+            Evidence =
+            [
+                Evidence("bounded evidence") with { JobName = new string('j', 257) }
+            ]
+        };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+    }
+
+    [Fact]
+    public void Result_RejectsOversizedTaskUrl()
+    {
+        var result = Result("provider-a", "turn-a") with
+        {
+            IssueUrl = "https://example.com/" + new string('a', 2_048)
+        };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+    }
+
+    [Fact]
     public void Comparison_RejectsDuplicateTurnIds()
     {
         var comparison = Comparison() with
