@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Security.Cryptography;
 using TheSingularityWorkshop.FSM_Serialization;
 using Xunit;
 
@@ -257,6 +258,106 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         public void Dispose()
         {
         }
+    }
+
+
+    [Fact]
+    public void Frame_RejectsInvalidMagic()
+    {
+        var bytes = PackRequestFrame();
+        bytes[0] ^= 0x01;
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(corrupted, Now));
+    }
+
+    [Fact]
+    public void Frame_RejectsUnknownFrameKind()
+    {
+        var bytes = PackRequestFrame();
+        bytes[4] = 99;
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(corrupted, Now));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Frame_RejectsNonPositivePayloadLength(int length)
+    {
+        var bytes = PackRequestFrame();
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(7, 4), length);
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(corrupted, Now));
+    }
+
+    [Fact]
+    public void Frame_RejectsNonCanonicalJsonEvenWhenDigestMatches()
+    {
+        var original = PackRequestFrame();
+        var payload = original[43..].Concat(new byte[] { (byte)' ' }).ToArray();
+        var framed = Reframe(original, payload);
+        using var corrupted = new MemoryBinaryStream(framed);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(corrupted, Now));
+    }
+
+    [Fact]
+    public void Frame_RejectsTruncatedHeader()
+    {
+        var bytes = PackRequestFrame();
+        using var truncated = new MemoryBinaryStream(bytes[..20]);
+
+        Assert.Throws<EndOfStreamException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(truncated, Now));
+    }
+
+    [Fact]
+    public void RequestFrame_RejectsStreamThatDoesNotSupportWriting()
+    {
+        using var stream = new PartialReadBinaryStream(Array.Empty<byte>());
+
+        Assert.Throws<ArgumentException>(() =>
+            HeadlessAiAgentTurnBinaryCodec.PackRequest(HeadlessAiAgentTurnRequest.Create(Envelope(), Now), stream));
+    }
+
+    [Fact]
+    public void RequestFrame_RejectsStreamThatDoesNotSupportReading()
+    {
+        using var stream = new WriteOnlyBinaryStream();
+
+        Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(stream, Now));
+    }
+
+    private static byte[] PackRequestFrame()
+    {
+        var snapshot = HeadlessAiAgentTurnRequest.Create(Envelope(), Now);
+        using var stream = new MemoryBinaryStream();
+        HeadlessAiAgentTurnBinaryCodec.PackRequest(snapshot, stream);
+        return stream.ToArray();
+    }
+
+    private static byte[] Reframe(byte[] originalFrame, byte[] payload)
+    {
+        var frame = new byte[43 + payload.Length];
+        originalFrame.AsSpan(0, 43).CopyTo(frame);
+        BinaryPrimitives.WriteInt32LittleEndian(frame.AsSpan(7, 4), payload.Length);
+        payload.CopyTo(frame, 43);
+        SHA256.HashData(payload, frame.AsSpan(11, 32));
+        return frame;
+    }
+
+    private sealed class WriteOnlyBinaryStream : IBinaryStream
+    {
+        public bool CanRead => false;
+        public bool CanWrite => true;
+        public long Position { get; set; }
+        public long Length => 0;
+        public int Read(Span<byte> buffer) => throw new NotSupportedException();
+        public void Write(ReadOnlySpan<byte> buffer) { }
+        public void Flush() { }
+        public void Dispose() { }
     }
 
 }
