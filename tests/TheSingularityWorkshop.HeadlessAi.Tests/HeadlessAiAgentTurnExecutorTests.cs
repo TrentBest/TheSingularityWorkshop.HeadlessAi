@@ -146,6 +146,25 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_HttpErrorResponseContainingCredentialQueryParameterIsNotRetained()
+    {
+        const string responseBody = "Provider rejected request URI https://provider.example.test/invoke?token=opaque-query-value-12345";
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent(responseBody)
+            })));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal("http_400", result.ErrorCode);
+        Assert.Equal(string.Empty, result.RawResponse);
+        Assert.DoesNotContain("opaque-query-value-12345", result.RawResponse);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_ResumesFromExplicitPriorTurnAndCandidateEvidence()
     {
         var requests = new List<string>();
