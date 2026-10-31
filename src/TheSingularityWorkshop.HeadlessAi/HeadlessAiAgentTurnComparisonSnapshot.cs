@@ -49,10 +49,25 @@ public sealed class HeadlessAiAgentTurnComparisonSnapshot
         ArgumentNullException.ThrowIfNull(comparison);
         comparison.Validate();
 
+        // Dictionary enumeration order is not part of provider-metadata meaning. Sort keys
+        // before serialization so equivalent comparisons have the same canonical payload.
+        var canonicalComparison = comparison with
+        {
+            ProviderResults = comparison.ProviderResults
+                .Select(result => result with
+                {
+                    ProviderMetadata = new SortedDictionary<string, string>(
+                        result.ProviderMetadata.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
+                        StringComparer.Ordinal)
+                })
+                .ToArray()
+        };
+
         var boundedWriter = new BoundedBufferWriter(MaxSerializedBytes);
         using (var jsonWriter = new Utf8JsonWriter(boundedWriter))
         {
-            JsonSerializer.Serialize(jsonWriter, comparison, JsonOptions);
+            JsonSerializer.Serialize(jsonWriter, canonicalComparison, JsonOptions);
             jsonWriter.Flush();
         }
         var canonicalPayload = Encoding.UTF8.GetString(boundedWriter.WrittenSpan);
