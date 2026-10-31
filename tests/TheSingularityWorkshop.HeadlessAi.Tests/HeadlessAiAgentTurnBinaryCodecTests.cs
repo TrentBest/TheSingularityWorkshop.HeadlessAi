@@ -157,4 +157,83 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         Assert.Throws<ArgumentException>(() =>
             HeadlessAiAgentTurnBinaryCodec.UnpackRequest(stream, Now.AddHours(1)));
     }
+    [Fact]
+    public void Frame_ReadsCorrectlyWhenTheStreamReturnsPartialChunks()
+    {
+        var original = HeadlessAiAgentTurnRequest.Create(Envelope(), Now);
+        using var packed = new MemoryBinaryStream();
+        HeadlessAiAgentTurnBinaryCodec.PackRequest(original, packed);
+        using var partial = new PartialReadBinaryStream(packed.ToArray());
+
+        var restored = HeadlessAiAgentTurnBinaryCodec.UnpackRequest(partial, Now);
+
+        Assert.Equal(original.CanonicalPayload, restored.CanonicalPayload);
+        Assert.Equal(original.Fingerprint, restored.Fingerprint);
+    }
+
+    [Fact]
+    public void Frame_RejectsPayloadLengthAboveTheRequestLimitBeforeAllocating()
+    {
+        var snapshot = HeadlessAiAgentTurnRequest.Create(Envelope(), Now);
+        using var stream = new MemoryBinaryStream();
+        HeadlessAiAgentTurnBinaryCodec.PackRequest(snapshot, stream);
+        var bytes = stream.ToArray();
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(7, 4), 1_024_001);
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(corrupted, Now));
+    }
+
+    [Fact]
+    public void Frame_RejectsInvalidUtf8EvenWhenTheDigestMatches()
+    {
+        var snapshot = HeadlessAiAgentTurnRequest.Create(Envelope(), Now);
+        using var stream = new MemoryBinaryStream();
+        HeadlessAiAgentTurnBinaryCodec.PackRequest(snapshot, stream);
+        var bytes = stream.ToArray();
+        bytes[43] = 0xff;
+        System.Security.Cryptography.SHA256.HashData(bytes.AsSpan(43), bytes.AsSpan(11, 32));
+        using var corrupted = new MemoryBinaryStream(bytes);
+
+        Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(corrupted, Now));
+    }
+
+    private sealed class PartialReadBinaryStream : IBinaryStream
+    {
+        private readonly byte[] _bytes;
+        private int _position;
+
+        public PartialReadBinaryStream(byte[] bytes) => _bytes = bytes;
+
+        public bool CanRead => true;
+        public bool CanWrite => false;
+        public long Position
+        {
+            get => _position;
+            set => _position = checked((int)value);
+        }
+        public long Length => _bytes.Length;
+
+        public int Read(Span<byte> buffer)
+        {
+            var count = Math.Min(2, Math.Min(buffer.Length, _bytes.Length - _position));
+            if (count <= 0)
+                return 0;
+            _bytes.AsSpan(_position, count).CopyTo(buffer);
+            _position += count;
+            return count;
+        }
+
+        public void Write(ReadOnlySpan<byte> buffer)
+            => throw new NotSupportedException();
+
+        public void Flush()
+        {
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
 }
