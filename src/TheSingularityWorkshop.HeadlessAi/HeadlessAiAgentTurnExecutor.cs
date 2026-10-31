@@ -278,7 +278,7 @@ public sealed class HeadlessAiAgentTurnExecutor
             return true;
 
         return System.Text.RegularExpressions.Regex.IsMatch(value,
-            @"(?i)\bBearer\s+\S{12,}|\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password)\s*[:=]\s*['"" ]?[^\s,'"" ]{8,}|['""](?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|credential|secret)['""]\s*:",
+            @"(?i)\bBearer\s+\S{12,}|[?&](?:token|key|signature|sig|api[_-]?key|access[_-]?token|refresh[_-]?token)=([^&\s]{8,})|\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password)\s*[:=]\s*['"" ]?[^\s,'"" ]{8,}|['""](?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|credential|secret)['""]\s*:",
             System.Text.RegularExpressions.RegexOptions.CultureInvariant);
     }
 
