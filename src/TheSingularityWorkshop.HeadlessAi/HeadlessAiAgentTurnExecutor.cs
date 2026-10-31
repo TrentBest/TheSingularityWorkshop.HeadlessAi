@@ -164,8 +164,16 @@ public sealed class HeadlessAiAgentTurnExecutor
         {
             foreach (var pair in output.Metadata)
             {
-                if (!metadata.ContainsKey(pair.Key))
-                    metadata.Add(pair.Key, pair.Value);
+                // Provider metadata is supplemental. Drop malformed or oversized entries
+                // rather than allowing untrusted adapter data to invalidate the result.
+                if (string.IsNullOrWhiteSpace(pair.Key) || pair.Key.Length > 128 ||
+                    pair.Value is null || pair.Value.Length > 4_096)
+                    continue;
+                if (metadata.ContainsKey(pair.Key))
+                    continue;
+                if (metadata.Count >= 128)
+                    break;
+                metadata.Add(pair.Key, pair.Value);
             }
         }
         return new HeadlessAiAgentTurnResult
