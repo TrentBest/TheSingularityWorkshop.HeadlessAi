@@ -376,6 +376,8 @@ public sealed record HeadlessAiAgentTurnResult
             (string.IsNullOrWhiteSpace(ConfigurationId) || ConfigurationId.Length > 128))
             throw new ArgumentException("Configuration identity must be non-empty and limited to 128 characters.", nameof(ConfigurationId));
         if (CompletedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.");
+        ValidateOptionalHttpsUrl(IssueUrl, nameof(IssueUrl));
+        ValidateOptionalHttpsUrl(PullRequestUrl, nameof(PullRequestUrl));
         if (ConversationId is not null && (string.IsNullOrWhiteSpace(ConversationId) || ConversationId.Length > 128))
             throw new ArgumentException("Conversation identity must be non-empty and limited to 128 characters.", nameof(ConversationId));
         if (TaskVersion is not null && (string.IsNullOrWhiteSpace(TaskVersion) || TaskVersion.Length > 128))
@@ -411,5 +413,12 @@ public sealed record HeadlessAiAgentTurnResult
                 string.IsNullOrWhiteSpace(p.Key) || p.Key.Length > 128 || p.Value is null || p.Value.Length > 4_096))
             throw new ArgumentException("Provider metadata keys and values must be non-empty and within the allowed bounds.", nameof(ProviderMetadata));
         Proposal.Validate();
+    }
+
+    private static void ValidateOptionalHttpsUrl(string? value, string name)
+    {
+        if (value is not null &&
+            (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps))
+            throw new ArgumentException($"{name} must be an absolute HTTPS URL when supplied.", name);
     }
 }
