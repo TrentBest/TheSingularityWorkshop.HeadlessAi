@@ -383,7 +383,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Theory]
-    [InlineData("""{"diagnosis":"provider echoed \\"api_key\\": \\"provider-secret-value-12345\\""}""")]
+    [InlineData("""{"api_key":"provider-secret-value-12345","diagnosis":"provider echoed credential material"}""")]
     [InlineData("""{"diagnosis":"provider echoed https://provider.example.test/?token=opaque-query-value-12345"}""")]
     [InlineData("""{"diagnosis":"provider echoed Bearer provider-secret-value-12345"}""")]
     public async Task ExecuteAsync_CredentialBearingSuccessfulResponseIsDiscarded(string raw)
