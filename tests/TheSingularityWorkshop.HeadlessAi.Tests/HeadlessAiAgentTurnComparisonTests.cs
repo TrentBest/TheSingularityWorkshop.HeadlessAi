@@ -551,7 +551,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     {
         var invalid = Comparison() with
         {
-            ProviderResults = [Result("provider-a", "turn-a")]
+            RequestFingerprint = "not-a-sha256-digest"
         };
 
         Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnComparisonSnapshot.Create(invalid));
