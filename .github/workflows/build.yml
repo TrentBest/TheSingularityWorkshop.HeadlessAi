@@ -92,7 +92,14 @@ jobs:
               assert value('license') or value('licenseUrl'), 'License metadata is missing'
               assert value('readme') == 'README.md', f"Unexpected package README metadata: {value('readme')}"
               dependency_nodes = root.findall('.//{*}dependency')
-              assert not dependency_nodes, f'HeadlessAi core must remain dependency-free; found package dependencies: {[node.attrib for node in dependency_nodes]}'
+              approved_dependencies = {
+                  'TheSingularityWorkshop.FSM_Serialization': '[1.0.0, )',
+              }
+              actual_dependencies = {node.attrib.get('id'): node.attrib.get('version') for node in dependency_nodes}
+              assert actual_dependencies == approved_dependencies, (
+                  'HeadlessAi may depend only on the approved FSM_Serialization boundary at 1.0.0; '
+                  f'found package dependencies: {actual_dependencies}'
+              )
               print(f'PASS: {package} contains assembly, XML docs, README, license metadata, expected id/version, absolute visual URL, and no relative README links.')
           PY
       - name: Verify package in a clean consumer project
@@ -125,7 +132,7 @@ jobs:
           consumer_dir="$(mktemp -d)"
           trap 'rm -rf "$consumer_dir"' EXIT
           dotnet new console --framework net8.0 --output "$consumer_dir" --no-restore
-          dotnet add "$consumer_dir" package "$package_id" --version "$package_version" --source "$PWD/artifacts"
+          dotnet add "$consumer_dir" package "$package_id" --version "$package_version" --source "$PWD/artifacts" --source "https://api.nuget.org/v3/index.json"
           dotnet build "$consumer_dir" --configuration Release
 
       - name: Upload package artifact
