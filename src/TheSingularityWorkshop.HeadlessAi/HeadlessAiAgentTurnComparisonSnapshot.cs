@@ -50,7 +50,11 @@ public sealed class HeadlessAiAgentTurnComparisonSnapshot
         comparison.Validate();
 
         var boundedWriter = new BoundedBufferWriter(MaxSerializedCharacters);
-        JsonSerializer.Serialize(boundedWriter, comparison, JsonOptions);
+        using (var jsonWriter = new Utf8JsonWriter(boundedWriter))
+        {
+            JsonSerializer.Serialize(jsonWriter, comparison, JsonOptions);
+            jsonWriter.Flush();
+        }
         var canonicalPayload = Encoding.UTF8.GetString(boundedWriter.WrittenSpan);
         if (canonicalPayload.Length > MaxSerializedCharacters)
             throw new ArgumentException("Serialized comparison exceeds the 40-million-character snapshot limit.", nameof(comparison));
