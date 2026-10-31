@@ -106,6 +106,46 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_HttpErrorResponseContainingCredentialsIsNotRetained()
+    {
+        const string secret = "provider-secret-value-12345";
+        const string responseBody = """{"authorization":"Bearer provider-secret-value-12345","message":"request rejected"}""";
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.Unauthorized)
+            {
+                Content = new StringContent(responseBody)
+            })));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal("http_401", result.ErrorCode);
+        Assert.Equal(string.Empty, result.RawResponse);
+        Assert.DoesNotContain(secret, result.RawResponse);
+        result.Validate();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_HttpErrorResponseContainingApiKeyIsNotRetained()
+    {
+        const string secret = "provider-api-key-value-12345";
+        const string responseBody = """{"api_key":"provider-api-key-value-12345","error":"invalid request"}""";
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent(responseBody)
+            })));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal("http_400", result.ErrorCode);
+        Assert.Equal(string.Empty, result.RawResponse);
+        Assert.DoesNotContain(secret, result.RawResponse);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_ResumesFromExplicitPriorTurnAndCandidateEvidence()
     {
         var requests = new List<string>();
