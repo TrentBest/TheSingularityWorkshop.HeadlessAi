@@ -475,6 +475,88 @@ public sealed class HeadlessAiAgentTurnComparisonTests
         }).Validate());
     }
 
+
+    [Fact]
+    public void ComparisonSnapshot_IsUnaffectedByMutationsToCallerOwnedNestedCollections()
+    {
+        var questions = new List<string> { "Original provider question." };
+        var metadata = new Dictionary<string, string> { ["finish_reason"] = "stop" };
+        var firstResult = Result("provider-a", "turn-a") with
+        {
+            Proposal = new HeadlessAiAgentTurnProposal { Questions = questions },
+            ProviderMetadata = metadata
+        };
+        var providerResults = new List<HeadlessAiAgentTurnResult>
+        {
+            firstResult,
+            Result("provider-b", "turn-b")
+        };
+        var findingsA = new List<HeadlessAiProviderFinding>
+        {
+            Finding("finding-a", "provider-a")
+        };
+        var omissions = new List<string> { "Original omission." };
+        var assessmentA = new HeadlessAiProviderAssessment
+        {
+            ProviderId = "provider-a",
+            TurnId = "turn-a",
+            Findings = findingsA,
+            Omissions = omissions
+        };
+        var findingIds = new List<string> { "finding-a", "finding-b" };
+        var relationship = Relationship("disagreement", findingIds);
+        var assessments = new List<HeadlessAiProviderAssessment>
+        {
+            assessmentA,
+            Assessment("provider-b", "turn-b", Finding("finding-b", "provider-b"))
+        };
+        var relationships = new List<HeadlessAiAgentTurnFindingRelationship> { relationship };
+        var comparison = Comparison() with
+        {
+            ProviderResults = providerResults,
+            Assessments = assessments,
+            FindingRelationships = relationships
+        };
+
+        var snapshot = HeadlessAiAgentTurnComparisonSnapshot.Create(comparison);
+        var originalPayload = snapshot.CanonicalPayload;
+        var originalFingerprint = snapshot.Fingerprint;
+
+        questions[0] = "Mutated question.";
+        questions.Add("Injected question.");
+        metadata["finish_reason"] = "mutated";
+        metadata["injected"] = "value";
+        providerResults.Clear();
+        findingsA.Clear();
+        omissions[0] = "Mutated omission.";
+        omissions.Add("Injected omission.");
+        findingIds[0] = "unknown-finding";
+        findingIds.Add("injected-finding");
+        assessments.Clear();
+        relationships.Clear();
+
+        Assert.Equal(originalPayload, snapshot.CanonicalPayload);
+        Assert.Equal(originalFingerprint, snapshot.Fingerprint);
+        Assert.Contains("Original provider question.", snapshot.CanonicalPayload);
+        Assert.Contains("Original omission.", snapshot.CanonicalPayload);
+        Assert.Contains("finding-a", snapshot.CanonicalPayload);
+        Assert.DoesNotContain("Mutated question.", snapshot.CanonicalPayload);
+        Assert.DoesNotContain("Injected omission.", snapshot.CanonicalPayload);
+        Assert.DoesNotContain("unknown-finding", snapshot.CanonicalPayload);
+        Assert.Equal(64, snapshot.Fingerprint.Length);
+    }
+
+    [Fact]
+    public void ComparisonSnapshot_RejectsInvalidComparisonBeforeSnapshotting()
+    {
+        var invalid = Comparison() with
+        {
+            ProviderResults = [Result("provider-a", "turn-a")]
+        };
+
+        Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnComparisonSnapshot.Create(invalid));
+    }
+
     private static HeadlessAiProviderAssessment Assessment(
         string provider, string turn, params HeadlessAiProviderFinding[] findings)
         => new() { ProviderId = provider, TurnId = turn, Findings = findings };
