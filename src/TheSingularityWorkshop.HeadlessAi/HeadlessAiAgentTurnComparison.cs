@@ -57,6 +57,7 @@ public sealed record HeadlessAiAgentTurnComparison
             throw new ArgumentException("A comparison must contain between one and 32 provider results.", nameof(ProviderResults));
 
         var resultsByTurn = new Dictionary<string, HeadlessAiAgentTurnResult>(StringComparer.Ordinal);
+        var firstResult = ProviderResults[0];
         var providerIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var result in ProviderResults)
         {
@@ -68,7 +69,15 @@ public sealed record HeadlessAiAgentTurnComparison
                 !string.Equals(result.CorrelationId, CorrelationId, StringComparison.Ordinal) ||
                 !string.Equals(result.Repository, Repository, StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(result.RequestFingerprint, RequestFingerprint, StringComparison.Ordinal) ||
-                !string.Equals(result.CandidateCommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(result.CandidateCommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(result.AuthorizedBranch, firstResult.AuthorizedBranch, StringComparison.Ordinal) ||
+                !string.Equals(result.BaseCommitSha, firstResult.BaseCommitSha, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(result.PriorTurnId, firstResult.PriorTurnId, StringComparison.Ordinal) ||
+                !string.Equals(result.PriorCandidateCommitSha, firstResult.PriorCandidateCommitSha, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(result.IdempotencyKey, firstResult.IdempotencyKey, StringComparison.Ordinal) ||
+                !string.Equals(result.IssueUrl, firstResult.IssueUrl, StringComparison.Ordinal) ||
+                !string.Equals(result.PullRequestUrl, firstResult.PullRequestUrl, StringComparison.Ordinal) ||
+                !result.Evidence.SequenceEqual(firstResult.Evidence))
                 throw new ArgumentException("Every provider result must belong to the same task, conversation, task version, correlation, repository, candidate, and canonical request.");
             if (!providerIds.Add(result.ProviderId))
                 throw new ArgumentException("A provider may appear only once in a comparison.", nameof(ProviderResults));
