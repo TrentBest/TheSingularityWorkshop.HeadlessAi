@@ -440,13 +440,16 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         var json = System.Text.Encoding.UTF8.GetString(original, 43, original.Length - 43);
         const string originalCorrelation = "\"correlationId\":\"correlation-1\"";
         const string changedCorrelation = "\"correlationId\":\"different-correlation\"";
-        Assert.Contains(originalCorrelation, json);
-        var payload = System.Text.Encoding.UTF8.GetBytes(
-            json.Replace(originalCorrelation, changedCorrelation, StringComparison.Ordinal));
+        var firstOccurrence = json.IndexOf(originalCorrelation, StringComparison.Ordinal);
+        var secondOccurrence = json.IndexOf(originalCorrelation, firstOccurrence + originalCorrelation.Length, StringComparison.Ordinal);
+        Assert.True(secondOccurrence >= 0);
+        var alteredJson = json[..secondOccurrence] + changedCorrelation +
+            json[(secondOccurrence + originalCorrelation.Length)..];
+        var payload = System.Text.Encoding.UTF8.GetBytes(alteredJson);
         var framed = Reframe(original, payload);
         using var corrupted = new MemoryBinaryStream(framed);
 
-        Assert.ThrowsAny<Exception>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+        Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
     }
 
     private static byte[] PackComparisonFrame()
