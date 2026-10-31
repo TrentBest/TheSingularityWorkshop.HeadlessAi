@@ -102,23 +102,23 @@ public sealed class HeadlessAiAgentTurnExecutor
         catch (TimeoutException ex)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
-                ex.Message, string.Empty);
+                "The provider request timed out.", string.Empty);
         }
         catch (HeadlessAiHttpException ex)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                 ex.StatusCode is { } statusCode ? $"http_{(int)statusCode}" : "http_error",
-                ex.Message, SanitizeErrorResponseExcerpt(ex.ResponseExcerpt));
+                "The provider returned a non-success HTTP response.", SanitizeErrorResponseExcerpt(ex.ResponseExcerpt));
         }
         catch (HttpRequestException ex)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
-                "transport_error", ex.Message, string.Empty);
+                "transport_error", "The provider transport request failed.", string.Empty);
         }
         catch (InvalidDataException ex)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
-                "response_limit_exceeded", ex.Message, string.Empty);
+                "response_limit_exceeded", "The provider response exceeded a configured size limit.", string.Empty);
         }
     }
 
@@ -143,7 +143,7 @@ public sealed class HeadlessAiAgentTurnExecutor
                 StopOrEscalateReason = "A malformed provider response must be reviewed; no action is proposed."
             };
             errorCode = "malformed_response";
-            diagnostic = ex.Message;
+            diagnostic = "The provider response was not valid JSON for the requested proposal schema.";
         }
         catch (ArgumentException ex)
         {
@@ -153,7 +153,7 @@ public sealed class HeadlessAiAgentTurnExecutor
                 StopOrEscalateReason = "An invalid provider proposal must be reviewed; no action is proposed."
             };
             errorCode = "invalid_proposal";
-            diagnostic = ex.Message;
+            diagnostic = "The provider proposal failed contract validation." ;
         }
 
         // Provider metadata is untrusted. Keep the first spelling when a provider supplies
