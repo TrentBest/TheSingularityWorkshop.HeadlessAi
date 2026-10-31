@@ -659,6 +659,45 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     }
 
     [Fact]
+    public void ComparisonSnapshot_CanonicalizesProviderMetadataDictionaryOrder()
+    {
+        var forward = new Dictionary<string, string>
+        {
+            ["zeta"] = "last",
+            ["alpha"] = "first"
+        };
+        var reverse = new Dictionary<string, string>
+        {
+            ["alpha"] = "first",
+            ["zeta"] = "last"
+        };
+        var first = Comparison() with
+        {
+            ProviderResults =
+            [
+                Result("provider-a", "turn-a") with { ProviderMetadata = forward },
+                Result("provider-b", "turn-b")
+            ]
+        };
+        var second = first with
+        {
+            ProviderResults =
+            [
+                Result("provider-a", "turn-a") with { ProviderMetadata = reverse },
+                Result("provider-b", "turn-b")
+            ]
+        };
+
+        var firstSnapshot = HeadlessAiAgentTurnComparisonSnapshot.Create(first);
+        var secondSnapshot = HeadlessAiAgentTurnComparisonSnapshot.Create(second);
+
+        Assert.Equal(firstSnapshot.CanonicalPayload, secondSnapshot.CanonicalPayload);
+        Assert.Equal(firstSnapshot.Fingerprint, secondSnapshot.Fingerprint);
+        Assert.True(firstSnapshot.CanonicalPayload.IndexOf("alpha", StringComparison.Ordinal) <
+                    firstSnapshot.CanonicalPayload.IndexOf("zeta", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void ComparisonSnapshot_StopsSerializationAtAggregatePayloadLimit()
     {
         var evidenceSummary = new string('e', 16_384);
