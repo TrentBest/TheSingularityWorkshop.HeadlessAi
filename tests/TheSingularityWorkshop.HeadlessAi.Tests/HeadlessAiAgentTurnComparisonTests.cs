@@ -330,11 +330,12 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     [InlineData("issue-url")]
     [InlineData("pull-request-url")]
     [InlineData("evidence")]
+    [InlineData("evidence-observed-offset")]
     public void Comparison_RejectsProviderResultWithMismatchedProvenance(string mismatch)
     {
         var first = Result("provider-a", "turn-a");
         var second = Result("provider-b", "turn-b");
-        if (mismatch == "evidence")
+        if (mismatch is "evidence" or "evidence-observed-offset")
         {
             first = first with
             {
@@ -344,7 +345,15 @@ public sealed class HeadlessAiAgentTurnComparisonTests
             second = second with
             {
                 CandidateCommitSha = Sha,
-                Evidence = [Evidence("different provider evidence")]
+                Evidence =
+                [
+                    mismatch == "evidence"
+                        ? Evidence("different provider evidence")
+                        : Evidence("first-provider evidence") with
+                        {
+                            ObservedAt = Now.ToOffset(TimeSpan.FromHours(-7))
+                        }
+                ]
             };
         }
 
