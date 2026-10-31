@@ -44,7 +44,7 @@ HeadlessAi is **not** a workflow engine or autonomous agent loop. It does not ow
 - `HeadlessAiAgentTurnRequest` validates and snapshots canonical request JSON once. Providers share the same immutable request and SHA-256 fingerprint.
 - `HeadlessAiAgentTurnExecutor` performs exactly one provider invocation and returns a provenance-bound result. It does not retry or deduplicate.
 - `HeadlessAiAgentTurnComparison` validates shared provenance and explicit provider attribution. It does not infer consensus or select a winner.
-- `HeadlessAiAgentTurnComparisonSnapshot` captures a bounded immutable canonical comparison payload.
+- `HeadlessAiAgentTurnComparisonSnapshot` captures a bounded immutable canonical comparison payload and sorts provider-metadata keys so equivalent dictionaries produce identical serialized payloads and fingerprints.
 - `HeadlessAiAgentTurnBinaryCodec` frames request and comparison snapshots over `TheSingularityWorkshop.FSM_Serialization` 1.0.0 and `IBinaryStream`.
 
 The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload length, SHA-256 digest), with a 1,024,000-byte request payload limit and a 40,000,000-byte comparison payload limit. The digest detects accidental corruption; it is not a signature or authentication mechanism. The host owns stream lifetime, storage, encryption, access control, and retention.
@@ -54,22 +54,22 @@ The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload len
 - Repository: `TrentBest/TheSingularityWorkshop.HeadlessAi`.
 - Active work: PR [#11 — Add versioned resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/11).
 - PR #11 is open and draft, from `feature/resumable-agent-turn-contracts` into `development`.
-- Latest code/test head recorded here: `5be1e6c55121febd5f96aa872e180ac084da2d5d`.
-- Latest combined verification: [run #483](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41172952296) passed restore, build, tests with coverage, coverage upload, pack, packed-artifact audit, and clean-consumer verification. `publish_nuget` was skipped.
-- Run #482 also passed after the binary-codec boundary tests were added.
-- The visible Codecov PR comment still reports 91.73028% patch coverage / 65 changed lines missing, but its timestamp predates the latest coverage upload. Do not treat that figure as the refreshed result; inspect the updated report before setting a new coverage baseline.
+- Latest code/test head recorded here: `c630fb8168bedfc80dd659e9b48178c0601bbcf3`.
+- [Run #485](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41173879337) passed restore, build, tests with coverage, Codecov upload, pack, package audit, clean-consumer verification, and artifact upload after expanding evidence-provenance mismatch coverage.
+- [Run #486](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41173964512) passed the same verification pipeline after canonical provider-metadata ordering and its regression test.
+- The refreshed Codecov PR comment reports 94.36090% patch coverage with 45 changed lines missing coverage. File-level counts remain available in the PR comment; exact line-level details are not exposed through the available GitHub connection. Do not add tests solely to chase 100%; inspect meaningful behavioral gaps.
+- The latest runs contain only the verification job; no NuGet publication was performed.
 
 No merge, release, NuGet publication, or writes to `master` / `development` are authorized by this brief.
 
 ## Next logical work
 
-1. Confirm the Codecov report has refreshed for the latest test commits; inspect the remaining missing and partial lines rather than adding tests solely to inflate a percentage.
-2. Continue the contract and codec audit: malformed serialized payloads, boundary values, provenance mismatch paths, and stream behavior.
-3. Review the agent-turn guide and public XML/API docs against the actual implementation.
-4. Check Foundry's consumption boundary: Foundry should own durable replay/idempotency, conversation history, authorization, bounded iteration, and action handoff.
-5. Keep provider adapters and security behavior aligned with their documented endpoint contracts; use deterministic fixtures for regression coverage.
-6. Expand benchmarks only where a stable, meaningful operation exists; publish no performance claim without reproducible baselines.
-7. Keep the PR open and draft until the implementation, documentation, coverage, and integration review are complete.
+1. Continue the snapshot and binary-codec boundary audit, focusing on meaningful malformed-payload and exact-boundary behavior rather than defensive branches that callers cannot reach.
+2. Review the agent-turn guide and public XML/API docs against the actual implementation; generated XML documentation is enabled and warnings are treated as errors.
+3. Check Foundry's consumption boundary: Foundry should own durable replay/idempotency, conversation history, authorization, bounded iteration, and action handoff.
+4. Keep provider adapters and security behavior aligned with their documented endpoint contracts; use deterministic fixtures for regression coverage.
+5. Expand benchmarks only where a stable, meaningful operation exists; publish no performance claim without reproducible baselines.
+6. Keep the PR open and draft until the implementation, documentation, coverage, and integration review are complete.
 
 ## Documentation and branch discipline
 
