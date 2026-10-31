@@ -12,7 +12,7 @@ namespace TheSingularityWorkshop.HeadlessAi;
 /// </summary>
 public sealed class HeadlessAiAgentTurnComparisonSnapshot
 {
-    private const int MaxSerializedCharacters = 40_000_000;
+    private const int MaxSerializedBytes = 40_000_000;
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -57,7 +57,7 @@ public sealed class HeadlessAiAgentTurnComparisonSnapshot
         }
         var canonicalPayload = Encoding.UTF8.GetString(boundedWriter.WrittenSpan);
         if (canonicalPayload.Length > MaxSerializedCharacters)
-            throw new ArgumentException("Serialized comparison exceeds the 40-million-character snapshot limit.", nameof(comparison));
+            throw new ArgumentException("Serialized comparison exceeds the 40-million-byte snapshot limit.", nameof(comparison));
 
         var snapshot = JsonSerializer.Deserialize<HeadlessAiAgentTurnComparison>(canonicalPayload, JsonOptions)
             ?? throw new InvalidOperationException("The validated comparison could not be snapshotted.");
