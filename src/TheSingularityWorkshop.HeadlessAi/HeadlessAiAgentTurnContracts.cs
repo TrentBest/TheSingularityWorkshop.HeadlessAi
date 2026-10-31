@@ -150,8 +150,9 @@ public sealed record HeadlessAiAgentTurnEnvelope
 
     private static void ValidateHttpsUrl(string value, string name)
     {
-        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
-            throw new ArgumentException($"{name} must be an absolute HTTPS URL.", name);
+        if (value.Length > 2_048 ||
+            !Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+            throw new ArgumentException($"{name} must be an absolute HTTPS URL limited to 2048 characters.", name);
     }
 }
 
@@ -383,6 +384,7 @@ public sealed record HeadlessAiAgentTurnResult
         if (ConfigurationId is not null &&
             (string.IsNullOrWhiteSpace(ConfigurationId) || ConfigurationId.Length > 128))
             throw new ArgumentException("Configuration identity must be non-empty and limited to 128 characters.", nameof(ConfigurationId));
+        CheckOptionalText(ProviderVersion, 128, nameof(ProviderVersion));
         if (CompletedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.");
         ValidateOptionalHttpsUrl(IssueUrl, nameof(IssueUrl));
         ValidateOptionalHttpsUrl(PullRequestUrl, nameof(PullRequestUrl));
