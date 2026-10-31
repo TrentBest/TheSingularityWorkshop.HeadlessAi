@@ -80,6 +80,10 @@ public sealed class HeadlessAiAgentTurnExecutor
             var output = await agent.SendAsync(new HeadlessAiInput(canonicalRequest), timeoutSource.Token)
                 .ConfigureAwait(false);
             var completedAt = _timeProvider.GetUtcNow();
+            if (output.Content.Length > 1_000_000)
+                return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
+                    "response_limit_exceeded",
+                    "The provider response exceeds the one-million-character result limit.", string.Empty);
             return CreateSuccess(envelope, output, fingerprint, providerId, modelId, startedAt, completedAt);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
