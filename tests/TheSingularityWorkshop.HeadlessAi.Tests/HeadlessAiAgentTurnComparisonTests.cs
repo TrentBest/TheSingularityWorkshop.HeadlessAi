@@ -323,21 +323,49 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     [InlineData("correlation")]
     [InlineData("repository")]
     [InlineData("candidate")]
+    [InlineData("authorized-branch")]
+    [InlineData("base-commit")]
+    [InlineData("prior-turn")]
+    [InlineData("idempotency-key")]
+    [InlineData("issue-url")]
+    [InlineData("pull-request-url")]
+    [InlineData("evidence")]
     public void Comparison_RejectsProviderResultWithMismatchedProvenance(string mismatch)
     {
+        var first = Result("provider-a", "turn-a");
         var second = Result("provider-b", "turn-b");
+        if (mismatch == "evidence")
+        {
+            first = first with
+            {
+                CandidateCommitSha = Sha,
+                Evidence = [Evidence("first-provider evidence")]
+            };
+            second = second with
+            {
+                CandidateCommitSha = Sha,
+                Evidence = [Evidence("different provider evidence")]
+            };
+        }
+
         second = mismatch switch
         {
             "task" => second with { TaskId = "other-task" },
             "correlation" => second with { CorrelationId = "other-correlation" },
             "repository" => second with { Repository = "Other/Repository" },
             "candidate" => second with { CandidateCommitSha = Sha },
+            "authorized-branch" => second with { AuthorizedBranch = "agent/other" },
+            "base-commit" => second with { BaseCommitSha = new string('b', 40) },
+            "prior-turn" => second with { PriorTurnId = "prior-turn", PriorCandidateCommitSha = Sha },
+            "idempotency-key" => second with { IdempotencyKey = "different-idempotency-key" },
+            "issue-url" => second with { IssueUrl = "https://github.com/TrentBest/Example/issues/2" },
+            "pull-request-url" => second with { PullRequestUrl = "https://github.com/TrentBest/Example/pull/2" },
             _ => second
         };
 
         Assert.Throws<ArgumentException>(() => (Comparison() with
         {
-            ProviderResults = [Result("provider-a", "turn-a"), second]
+            ProviderResults = [first, second]
         }).Validate());
     }
 
@@ -556,6 +584,20 @@ public sealed class HeadlessAiAgentTurnComparisonTests
 
         Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnComparisonSnapshot.Create(invalid));
     }
+
+    private static HeadlessAiEvidenceReference Evidence(string summary)
+        => new()
+        {
+            Repository = "TrentBest/Example",
+            CommitSha = Sha,
+            WorkflowRunId = "run-123",
+            Attempt = 1,
+            WorkflowName = "CI",
+            Conclusion = "success",
+            SourceUrl = "https://github.com/TrentBest/Example/actions/runs/123",
+            ObservedAt = Now,
+            BoundedSummary = summary
+        };
 
     private static HeadlessAiProviderAssessment Assessment(
         string provider, string turn, params HeadlessAiProviderFinding[] findings)
