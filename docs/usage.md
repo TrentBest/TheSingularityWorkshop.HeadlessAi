@@ -13,7 +13,7 @@ The public API uses a `HeadlessAiProfile` and `HeadlessAiAgentTemplate` to confi
 
 This example uses **one specific protocol: OpenAI's Responses API**. That is an example choice, not a requirement or a generic endpoint. The URL, adapter, authentication headers, and settings must match the service you intend to call. This code calls the provider API directly; it does **not** automate the ChatGPT website or submit into the same signed-in web session. Provider APIs and their website experiences can have different features and conversation state.
 
-The example expects a real API key in the host environment and makes a live network request; it is not an offline test.
+The example expects a real API key in the host environment and makes a live network request; it is not an offline test. The same example is maintained as a compile-checked project at [samples/TheSingularityWorkshop.HeadlessAi.Quickstart](../samples/TheSingularityWorkshop.HeadlessAi.Quickstart/Program.cs). CI builds the sample but does not run it or contact a live provider.
 
 ## Current constructor-based API
 
