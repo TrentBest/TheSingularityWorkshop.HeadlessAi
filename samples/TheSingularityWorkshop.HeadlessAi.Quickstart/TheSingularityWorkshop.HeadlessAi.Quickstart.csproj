@@ -6,7 +6,10 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(UsePackedHeadlessAi)' != 'true'">
     <ProjectReference Include="../../src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UsePackedHeadlessAi)' == 'true'">
+    <PackageReference Include="TheSingularityWorkshop.HeadlessAi" Version="$(HeadlessAiPackageVersion)" />
   </ItemGroup>
 </Project>
