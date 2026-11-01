@@ -38,6 +38,7 @@ public sealed class HeadlessAiAgent
     /// <returns>The adapter-normalized endpoint response.</returns>
     /// <exception cref="HeadlessAiHttpException">The endpoint returns a non-success HTTP status.</exception>
     /// <exception cref="TimeoutException">The configured profile timeout expires before caller cancellation.</exception>
+    /// <exception cref="InvalidDataException">The adapter returns null instead of a normalized output.</exception>
     public async Task<HeadlessAiOutput> SendAsync(HeadlessAiInput input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
