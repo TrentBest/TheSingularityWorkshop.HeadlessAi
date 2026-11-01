@@ -89,11 +89,11 @@ public sealed class HeadlessAiAgent
         {
             if (string.IsNullOrWhiteSpace(header.Key) ||
                 header.Key.Length > HeadlessAiProfile.MaxConfigurationKeyCharacters ||
-                header.Key.Any(character => char.IsWhiteSpace(character) || character is ':' or '\\r' or '\\n'))
+                header.Key.Any(character => char.IsWhiteSpace(character) || character is ':' or '\r' or '\n'))
                 throw new InvalidOperationException("Request header names must be non-whitespace, bounded, and must not contain whitespace or separators.");
             if (header.Value is null ||
                 header.Value.Length > HeadlessAiProfile.MaxConfigurationValueCharacters ||
-                header.Value.Contains('\\r') || header.Value.Contains('\\n') || header.Value.Contains('\\0'))
+                header.Value.Contains('\r') || header.Value.Contains('\n') || header.Value.Contains('\0'))
                 throw new InvalidOperationException("Request header values must be bounded and cannot contain CR, LF, or NUL characters.");
             if (!seen.Add(header.Key))
                 throw new InvalidOperationException($"Request headers contain a duplicate key '{header.Key}' (case-insensitive).");
