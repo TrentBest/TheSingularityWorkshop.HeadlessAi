@@ -37,9 +37,13 @@ public sealed record HeadlessAiInput
         Metadata = new ReadOnlyDictionary<string, string>(copy);
     }
 
+    /// <summary>Gets the immutable input content.</summary>
     public string Content { get; }
+
+    /// <summary>Gets the immutable metadata snapshot, empty when no metadata was supplied.</summary>
     public IReadOnlyDictionary<string, string> Metadata { get; }
 
+    /// <summary>Deconstructs the input into its content and immutable metadata snapshot.</summary>
     public void Deconstruct(out string content, out IReadOnlyDictionary<string, string> metadata)
     {
         content = Content;
