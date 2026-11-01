@@ -7,6 +7,29 @@ namespace TheSingularityWorkshop.HeadlessAi.Tests;
 public sealed class HeadlessAiTests
 {
     [Fact]
+    public void Input_RejectsContentAboveTheContractLimit()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            new HeadlessAiInput(new string('x', HeadlessAiInput.MaxContentCharacters + 1)));
+    }
+
+    [Fact]
+    public void Input_CopiesAndBoundsMetadata()
+    {
+        var metadata = new Dictionary<string, string> { ["source"] = "host" };
+        var input = new HeadlessAiInput("task", metadata);
+        metadata["source"] = "changed";
+        Assert.Equal("host", input.Metadata["source"]);
+        Assert.Throws<NotSupportedException>(() =>
+            ((IDictionary<string, string>)input.Metadata)["source"] = "mutated");
+        Assert.Throws<ArgumentException>(() => new HeadlessAiInput("task",
+            Enumerable.Range(0, HeadlessAiInput.MaxMetadataEntries + 1)
+                .ToDictionary(i => $"key-{i}", _ => "value")));
+        Assert.Throws<ArgumentException>(() => new HeadlessAiInput("task",
+            new Dictionary<string, string> { ["source"] = new string('x', HeadlessAiInput.MaxMetadataValueCharacters + 1) }));
+    }
+
+    [Fact]
     public void Profile_RequiresHttpsUnlessExplicitlyOverridden()
     {
         Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("test", new Uri("http://example.test")));
