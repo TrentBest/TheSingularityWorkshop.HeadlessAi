@@ -41,6 +41,10 @@ public sealed class HeadlessAiProfile
             throw new ArgumentException("The endpoint must be an absolute URI.", nameof(endpoint));
         if (endpoint.AbsoluteUri.Length > MaxEndpointCharacters)
             throw new ArgumentException($"Endpoint URIs cannot exceed {MaxEndpointCharacters} characters.", nameof(endpoint));
+        if (!string.IsNullOrEmpty(endpoint.UserInfo))
+            throw new ArgumentException("Endpoint credentials must be supplied through a host-managed header provider, not embedded in the URI.", nameof(endpoint));
+        if (!string.IsNullOrEmpty(endpoint.Fragment))
+            throw new ArgumentException("Endpoint URIs cannot contain fragments.", nameof(endpoint));
         if (endpoint.Scheme != Uri.UriSchemeHttps &&
             !(allowInsecureHttp && endpoint.Scheme == Uri.UriSchemeHttp))
             throw new ArgumentException("HTTPS is required unless insecure HTTP is explicitly enabled.", nameof(endpoint));
