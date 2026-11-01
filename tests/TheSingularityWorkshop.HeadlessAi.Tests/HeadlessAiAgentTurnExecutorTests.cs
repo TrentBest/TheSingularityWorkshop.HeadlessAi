@@ -258,6 +258,25 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_NormalizesTransportCancellationThatIsNotCallerCancellation()
+    {
+        var attempts = 0;
+        using var client = new HttpClient(new StubHandler((_, _) =>
+        {
+            attempts++;
+            throw new TaskCanceledException("The HTTP transport timed out.");
+        }));
+        var executor = CreateExecutor(client);
+
+        var result = await executor.ExecuteAsync(CreateEnvelope());
+
+        Assert.Equal(1, attempts);
+        Assert.Equal("timeout", result.ErrorCode);
+        Assert.Equal("error", result.FinishReason);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_RejectsEnvelopeAboveSerializedCharacterLimitBeforeSending()
     {
         var attempts = 0;
