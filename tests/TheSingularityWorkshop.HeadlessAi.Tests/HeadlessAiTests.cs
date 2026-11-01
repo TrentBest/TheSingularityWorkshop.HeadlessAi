@@ -46,6 +46,8 @@ public sealed class HeadlessAiTests
     {
         Assert.Throws<ArgumentException>(() => new HeadlessAiProfile(
             new string('x', HeadlessAiProfile.MaxIdCharacters + 1), new Uri("https://example.test")));
+        Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("long-uri",
+            new Uri("https://example.test/" + new string('x', HeadlessAiProfile.MaxEndpointCharacters))));
         Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("headers", new Uri("https://example.test"),
             headers: Enumerable.Range(0, HeadlessAiProfile.MaxHeaders + 1).ToDictionary(i => $"x-{i}", _ => "v")));
         Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("settings", new Uri("https://example.test"),
