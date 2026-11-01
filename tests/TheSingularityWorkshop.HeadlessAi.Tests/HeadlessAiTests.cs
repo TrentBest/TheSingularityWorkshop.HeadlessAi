@@ -293,7 +293,7 @@ public sealed class HeadlessAiTests
     {
         using var client = new HttpClient(new StubHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("unexpected") })));
-        var headers = new Dictionary<string, string> { ["Authorization"] = "Bearer token\\r\\nX-Injected: true" };
+        var headers = new Dictionary<string, string> { ["Authorization"] = "Bearer token\r\nX-Injected: true" };
         var agent = new HeadlessAiAgent(client,
             new HeadlessAiProfile("fixture", new Uri("https://example.test")),
             new RawTextHeadlessAiAdapter(), new DictionaryHeaderProvider(headers));
