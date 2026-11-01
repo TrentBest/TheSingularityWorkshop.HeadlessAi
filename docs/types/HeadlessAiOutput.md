@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Normalized response content with HTTP status, media type, and optional metadata.
+Normalized response content with HTTP status, media type, and optional metadata. Output snapshots enforce content, media-type, and metadata bounds; metadata is immutable after construction.
 
 ## Declaration and ownership
 
