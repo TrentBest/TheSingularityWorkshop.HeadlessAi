@@ -81,7 +81,7 @@ Fixture coverage proves only the tested protocol shapes. Before claiming current
 
 ### P1 — Prove the public contract
 - [ ] Inspect public source/API, constructor validation, exception behavior, XML docs, and nullable annotations.
-- [x] Add deterministic tests for cancellation/timeout distinction, non-success status, oversized bodies, request-header precedence, endpoint restrictions, bounded/dynamic header validation, and malformed adapter variants. Verified by [development run #524](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41281578382), which passed all 47 tests.
+- [ ] Add deterministic tests for cancellation/timeout distinction, transport failure, non-success status, oversized bodies, request-header precedence, endpoint restrictions, bounded/dynamic header validation, and malformed adapter variants. The transport-failure regression was just added and awaits its exact-head workflow run.
 - [ ] Compile README and usage examples in a consumer smoke test; avoid live credentials in CI.
 
 ### P2 — Close domain documentation
