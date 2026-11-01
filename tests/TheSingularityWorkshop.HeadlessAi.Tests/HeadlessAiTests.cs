@@ -267,6 +267,40 @@ public sealed class HeadlessAiTests
                 new Dictionary<string, string> { ["Authorization"] = "rotated-token" });
     }
 
+    private sealed class DictionaryHeaderProvider(IReadOnlyDictionary<string, string> headers) : IHeadlessAiRequestHeaderProvider
+    {
+        public ValueTask<IReadOnlyDictionary<string, string>> GetHeadersAsync(
+            HeadlessAiProfile profile, CancellationToken cancellationToken = default)
+            => ValueTask.FromResult(headers);
+    }
+
+    [Fact]
+    public async Task Agent_BoundsDynamicHeaderProviderOutput()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("unexpected") })));
+        var headers = Enumerable.Range(0, HeadlessAiProfile.MaxHeaders + 1)
+            .ToDictionary(index => $"x-header-{index}", _ => "value");
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test")),
+            new RawTextHeadlessAiAdapter(), new DictionaryHeaderProvider(headers));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => agent.SendAsync(new HeadlessAiInput("task")));
+    }
+
+    [Fact]
+    public async Task Agent_RejectsNewlinesInDynamicHeaderValues()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("unexpected") })));
+        var headers = new Dictionary<string, string> { ["Authorization"] = "Bearer token\\r\\nX-Injected: true" };
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test")),
+            new RawTextHeadlessAiAdapter(), new DictionaryHeaderProvider(headers));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => agent.SendAsync(new HeadlessAiInput("task")));
+    }
+
 
     [Fact]
     public async Task JsonAdapter_MapsProviderSpecificRequestAndResponse()
