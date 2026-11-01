@@ -25,6 +25,8 @@ They do **not** create an autonomous agent loop. The host remains responsible fo
 
 The envelope is data, not authority. Validation requires an isolated feature branch and rejects `master` and `development` as authorized targets. CI evidence is treated as untrusted, provenance-bearing input; HeadlessAi does not independently verify a CI provider's verdict.
 
+The isolated authorized branch is a **host-managed candidate ref**, not a permanent repository branch. A host may create it for one bounded agent turn or review cycle and discard it after integration or rejection. The repository's maintained branch policy can therefore remain exactly `master` and `development`; HeadlessAi neither creates candidate branches nor decides their retention or deletion. The host must enforce the repository's branch-creation and cleanup policy.
+
 ## One provider turn
 
 Create the envelope in the host, validate and snapshot it once, then pass that same request snapshot to each provider executor. Sharing the request guarantees that every provider receives identical canonical input and the same request fingerprint.
