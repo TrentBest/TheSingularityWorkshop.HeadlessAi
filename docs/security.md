@@ -10,7 +10,7 @@
 HeadlessAi sends data to endpoints configured by the host. Endpoint configuration, credentials, and response handling are security-sensitive.
 
 - HTTPS is required by default. Plain HTTP requires explicit opt-in for trusted local/test endpoints.
-- Endpoint URIs reject embedded user information and fragments. Prefer `IHeadlessAiRequestHeaderProvider` for request-time secret retrieval and token rotation. Static profile headers are copied into immutable collections, but their values may still be secrets.
+- Endpoint URIs reject embedded user information and fragments. Prefer `IHeadlessAiRequestHeaderProvider` for request-time secret retrieval and token rotation. Its output is bounded and validated for HTTP token names and control characters before it is applied. Static profile headers are copied into immutable collections, but their values may still be secrets.
 - HeadlessAi does not log credentials, prompts, or responses.
 - Successful response bodies are buffered only up to the profile's `MaxResponseBytes` limit.
 - Non-success response excerpts are limited to 2048 bytes, but may still contain sensitive content; redact before persistence.
