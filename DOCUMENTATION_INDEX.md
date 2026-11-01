@@ -14,7 +14,8 @@ HeadlessAi gives a .NET application a direct HTTP path to an AI-capable endpoint
 | Your goal | Read |
 |---|---|
 | Understand the problem and the boundary | [README](README.md) · [What is HeadlessAi?](docs/WHAT_IS_HEADLESSAI.md) |
-| Make a request with the current public API | [Usage guide](docs/usage.md) |
+| Make a request with the endpoint API | [Usage guide](docs/usage.md) |
+| Create, resume, compare, and persist versioned agent turns | [Agent turns and resumability](docs/agent-turns-and-resumability.md) |
 | Choose a supported endpoint protocol | [Provider adapters](docs/provider-adapters.md) |
 | Understand response extraction and failures | [Provider failure contract](docs/provider-failure-contract.md) |
 | Handle credentials, endpoint trust, and untrusted output | [Security model](docs/security.md) |

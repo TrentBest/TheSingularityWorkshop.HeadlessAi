@@ -115,7 +115,8 @@ Expected behavior: the program prints the response text extracted by the selecte
 
 ## 🟪 06 Documentation and theory
 
-- **[Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
+- **[Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md)** — configure the endpoint API, call a provider, and understand credentials, limits, and failure behavior.
+- **[Versioned Agent Turns and Resumability](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/agent-turns-and-resumability.md)** — create immutable request snapshots, preserve provenance across provider turns, resume host-owned conversations, compare provider results, and persist snapshots through FSM_Serialization.
 - **[What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
 - **[Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md)** — understand why endpoint protocol, transport, identity, and application authority are separate concerns.
 - **[Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md)** — understand the request, response, and host responsibilities.

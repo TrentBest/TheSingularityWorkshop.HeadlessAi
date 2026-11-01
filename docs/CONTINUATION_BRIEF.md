@@ -7,73 +7,79 @@
 
 # Continuation Brief — HeadlessAi
 
-## Purpose
+## Purpose and architectural boundary
 
-HeadlessAi is a standalone .NET HTTP-agent toolkit. It configures endpoint-specific HTTP requests and responses and lets hosts create lightweight agent instances from reusable profiles/templates. It is not itself a model, workflow engine, permission system, memory store, or execution loop.
+HeadlessAi is a provider-neutral .NET boundary for direct HTTP model invocation and bounded, versioned agent-turn exchange. It preserves request identity, repository/commit provenance, CI evidence references, provider output, normalized proposals, and cross-provider comparisons.
 
-## Architecture invariants
+HeadlessAi is **not** a workflow engine or autonomous agent loop. It does not own conversation storage, scheduling, retry loops, durable idempotency, provider arbitration, permissions, repository mutation, tool execution, or consequential actions.
 
-- Keep endpoint-specific schemas explicit; do not force all providers into one JSON body.
-- Share an injected HttpClient; agent instances must not own independent connection pools.
-- Keep ProtocolAi and GrammarAi optional. HeadlessAi must work without them and must not depend on TheForge, FSM_COS, or FSM_API.
-- The host owns roles, memory, scheduling, permissions, budgets, validation, tool mediation, and consequential actions.
-- Treat model output as untrusted data, never as permission to execute.
-- Use request-time header providers for rotating secrets; avoid secret-bearing diagnostics.
-- Bound response bodies, timeouts, and cancellation behavior.
-- Never claim token savings, accuracy, hallucination reduction, or performance improvement without reproducible measurements.
-- Never publish to NuGet without explicit user approval. CI publication must remain disabled by default.
+- **Foundry** owns workflow lifecycle, durable duplicate suppression, bounded iteration, orchestration, authorization, and action handoff.
+- **CiAi** supplies CI facts and evidence; HeadlessAi preserves evidence references as untrusted, provenance-bearing input.
+- **ProtocolAi** and **GrammarAi** remain optional integrations. HeadlessAi must work without either.
+- **FSM_Serialization** supplies the stable binary stream boundary used by the agent-turn codec. Do not introduce a competing stream abstraction.
 
-## Current repository structure
+## Repository invariants
 
-- src/TheSingularityWorkshop.HeadlessAi/: library contracts and provider adapters.
-- tests/TheSingularityWorkshop.HeadlessAi.Tests/: deterministic fixture-based tests.
-- benchmarks/TheSingularityWorkshop.HeadlessAi.Benchmarks/: local BenchmarkDotNet baselines.
-- docs/: problem domain, theory, architecture, usage, provider adapter, security, performance, use cases, measurement, and roadmap documentation.
-- .github/workflows/build.yml: restore, Release build, tests, coverage/Codecov, package pack, and artifact upload; no publish step enabled.
+- Keep provider endpoint schemas explicit. A provider adapter speaks its documented protocol; do not pretend URL substitution alone changes protocols.
+- Reuse a host-injected `HttpClient`; HeadlessAi must not create independent connection pools for logical callers.
+- Keep credentials host-managed and resolve rotating authorization headers at request time. Never persist credentials in prompts, evidence, metadata, or diagnostics.
+- Treat raw provider output, normalized proposals, provider metadata, assessments, and CI evidence summaries as untrusted data.
+- A model proposal is not permission to execute. The host independently validates every consequential action.
+- Preserve cancellation and timeout boundaries. Do not add automatic retries; retry policy belongs to the host.
+- Do not claim token savings, accuracy, hallucination reduction, or performance improvement without reproducible measurements.
+- Keep NuGet publication disabled/skipped unless the user explicitly authorizes a release.
 
-## Current implementation slice
+## Current implementation
 
-- Endpoint profiles and reusable agent templates.
-- Raw text, delegate-based, and JSON adapter extension points.
+### Endpoint API
+
+- Reusable `HeadlessAiProfile` and `HeadlessAiAgentTemplate` configuration.
 - Direct HTTP adapters for OpenAI Responses, Gemini generateContent, and Anthropic Messages.
-- Request-time header resolution, cancellation, timeouts, and bounded response bodies.
-- Usage metadata extraction for supported response fields.
-- Fixture-based provider request/response tests.
-- BenchmarkDotNet project and CI coverage/pack workflow.
+- Raw-text, delegate-based, and JSON adapter extension points.
+- Host-provided request headers, shared transport, cancellation, timeout, bounded response handling, normalized provider failures, and usage metadata.
 
-The built-in adapters currently focus on basic text requests. Streaming, rich multimodal inputs, full provider tool semantics, broad error-envelope normalization, explicit redirect policy, retry policy, and host-level rate/cost budgets remain future work or host responsibilities.
+### Versioned agent turns
 
-## Current branch and review posture
+- `HeadlessAiAgentTurnEnvelope` carries task/conversation identity, task version, isolated branch and commit provenance, expiry, idempotency key, bounded evidence/context, and resource limits.
+- `HeadlessAiAgentTurnRequest` validates and snapshots canonical request JSON once. Providers share the same immutable request and SHA-256 fingerprint.
+- `HeadlessAiAgentTurnExecutor` performs exactly one provider invocation and returns a provenance-bound result. It does not retry or deduplicate.
+- `HeadlessAiAgentTurnComparison` validates shared provenance and explicit provider attribution. It does not infer consensus or select a winner.
+- `HeadlessAiAgentTurnComparisonSnapshot` captures a bounded immutable canonical comparison payload and sorts provider-metadata keys so equivalent dictionaries produce identical serialized payloads and fingerprints.
+- `HeadlessAiAgentTurnBinaryCodec` frames request and comparison snapshots over `TheSingularityWorkshop.FSM_Serialization` 1.0.0 and `IBinaryStream`.
 
-Work is on development. PR #1 targets master and remains unmerged. Do not merge, publish, or rewrite protected branch history without explicit user direction. After every meaningful batch, verify CI against the exact branch head and report what did and did not run.
+The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload length, SHA-256 digest), with a 1,024,000-byte request payload limit and a 40,000,000-byte comparison payload limit. The digest detects accidental corruption; it is not a signature or authentication mechanism. The host owns stream lifetime, storage, encryption, access control, and retention.
+
+## Current PR and verification posture
+
+- Repository: `TrentBest/TheSingularityWorkshop.HeadlessAi`.
+- Active work: PR [#11 — Add versioned resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/11).
+- PR #11 is open and draft, from `feature/resumable-agent-turn-contracts` into `development`.
+- Latest implementation/test head: `d63c40778e011ab2f0ddc55320c0e6f45e2d245e`.
+- [Run #563](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41283611031) passed on that exact head: restore, Release build, all 215 tests, coverage preparation/upload, pack, package audit, quickstart compilation against the packed package, clean-consumer verification, and artifact upload.
+- The executor now normalizes transport-level `OperationCanceledException` failures as bounded timeout results when the caller's cancellation token was not cancelled. Explicit caller cancellation still propagates.
+- Regression coverage includes transport cancellation normalization and credential-bearing provider metadata filtering. Provider metadata remains supplemental and is filtered at the turn-executor boundary; the lower-level output contract validates its own structural bounds.
+- The comparison-frame regression suite covers round-trip, unsupported versions, payload tampering, wrong frame kind, truncated header/payload, invalid UTF-8 with a matching digest, over-limit declared payload length, noncanonical JSON with a matching digest, and invalid comparison provenance with a correctly framed/checksummed payload.
+- The codec implementation uses the shared bounded frame reader/writer and revalidates comparison snapshots during unpack.
+
+The `publish_nuget` job was skipped in run #489. No package was published. No merge, release, NuGet publication, or writes to `master` / `development` are included.
 
 ## Next logical work
 
-1. Run CI on the exact latest head and fix all warnings/errors.
-2. Audit provider adapters against current official endpoint schemas and add malformed/error-envelope fixtures.
-3. Audit package metadata, XML docs, license, changelog, repository links, and packed package contents.
-4. Expand benchmark cases and capture a baseline; do not convert intended performance into claims.
-5. Design optional ProtocolAi/GrammarAi evaluation harness and collect reproducible token/quality results.
-6. Decide and document retry, redirect, concurrency, and budget boundaries before implementation.
-7. Keep NuGet publication disabled until the user explicitly approves a release.
+1. Continue the snapshot and binary-codec boundary audit, focusing on meaningful malformed-payload and exact-boundary behavior rather than defensive branches that callers cannot reach.
+2. Review the agent-turn guide and public XML/API docs against the actual implementation; generated XML documentation is enabled and warnings are treated as errors.
+3. Check Foundry's consumption boundary: Foundry should own durable replay/idempotency, conversation history, authorization, bounded iteration, and action handoff.
+4. Keep provider adapters and security behavior aligned with their documented endpoint contracts; use deterministic fixtures for regression coverage.
+5. Expand benchmarks only where a stable, meaningful operation exists; publish no performance claim without reproducible baselines.
+6. Keep the PR open and draft until the implementation, documentation, coverage, and integration review are complete.
+
+## Documentation and branch discipline
+
+- Follow the current Workshop documentation standard: animated moniker at the top and the canonical PNG footer below.
+- Keep public documentation operational and user-facing; avoid stale branch/run notes outside this continuation brief.
+- The intended long-lived branches are `master` (released state) and `development` (active integration). Feature work stays isolated in its PR until explicitly approved.
+- Do not merge, publish, delete branches, or change protected branch refs without the user's explicit direction.
 
 ---
 
-<p align="center">
-  <a href="https://github.com/TrentBest">
-    <img src="https://github.com/TrentBest.png?size=200" alt="The Singularity Workshop on GitHub" width="200">
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/TrentBest">GitHub</a> ·
-  <a href="https://coderlegion.com/">Coder Legion</a> ·
-  <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
-  <a href="https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J">PayPal</a>
-  <br>
-  <a href="https://github.com/TrentBest/FSM_API">FSM_API</a> ·
-  <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_Serialization">FSM_Serialization</a> ·
-  <a href="https://github.com/TrentBest/WebPage">WebPage</a>
-</p>
-
-<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong><br><em>And because static boundaries are invitations to cause trouble.</em></p>
+<!-- THE SINGULARITY WORKSHOP FOOTER -->
+<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" width="200" /></p>
