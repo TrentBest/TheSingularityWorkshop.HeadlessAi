@@ -37,10 +37,10 @@ public sealed class HeadlessAiProfile
         if (id.Length > MaxIdCharacters)
             throw new ArgumentException($"Profile IDs cannot exceed {MaxIdCharacters} characters.", nameof(id));
         ArgumentNullException.ThrowIfNull(endpoint);
-        if (endpoint.AbsoluteUri.Length > MaxEndpointCharacters)
-            throw new ArgumentException($"Endpoint URIs cannot exceed {MaxEndpointCharacters} characters.", nameof(endpoint));
         if (!endpoint.IsAbsoluteUri)
             throw new ArgumentException("The endpoint must be an absolute URI.", nameof(endpoint));
+        if (endpoint.AbsoluteUri.Length > MaxEndpointCharacters)
+            throw new ArgumentException($"Endpoint URIs cannot exceed {MaxEndpointCharacters} characters.", nameof(endpoint));
         if (endpoint.Scheme != Uri.UriSchemeHttps &&
             !(allowInsecureHttp && endpoint.Scheme == Uri.UriSchemeHttp))
             throw new ArgumentException("HTTPS is required unless insecure HTTP is explicitly enabled.", nameof(endpoint));
