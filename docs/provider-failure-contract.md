@@ -30,6 +30,7 @@ The broader invocation contract also distinguishes important operational cases:
 
 - **Caller cancellation:** preserve the caller's cancellation signal; do not reinterpret it as a provider answer.
 - **Profile timeout:** surface timeout as a timeout failure rather than successful empty output.
+- **Transport failure:** allow `HttpRequestException` to propagate so the host can distinguish network failure from an HTTP response.
 - **Non-success HTTP status:** surface `HeadlessAiHttpException` with a bounded response excerpt. The excerpt is limited to 2048 bytes and can still contain sensitive provider text; redact it before persistence.
 - **Response too large:** enforce the configured `MaxResponseBytes` limit rather than buffering an unbounded successful body.
 - **Invalid configuration:** reject unusable profile settings before relying on a remote endpoint. Missing required settings and malformed typed settings fail during request construction with an `ArgumentException` that identifies the profile and setting; malformed values are not sent to the provider.
