@@ -54,12 +54,12 @@ The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload len
 - Repository: `TrentBest/TheSingularityWorkshop.HeadlessAi`.
 - Active work: PR [#11 — Add versioned resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/11).
 - PR #11 is open and draft, from `feature/resumable-agent-turn-contracts` into `development`.
-- Latest implementation/test head: `6f9ccc25a37d9dcfdd10003bec9ef280ab9152eb`.
-- [Run #489](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41249187201) passed on that exact head: restore, build, all 208 tests, coverage preparation/upload, pack, package audit, clean-consumer verification, and artifact upload.
-- Run #488 exposed one faulty test fixture: its tampering helper changed the top-level correlation and both provider correlations together, leaving a valid comparison. The fixture was corrected to alter only one provider result; the narrowed assertion now verifies rejection of the provenance mismatch. Run #489 passed after that correction.
-- The comparison-frame regression suite now covers round-trip, unsupported versions, payload tampering, wrong frame kind, truncated header/payload, invalid UTF-8 with a matching digest, over-limit declared payload length, noncanonical JSON with a matching digest, and invalid comparison provenance with a correctly framed/checksummed payload.
-- The codec implementation itself uses the shared bounded frame reader/writer and revalidates comparison snapshots during unpack. The audit found a test-coverage gap, not a demonstrated implementation defect.
-- The earlier Codecov report of 94.36090% patch coverage / 45 changed lines missing coverage predates these tests and is not current coverage.
+- Latest implementation/test head: `d63c40778e011ab2f0ddc55320c0e6f45e2d245e`.
+- [Run #563](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41283611031) passed on that exact head: restore, Release build, all 215 tests, coverage preparation/upload, pack, package audit, quickstart compilation against the packed package, clean-consumer verification, and artifact upload.
+- The executor now normalizes transport-level `OperationCanceledException` failures as bounded timeout results when the caller's cancellation token was not cancelled. Explicit caller cancellation still propagates.
+- Regression coverage includes transport cancellation normalization and credential-bearing provider metadata filtering. Provider metadata remains supplemental and is filtered at the turn-executor boundary; the lower-level output contract validates its own structural bounds.
+- The comparison-frame regression suite covers round-trip, unsupported versions, payload tampering, wrong frame kind, truncated header/payload, invalid UTF-8 with a matching digest, over-limit declared payload length, noncanonical JSON with a matching digest, and invalid comparison provenance with a correctly framed/checksummed payload.
+- The codec implementation uses the shared bounded frame reader/writer and revalidates comparison snapshots during unpack.
 
 The `publish_nuget` job was skipped in run #489. No package was published. No merge, release, NuGet publication, or writes to `master` / `development` are included.
 
