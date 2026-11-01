@@ -30,7 +30,7 @@ HeadlessAi is a provider-neutral .NET library for making bounded, explicit HTTP 
 
 - Invocation input is snapshotted into immutable metadata and bounded to 1,048,576 UTF-16 content characters, 128 metadata entries, 256-character keys, and 8,192-character values. These are input representation bounds, not a token-budget guarantee.
 
-- Reusable endpoint profiles and templates, and lightweight agent invocation.
+- Reusable endpoint profiles and templates, and lightweight agent invocation. Profiles bound identifiers, endpoint URI length, header/settings counts and lengths, and response-buffer size; input snapshots have their own documented content/metadata limits.
 - Host-injected `HttpClient`; explicit HTTP method and endpoint ownership.
 - Raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters.
 - Request-time headers, cancellation, configured timeouts, bounded successful response bodies, and bounded non-success excerpts.
