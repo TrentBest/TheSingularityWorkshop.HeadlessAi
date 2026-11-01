@@ -82,7 +82,7 @@ Fixture coverage proves only the tested protocol shapes. Before claiming current
 ### P1 — Prove the public contract
 - [ ] Inspect public source/API, constructor validation, exception behavior, XML docs, and nullable annotations.
 - [ ] Add deterministic tests for cancellation/timeout distinction, transport failure, non-success status, oversized bodies, request-header precedence, endpoint restrictions, bounded/dynamic header validation, and malformed adapter variants. The transport-failure regression was just added and awaits its exact-head workflow run.
-- [ ] Compile README and usage examples in a consumer smoke test; avoid live credentials in CI.
+- [ ] Compile README and usage examples in a consumer smoke test; avoid live credentials in CI. A compile-checked sample project now mirrors the README/usage example and is included in the solution; verify its exact-head workflow before checking this gate.
 
 ### P2 — Close domain documentation
 - [ ] Reconcile this document, Problem Domain, Usage, Provider Adapters, Provider Failure Contract, Security, Architecture Boundaries, Roadmap, Gallery, README, and package metadata against actual source/tests.
