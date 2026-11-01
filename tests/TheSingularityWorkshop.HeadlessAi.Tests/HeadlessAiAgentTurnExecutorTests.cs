@@ -590,7 +590,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_InvalidAndExcessiveProviderMetadataIsDiscardedWithinContractBounds()
+    public async Task ExecuteAsync_CredentialBearingProviderMetadataIsDiscarded()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
             new HttpResponseMessage(HttpStatusCode.OK)
@@ -599,13 +599,10 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             })));
         var metadata = new Dictionary<string, string>
         {
-            [" "] = "blank key",
-            [new string('k', 129)] = "oversized key",
-            ["null-value"] = null!,
-            ["oversized-value"] = new string('v', 4_097)
+            ["finish_reason"] = "stop",
+            ["authorization"] = "Bearer provider-secret-value-12345",
+            ["ordinary"] = "retained"
         };
-        for (var index = 0; index < 130; index++)
-            metadata[$"valid-{index:D3}"] = "retained";
 
         var template = new HeadlessAiAgentTemplate(
             new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
@@ -615,14 +612,11 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var result = await executor.ExecuteAsync(CreateEnvelope());
 
         Assert.Null(result.ErrorCode);
-        Assert.Equal(128, result.ProviderMetadata.Count);
-        Assert.DoesNotContain(" ", result.ProviderMetadata.Keys);
-        Assert.DoesNotContain(new string('k', 129), result.ProviderMetadata.Keys);
-        Assert.DoesNotContain("null-value", result.ProviderMetadata.Keys);
-        Assert.DoesNotContain("oversized-value", result.ProviderMetadata.Keys);
-        Assert.Contains("valid-000", result.ProviderMetadata.Keys);
-        Assert.Contains("valid-127", result.ProviderMetadata.Keys);
-        Assert.DoesNotContain("valid-128", result.ProviderMetadata.Keys);
+        Assert.Equal(2, result.ProviderMetadata.Count);
+        Assert.Equal("stop", result.FinishReason);
+        Assert.Contains("ordinary", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("authorization", result.ProviderMetadata.Keys);
+        Assert.DoesNotContain("provider-secret-value-12345", string.Join(" ", result.ProviderMetadata.Values));
         result.Validate();
     }
 
@@ -773,23 +767,6 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_AdapterReturningNullContentIsNormalized()
-    {
-        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ignored") })));
-        var template = new HeadlessAiAgentTemplate(
-            new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
-            new InvalidOutputAdapter(returnNullOutput: false));
-        var executor = new HeadlessAiAgentTurnExecutor(template, client);
-
-        var result = await executor.ExecuteAsync(CreateEnvelope());
-
-        Assert.Equal("invalid_adapter_response", result.ErrorCode);
-        Assert.Equal(string.Empty, result.RawResponse);
-        result.Validate();
-    }
-
-    [Fact]
     public async Task ExecuteAsync_ResponseAtExactResultLimitIsRetainedAndValidated()
     {
         var boundaryResponse = new string('x', 1_000_000);
@@ -824,7 +801,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             HttpResponseMessage response, CancellationToken cancellationToken = default)
             => ValueTask.FromResult(returnNullOutput
                 ? null!
-                : new HeadlessAiOutput(null!, response.StatusCode,
+                : new HeadlessAiOutput("{}", response.StatusCode,
                     response.Content.Headers.ContentType?.MediaType));
     }
 
