@@ -39,4 +39,10 @@ public sealed record HeadlessAiInput
 
     public string Content { get; }
     public IReadOnlyDictionary<string, string> Metadata { get; }
+
+    public void Deconstruct(out string content, out IReadOnlyDictionary<string, string> metadata)
+    {
+        content = Content;
+        metadata = Metadata;
+    }
 }
