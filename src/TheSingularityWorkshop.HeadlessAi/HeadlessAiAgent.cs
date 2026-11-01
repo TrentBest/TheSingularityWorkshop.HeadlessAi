@@ -106,7 +106,7 @@ public sealed class HeadlessAiAgent
     private static async Task BufferResponseAsync(HttpResponseMessage response, int maxBytes, CancellationToken cancellationToken)
     {
         var original = response.Content;
-        var initialCapacity = (int)Math.Min(maxBytes, original.Headers.ContentLength ?? 16384);
+        var initialCapacity = (int)Math.Min(81920, Math.Min(maxBytes, original.Headers.ContentLength ?? 16384));
         using var buffer = new MemoryStream(initialCapacity);
         var chunk = ArrayPool<byte>.Shared.Rent(81920);
         try
