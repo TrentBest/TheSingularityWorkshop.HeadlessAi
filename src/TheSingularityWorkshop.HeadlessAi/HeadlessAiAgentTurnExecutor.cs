@@ -103,6 +103,13 @@ public sealed class HeadlessAiAgentTurnExecutor
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
                 "The turn exceeded its configured timeout.", string.Empty);
         }
+        catch (OperationCanceledException)
+        {
+            // Some HttpClient/handler timeout paths surface cancellation independently of the
+            // turn token. Caller cancellation was already propagated by the preceding filter.
+            return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
+                "The provider transport cancelled the request before a response was available.", string.Empty);
+        }
         catch (TimeoutException)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
