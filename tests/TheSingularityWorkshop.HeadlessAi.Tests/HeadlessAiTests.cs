@@ -27,6 +27,18 @@ public sealed class HeadlessAiTests
                 .ToDictionary(i => $"key-{i}", _ => "value")));
         Assert.Throws<ArgumentException>(() => new HeadlessAiInput("task",
             new Dictionary<string, string> { ["source"] = new string('x', HeadlessAiInput.MaxMetadataValueCharacters + 1) }));
+
+        var copy = input with { Content = "updated" };
+        Assert.Equal("updated", copy.Content);
+        Assert.Equal("host", copy.Metadata["source"]);
+        Assert.Throws<ArgumentException>(() => input with
+        {
+            Content = new string('x', HeadlessAiInput.MaxContentCharacters + 1)
+        });
+        var replacementMetadata = new Dictionary<string, string> { ["origin"] = "copied" };
+        var metadataCopy = input with { Metadata = replacementMetadata };
+        replacementMetadata["origin"] = "mutated";
+        Assert.Equal("copied", metadataCopy.Metadata["origin"]);
     }
 
     [Fact]
