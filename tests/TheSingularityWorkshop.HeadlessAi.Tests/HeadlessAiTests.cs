@@ -341,6 +341,21 @@ public sealed class HeadlessAiTests
     }
 
     [Fact]
+    public async Task Agent_PreservesTransportFailures()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromException<HttpResponseMessage>(new HttpRequestException("network unavailable"))));
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test")),
+            new RawTextHeadlessAiAdapter());
+
+        var error = await Assert.ThrowsAsync<HttpRequestException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("network unavailable", error.Message);
+    }
+
+    [Fact]
     public async Task Agent_BoundsHttpErrorExcerpt()
     {
         using var client = new HttpClient(new StubHandler((_, _) =>
