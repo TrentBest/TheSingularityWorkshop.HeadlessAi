@@ -46,6 +46,10 @@ These source-checked pages explain the public core and provider-adapter contract
 | GeminiGenerateContentAdapter | [Type guide](docs/types/GeminiGenerateContentAdapter.md) | [UML](docs/UML/GeminiGenerateContentAdapterUML.md) |
 | AnthropicMessagesAdapter | [Type guide](docs/types/AnthropicMessagesAdapter.md) | [UML](docs/UML/AnthropicMessagesAdapterUML.md) |
 
+## AI agent onboarding
+
+Before changing this repository, read [AGENTS.md](AGENTS.md) and the [shared FSM_COS Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). The agent guide records HeadlessAi's provider-communication boundary, host-owned authority, branch policy, and verification expectations.
+
 ## Related Workshop tools
 
 - [ProtocolAi](https://github.com/TrentBest/TheSingularityWorkshop.ProtocolAi) gives application-owned vocabulary values stable identities.
