@@ -48,10 +48,10 @@ HeadlessAi is a provider-neutral .NET library for making bounded, explicit HTTP 
 
 ## 2. Definition of done by domain outcome
 
-- [ ] **Connect:** document and test valid profile construction, URI/HTTPS policy, local HTTP opt-in, timeout, response bounds, method, and required adapter settings.
+- [x] **Connect:** valid profile construction, URI/HTTPS policy, local HTTP opt-in, timeout, response bounds, method, and required adapter settings are documented and tested. [Development run #542](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41281982097) passed all 48 tests.
 - [ ] **Invoke:** compile the documented first-use example against the exact current public API; verify request method, URI, headers, and body with a fake handler.
 - [ ] **Interpret:** define content and metadata guarantees; document missing text, blocked/no-text results, and provider-specific extraction limits.
-- [ ] **Fail clearly:** verify cancellation versus timeout, network failures, non-success HTTP, oversized bodies, malformed/empty payloads, invalid settings, and bounded error excerpts.
+- [x] **Fail clearly:** cancellation versus timeout, propagated transport failures, non-success HTTP, oversized bodies, malformed/empty payloads, invalid settings, and bounded error excerpts are covered by deterministic tests. [Development run #542](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41281982097) passed all 48 tests.
 - [ ] **Extend:** demonstrate a small custom adapter and document the stable extension contract and disposal/thread-safety expectations.
 - [ ] **Secure:** document secret handling, redirects, outbound allowlists/SSRF, untrusted outputs, safe logging, and host-owned authorization; test security-relevant boundaries.
 - [ ] **Operate:** define caller concurrency and reuse of `HttpClient`; document that retries, budgets, and idempotency are host policies.
@@ -81,7 +81,7 @@ Fixture coverage proves only the tested protocol shapes. Before claiming current
 
 ### P1 — Prove the public contract
 - [ ] Inspect public source/API, constructor validation, exception behavior, XML docs, and nullable annotations.
-- [ ] Add deterministic tests for cancellation/timeout distinction, transport failure, non-success status, oversized bodies, request-header precedence, endpoint restrictions, bounded/dynamic header validation, and malformed adapter variants. The transport-failure regression was just added and awaits its exact-head workflow run.
+- [x] Add deterministic tests for cancellation/timeout distinction, transport failure, non-success status, oversized bodies, request-header precedence, endpoint restrictions, bounded/dynamic header validation, and malformed adapter variants. Verified by [development run #542](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41281982097), which passed all 48 tests.
 - [ ] Compile README and usage examples against the exact packed NuGet artifact in a consumer smoke test; avoid live credentials in CI. The quickstart project now supports both source-project and packed-package references, and CI builds it against the generated package; verify the exact-head workflow before checking this gate.
 
 ### P2 — Close domain documentation
