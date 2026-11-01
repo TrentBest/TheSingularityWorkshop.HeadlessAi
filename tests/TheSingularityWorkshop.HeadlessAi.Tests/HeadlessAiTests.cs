@@ -136,7 +136,7 @@ public sealed class HeadlessAiTests
         using var client = new HttpClient(new StubHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") })));
         var adapter = new DelegateHeadlessAiAdapter("null-output",
-            (_, _) => new HttpRequestMessage(HttpMethod.Post),
+            (_, _) => new HttpRequestMessage(HttpMethod.Post, new Uri("https://example.test")),
             (_, _) => ValueTask.FromResult<HeadlessAiOutput>(null!));
         var agent = new HeadlessAiAgent(client,
             new HeadlessAiProfile("fixture", new Uri("https://example.test")), adapter);
