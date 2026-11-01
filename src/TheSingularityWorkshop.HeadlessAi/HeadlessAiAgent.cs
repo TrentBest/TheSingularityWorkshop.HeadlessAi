@@ -85,8 +85,11 @@ public sealed class HeadlessAiAgent
             throw new InvalidOperationException($"A request cannot apply more than {HeadlessAiProfile.MaxHeaders} headers at one time.");
 
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var headerCount = 0;
         foreach (var header in headers)
         {
+            if (++headerCount > HeadlessAiProfile.MaxHeaders)
+                throw new InvalidOperationException($"A request cannot apply more than {HeadlessAiProfile.MaxHeaders} headers at one time.");
             if (string.IsNullOrWhiteSpace(header.Key) ||
                 header.Key.Length > HeadlessAiProfile.MaxConfigurationKeyCharacters ||
                 header.Key.Any(character => !(char.IsAsciiLetterOrDigit(character) || "!#$%&'*+-.^_`|~".Contains(character))))
