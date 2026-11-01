@@ -81,7 +81,7 @@ Fixture coverage proves only the tested protocol shapes. Before claiming current
 
 ### P1 — Prove the public contract
 - [ ] Inspect public source/API, constructor validation, exception behavior, XML docs, and nullable annotations.
-- [ ] Add missing deterministic tests from the definition-of-done list, prioritizing cancellation/timeout distinction, non-success status, oversized bodies, header precedence, endpoint restrictions, and malformed adapter variants.
+- [x] Add deterministic tests for cancellation/timeout distinction, non-success status, oversized bodies, request-header precedence, endpoint restrictions, bounded/dynamic header validation, and malformed adapter variants. Verified by [development run #524](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41281578382), which passed all 47 tests.
 - [ ] Compile README and usage examples in a consumer smoke test; avoid live credentials in CI.
 
 ### P2 — Close domain documentation
@@ -97,9 +97,9 @@ Fixture coverage proves only the tested protocol shapes. Before claiming current
 
 ## Latest development evidence — 2026-11-01
 
-Invocation inputs now snapshot metadata into immutable dictionaries and enforce content/metadata limits. Profile configuration now bounds profile IDs, endpoint URI length, header and setting counts/lengths, and response-buffer size. Response buffering avoids eagerly reserving the entire configured maximum when a remote endpoint advertises a large content length. The profile and input type guides describe the public bounds.
+Invocation inputs now snapshot metadata into immutable dictionaries and enforce content/metadata limits. Profile configuration now bounds profile IDs, endpoint URI length, header and setting counts/lengths, and response-buffer size. Request-time header-provider output is also bounded and validated against HTTP token/control-character rules; endpoint URIs reject embedded credentials and fragments. Response buffering avoids eagerly reserving the entire configured maximum when a remote endpoint advertises a large content length. The profile and input type guides describe the public bounds.
 
-The latest development workflow [#509](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41281151874) passed on commit [639b6a5](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/commit/639b6a5ab7a77b565da9ad051f97cd433930d53f): Release verification and all 45 HeadlessAi tests. This is not the resumable-turn PR candidate; that separate open draft PR [#11](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/11) has its own successful exact-head workflow [#490](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41249275253).
+The latest development workflow [#524](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41281578382) passed on commit [00b1309](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/commit/00b130995b689e7406c36d0dabe03b8af461de6e): Release verification and all 47 HeadlessAi tests. This is not the resumable-turn PR candidate; that separate open draft PR [#11](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/11) has its own successful exact-head workflow [#490](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41249275253).
 
 ## 5. Evidence rule
 
