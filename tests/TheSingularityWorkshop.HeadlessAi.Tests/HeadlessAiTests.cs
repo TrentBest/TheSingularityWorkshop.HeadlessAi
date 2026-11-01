@@ -42,6 +42,21 @@ public sealed class HeadlessAiTests
     }
 
     [Fact]
+    public void Profile_BoundsConfigurationAndResponseResources()
+    {
+        Assert.Throws<ArgumentException>(() => new HeadlessAiProfile(
+            new string('x', HeadlessAiProfile.MaxIdCharacters + 1), new Uri("https://example.test")));
+        Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("headers", new Uri("https://example.test"),
+            headers: Enumerable.Range(0, HeadlessAiProfile.MaxHeaders + 1).ToDictionary(i => $"x-{i}", _ => "v")));
+        Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("settings", new Uri("https://example.test"),
+            settings: new Dictionary<string, string> { ["model"] = new string('x', HeadlessAiProfile.MaxConfigurationValueCharacters + 1) }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new HeadlessAiProfile("response", new Uri("https://example.test"),
+            maxResponseBytes: HeadlessAiProfile.MaxResponseBytesLimit + 1));
+        Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("duplicate", new Uri("https://example.test"),
+            headers: new Dictionary<string, string> { ["X-Key"] = "one", ["x-key"] = "two" }));
+    }
+
+    [Fact]
     public void Profile_RequiresHttpsUnlessExplicitlyOverridden()
     {
         Assert.Throws<ArgumentException>(() => new HeadlessAiProfile("test", new Uri("http://example.test")));
