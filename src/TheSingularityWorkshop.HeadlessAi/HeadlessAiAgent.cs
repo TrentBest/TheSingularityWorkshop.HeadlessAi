@@ -69,7 +69,8 @@ public sealed class HeadlessAiAgent
             }
 
             await BufferResponseAsync(response, _profile.MaxResponseBytes, timeoutSource.Token).ConfigureAwait(false);
-            return await _adapter.ReadResponseAsync(response, timeoutSource.Token).ConfigureAwait(false);
+            return await _adapter.ReadResponseAsync(response, timeoutSource.Token).ConfigureAwait(false)
+                ?? throw new InvalidDataException($"Adapter '{_adapter.Id}' returned a null normalized output.");
         }
         catch (OperationCanceledException) when (
             !cancellationToken.IsCancellationRequested && timeoutSource.IsCancellationRequested)
