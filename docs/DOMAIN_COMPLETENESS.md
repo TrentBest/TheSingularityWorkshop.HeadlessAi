@@ -95,6 +95,12 @@ Fixture coverage proves only the tested protocol shapes. Before claiming current
 - [ ] Review remaining unchecked gates and assign each one a disposition: complete with evidence, implement, or explicitly defer with rationale.
 - [ ] Only then report a defensible readiness percentage and ask the owner for release approval. No merge, branch deletion, or publication is implied by this plan.
 
+## Latest development evidence — 2026-11-01
+
+Invocation inputs now snapshot metadata into immutable dictionaries and enforce content/metadata limits. Profile configuration now bounds profile IDs, endpoint URI length, header and setting counts/lengths, and response-buffer size. Response buffering avoids eagerly reserving the entire configured maximum when a remote endpoint advertises a large content length. The profile and input type guides describe the public bounds.
+
+The latest development workflow [#509](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41281151874) passed on commit [639b6a5](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/commit/639b6a5ab7a77b565da9ad051f97cd433930d53f): Release verification and all 45 HeadlessAi tests. This is not the resumable-turn PR candidate; that separate open draft PR [#11](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/11) has its own successful exact-head workflow [#490](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41249275253).
+
 ## 5. Evidence rule
 
 Every checked item needs a source/test/CI/artifact reference or a short reproducible verification note. A documentation statement is not proof of implementation; a passing fixture is not proof of every provider variant; a packed artifact is not a published package; a green CI run is not release approval.
