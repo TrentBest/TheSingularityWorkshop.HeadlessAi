@@ -16,7 +16,7 @@ public sealed record HeadlessAiOutput
     /// <summary>Maximum metadata value length, in UTF-16 characters.</summary>
     public const int MaxMetadataValueCharacters = 8_192;
     /// <summary>Maximum aggregate metadata value length, in UTF-16 characters.</summary>
-    public const int MaxTotalMetadataValueCharacters = 1_048_576;
+    public const int MaxTotalMetadataValueCharacters = 262_144;
     /// <summary>Maximum media type length, in UTF-16 characters.</summary>
     public const int MaxMediaTypeCharacters = 256;
 
