@@ -95,6 +95,28 @@ jobs:
               assert not dependency_nodes, f'HeadlessAi core must remain dependency-free; found package dependencies: {[node.attrib for node in dependency_nodes]}'
               print(f'PASS: {package} contains assembly, XML docs, README, license metadata, expected id/version, absolute visual URL, and no relative README links.')
           PY
+      - name: Compile quickstart against packed NuGet artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          package="$(find ./artifacts -maxdepth 1 -type f -name '*.nupkg' -print -quit)"
+          package_version="$(python3 - "$package" <<'PY'
+          import sys, zipfile
+          from xml.etree import ElementTree as ET
+          with zipfile.ZipFile(sys.argv[1]) as package:
+              nuspec = next(name for name in package.namelist() if name.endswith('.nuspec'))
+              root = ET.fromstring(package.read(nuspec))
+              metadata = root.find('.//{*}metadata')
+              version = metadata.find('{*}version') if metadata is not None else None
+              if version is None or not version.text:
+                  raise SystemExit('Package version is missing.')
+              print(version.text.strip())
+          PY
+          )"
+          sample="samples/TheSingularityWorkshop.HeadlessAi.Quickstart/TheSingularityWorkshop.HeadlessAi.Quickstart.csproj"
+          dotnet restore "$sample" --source "$PWD/artifacts" -p:UsePackedHeadlessAi=true -p:HeadlessAiPackageVersion="$package_version"
+          dotnet build "$sample" --configuration Release --no-restore -p:UsePackedHeadlessAi=true -p:HeadlessAiPackageVersion="$package_version"
+
       - name: Verify package in a clean consumer project
         shell: bash
         run: |
