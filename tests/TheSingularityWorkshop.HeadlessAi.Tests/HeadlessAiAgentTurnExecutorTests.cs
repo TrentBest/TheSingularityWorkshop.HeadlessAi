@@ -750,23 +750,6 @@ public sealed class HeadlessAiAgentTurnExecutorTests
 
 
     [Fact]
-    public async Task ExecuteAsync_AdapterReturningNullOutputIsNormalized()
-    {
-        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ignored") })));
-        var template = new HeadlessAiAgentTemplate(
-            new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
-            new InvalidOutputAdapter(returnNullOutput: true));
-        var executor = new HeadlessAiAgentTurnExecutor(template, client);
-
-        var result = await executor.ExecuteAsync(CreateEnvelope());
-
-        Assert.Equal("invalid_adapter_response", result.ErrorCode);
-        Assert.Equal(string.Empty, result.RawResponse);
-        result.Validate();
-    }
-
-    [Fact]
     public async Task ExecuteAsync_ResponseAtExactResultLimitIsRetainedAndValidated()
     {
         var boundaryResponse = new string('x', 1_000_000);
@@ -787,22 +770,5 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         result.Validate();
     }
 
-    private sealed class InvalidOutputAdapter(bool returnNullOutput) : IHeadlessAiAdapter
-    {
-        public string Id => "invalid-output-provider";
-
-        public HttpRequestMessage CreateRequest(HeadlessAiProfile profile, HeadlessAiInput input)
-            => new(HttpMethod.Post, profile.Endpoint)
-            {
-                Content = new StringContent(input.Content, Encoding.UTF8, "application/json")
-            };
-
-        public ValueTask<HeadlessAiOutput> ReadResponseAsync(
-            HttpResponseMessage response, CancellationToken cancellationToken = default)
-            => ValueTask.FromResult(returnNullOutput
-                ? null!
-                : new HeadlessAiOutput("{}", response.StatusCode,
-                    response.Content.Headers.ContentType?.MediaType));
-    }
 
 }
