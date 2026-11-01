@@ -6,11 +6,20 @@ namespace TheSingularityWorkshop.HeadlessAi;
 /// <remarks>Input content and metadata are copied and bounded when the value is created.</remarks>
 public sealed record HeadlessAiInput
 {
+    /// <summary>Maximum input content length, in UTF-16 characters.</summary>
     public const int MaxContentCharacters = 1_048_576;
+    /// <summary>Maximum number of metadata entries.</summary>
     public const int MaxMetadataEntries = 128;
+    /// <summary>Maximum metadata key length, in UTF-16 characters.</summary>
     public const int MaxMetadataKeyCharacters = 256;
+    /// <summary>Maximum metadata value length, in UTF-16 characters.</summary>
     public const int MaxMetadataValueCharacters = 8_192;
 
+    /// <summary>Creates an input snapshot after validating and copying its content and metadata.</summary>
+    /// <param name="content">Provider-neutral input content.</param>
+    /// <param name="metadata">Optional metadata to snapshot; null becomes an empty immutable dictionary.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="content"/> is null.</exception>
+    /// <exception cref="ArgumentException">Content or metadata exceeds the documented bounds, or metadata contains invalid/duplicate keys.</exception>
     public HeadlessAiInput(string content, IReadOnlyDictionary<string, string>? metadata = null)
     {
         ArgumentNullException.ThrowIfNull(content);
