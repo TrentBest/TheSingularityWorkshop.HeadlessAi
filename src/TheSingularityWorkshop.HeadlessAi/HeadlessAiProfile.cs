@@ -5,6 +5,20 @@ namespace TheSingularityWorkshop.HeadlessAi;
 /// <summary>Describes an endpoint and the non-secret defaults used for invocation.</summary>
 public sealed class HeadlessAiProfile
 {
+    /// <summary>Maximum profile identifier length, in UTF-16 characters.</summary>
+    public const int MaxIdCharacters = 128;
+    /// <summary>Maximum absolute endpoint URI length, in UTF-16 characters.</summary>
+    public const int MaxEndpointCharacters = 2_048;
+    /// <summary>Maximum number of configured headers.</summary>
+    public const int MaxHeaders = 64;
+    /// <summary>Maximum number of provider settings.</summary>
+    public const int MaxSettings = 128;
+    /// <summary>Maximum header or setting key length, in UTF-16 characters.</summary>
+    public const int MaxConfigurationKeyCharacters = 256;
+    /// <summary>Maximum header or setting value length, in UTF-16 characters.</summary>
+    public const int MaxConfigurationValueCharacters = 8_192;
+    /// <summary>Maximum buffered response body size, in bytes.</summary>
+    public const int MaxResponseBytesLimit = 64 * 1024 * 1024;
     /// <summary>Creates validated settings for one endpoint profile.</summary>
     /// <param name="id">Stable profile identifier.</param>
     /// <param name="endpoint">Absolute endpoint URI. HTTPS is required by default.</param>
@@ -20,7 +34,11 @@ public sealed class HeadlessAiProfile
         int maxResponseBytes = 4 * 1024 * 1024)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        if (id.Length > MaxIdCharacters)
+            throw new ArgumentException($"Profile IDs cannot exceed {MaxIdCharacters} characters.", nameof(id));
         ArgumentNullException.ThrowIfNull(endpoint);
+        if (endpoint.AbsoluteUri.Length > MaxEndpointCharacters)
+            throw new ArgumentException($"Endpoint URIs cannot exceed {MaxEndpointCharacters} characters.", nameof(endpoint));
         if (!endpoint.IsAbsoluteUri)
             throw new ArgumentException("The endpoint must be an absolute URI.", nameof(endpoint));
         if (endpoint.Scheme != Uri.UriSchemeHttps &&
@@ -29,14 +47,14 @@ public sealed class HeadlessAiProfile
         var effectiveTimeout = timeout ?? TimeSpan.FromSeconds(100);
         if (effectiveTimeout <= TimeSpan.Zero && effectiveTimeout != System.Threading.Timeout.InfiniteTimeSpan)
             throw new ArgumentOutOfRangeException(nameof(timeout), "Timeout must be positive or infinite.");
-        if (maxResponseBytes <= 0)
-            throw new ArgumentOutOfRangeException(nameof(maxResponseBytes), "Response size limit must be positive.");
+        if (maxResponseBytes <= 0 || maxResponseBytes > MaxResponseBytesLimit)
+            throw new ArgumentOutOfRangeException(nameof(maxResponseBytes), $"Response size limit must be between 1 and {MaxResponseBytesLimit} bytes.");
 
         Id = id;
         Endpoint = endpoint;
         Method = method ?? HttpMethod.Post;
-        Headers = CopyReadOnly(headers);
-        Settings = CopyReadOnly(settings);
+        Headers = CopyReadOnly(headers, MaxHeaders, nameof(headers));
+        Settings = CopyReadOnly(settings, MaxSettings, nameof(settings));
         Timeout = effectiveTimeout;
         MaxResponseBytes = maxResponseBytes;
     }
@@ -62,8 +80,25 @@ public sealed class HeadlessAiProfile
     /// <summary>Gets the maximum buffered response body size in bytes.</summary>
     public int MaxResponseBytes { get; }
 
-    private static IReadOnlyDictionary<string, string> CopyReadOnly(IReadOnlyDictionary<string, string>? source)
-        => new ReadOnlyDictionary<string, string>(source is null
-            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            : new Dictionary<string, string>(source, StringComparer.OrdinalIgnoreCase));
+    private static IReadOnlyDictionary<string, string> CopyReadOnly(
+        IReadOnlyDictionary<string, string>? source, int maxEntries, string parameterName)
+    {
+        var copy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (source is not null)
+        {
+            foreach (var pair in source)
+            {
+                if (copy.Count >= maxEntries)
+                    throw new ArgumentException($"Configuration cannot contain more than {maxEntries} entries.", parameterName);
+                if (string.IsNullOrWhiteSpace(pair.Key) || pair.Key.Length > MaxConfigurationKeyCharacters)
+                    throw new ArgumentException($"Configuration keys must contain 1–{MaxConfigurationKeyCharacters} non-whitespace characters.", parameterName);
+                if (pair.Value is null || pair.Value.Length > MaxConfigurationValueCharacters)
+                    throw new ArgumentException($"Configuration values cannot exceed {MaxConfigurationValueCharacters} characters or be null.", parameterName);
+                if (!copy.TryAdd(pair.Key, pair.Value))
+                    throw new ArgumentException($"Configuration contains duplicate key '{pair.Key}' (case-insensitive).", parameterName);
+            }
+        }
+
+        return new ReadOnlyDictionary<string, string>(copy);
+    }
 }
