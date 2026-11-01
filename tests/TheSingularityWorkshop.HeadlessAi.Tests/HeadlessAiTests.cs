@@ -106,6 +106,45 @@ public sealed class HeadlessAiTests
     }
 
     [Fact]
+    public void Output_SnapshotsAndBoundsMetadata()
+    {
+        var metadata = new Dictionary<string, string> { ["total_tokens"] = "15" };
+        var output = new HeadlessAiOutput("answer", HttpStatusCode.OK, "text/plain", metadata);
+        metadata["total_tokens"] = "99";
+        Assert.Equal("15", output.Metadata!["total_tokens"]);
+        Assert.Throws<NotSupportedException>(() =>
+            ((IDictionary<string, string>)output.Metadata!)["total_tokens"] = "changed");
+        Assert.Throws<ArgumentException>(() => new HeadlessAiOutput("answer", HttpStatusCode.OK, "text/plain",
+            Enumerable.Range(0, HeadlessAiOutput.MaxMetadataEntries + 1).ToDictionary(i => $"key-{i}", _ => "v")));
+        Assert.Throws<ArgumentException>(() => new HeadlessAiOutput("answer", HttpStatusCode.OK, "text/plain",
+            new Dictionary<string, string> { ["usage"] = new string('x', HeadlessAiOutput.MaxMetadataValueCharacters + 1) }));
+        Assert.Throws<ArgumentException>(() => new HeadlessAiOutput("answer", HttpStatusCode.OK, "text/plain\nunsafe"));
+        Assert.Throws<ArgumentNullException>(() => new HeadlessAiOutput(null!, HttpStatusCode.OK, null));
+
+        var aggregate = Enumerable.Range(0, HeadlessAiOutput.MaxTotalMetadataValueCharacters / HeadlessAiOutput.MaxMetadataValueCharacters + 1)
+            .ToDictionary(i => $"metric-{i}", _ => new string('x', HeadlessAiOutput.MaxMetadataValueCharacters));
+        Assert.Throws<ArgumentException>(() => new HeadlessAiOutput("answer", HttpStatusCode.OK, "text/plain", aggregate));
+
+        var copy = output with { Metadata = new Dictionary<string, string> { ["total_tokens"] = "20" } };
+        Assert.Equal("20", copy.Metadata!["total_tokens"]);
+        Assert.Equal("15", output.Metadata["total_tokens"]);
+    }
+
+    [Fact]
+    public async Task Agent_RejectsNullAdapterOutput()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") })));
+        var adapter = new DelegateHeadlessAiAdapter("null-output",
+            (_, _) => new HttpRequestMessage(HttpMethod.Post),
+            (_, _) => ValueTask.FromResult<HeadlessAiOutput>(null!));
+        var agent = new HeadlessAiAgent(client,
+            new HeadlessAiProfile("fixture", new Uri("https://example.test")), adapter);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => agent.SendAsync(new HeadlessAiInput("task")));
+    }
+
+    [Fact]
     public async Task Agent_UsesInjectedTransportAndNormalizesOutput()
     {
         using var client = new HttpClient(new StubHandler((request, _) =>
