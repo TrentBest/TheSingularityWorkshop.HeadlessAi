@@ -13,7 +13,7 @@ public interface IHeadlessAiAdapter
     /// <summary>Create a request. The agent applies the profile endpoint and method, then applies profile and dynamic headers.</summary>
     HttpRequestMessage CreateRequest(HeadlessAiProfile profile, HeadlessAiInput input);
 
-    /// <summary>Extract the useful response content. Called for successful HTTP responses only.</summary>
+    /// <summary>Extract a non-null, bounded normalized output from a successful HTTP response only.</summary>
     ValueTask<HeadlessAiOutput> ReadResponseAsync(
         HttpResponseMessage response,
         CancellationToken cancellationToken = default);
