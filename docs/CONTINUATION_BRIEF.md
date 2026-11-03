@@ -58,35 +58,24 @@ The built-in adapters currently focus on basic text requests. Streaming, rich mu
 
 ## Current branch and review posture
 
-Work is on development. PR #1 targets master and remains unmerged. Do not merge, publish, or rewrite protected branch history without explicit user direction. After every meaningful batch, verify CI against the exact branch head and report what did and did not run.
+- Active integration: [PR #13](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13), from `feature/resumable-agent-turn-integration` into `development`.
+- PR #11 remains open and untouched; it is not the integration source because its history diverged substantially from current `development`.
+- The integration branch was created from current `development` and selectively ports the v1 implementation, tests, and guide while retaining current build, quickstart, consumer-verification, and AI-onboarding work.
+- Latest verified head: `fd5263aa662b103cb5f9c976fd33b780d32137c4`.
+- [Run #566](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41593915516) passed on that exact head: restore, Release build, tests, coverage preparation/upload, pack, package audit, quickstart compilation against the packed package, clean-consumer verification, and artifact upload.
+- The package audit permits exactly `TheSingularityWorkshop.FSM_Serialization` 1.0.0 and rejects all other package dependencies.
+- NuGet publication remains disabled. No merge, release, deployment, or write to `master` or `development` is included.
 
 ## Next logical work
 
-1. Run CI on the exact latest head and fix all warnings/errors.
-2. Audit provider adapters against current official endpoint schemas and add malformed/error-envelope fixtures.
-3. Audit package metadata, XML docs, license, changelog, repository links, and packed package contents.
-4. Expand benchmark cases and capture a baseline; do not convert intended performance into claims.
-5. Design optional ProtocolAi/GrammarAi evaluation harness and collect reproducible token/quality results.
-6. Decide and document retry, redirect, concurrency, and budget boundaries before implementation.
-7. Keep NuGet publication disabled until the user explicitly approves a release.
+1. Review the v1 contracts and binary codec for domain completeness, edge cases, and public API clarity; retain strict rejection of unsupported schema/frame versions.
+2. Review generated XML docs and the agent-turn guide against the implemented public API; keep examples compiling and claims bounded.
+3. Confirm Foundry's consumption boundary: Foundry owns durable replay/idempotency, conversation history, authorization, bounded iteration, and action handoff.
+4. Keep the optional bounded artifact HTTP adapter separate until FSM_REST supplies the shared bounded streaming/binary contract tracked in FSM_REST issue #13 and HeadlessAi issue #12.
+5. Expand benchmarks only for stable, meaningful operations; make no performance claim without reproducible baselines.
+6. Keep PR #13 draft until integration review and any follow-up changes are complete; do not merge or publish without explicit user authorization.
 
 ---
 
-<p align="center">
-  <a href="https://github.com/TrentBest">
-    <img src="https://github.com/TrentBest.png?size=200" alt="The Singularity Workshop on GitHub" width="200">
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/TrentBest">GitHub</a> ·
-  <a href="https://coderlegion.com/">Coder Legion</a> ·
-  <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
-  <a href="https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J">PayPal</a>
-  <br>
-  <a href="https://github.com/TrentBest/FSM_API">FSM_API</a> ·
-  <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_Serialization">FSM_Serialization</a> ·
-  <a href="https://github.com/TrentBest/WebPage">WebPage</a>
-</p>
-
-<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong><br><em>And because static boundaries are invitations to cause trouble.</em></p>
+<!-- THE SINGULARITY WORKSHOP FOOTER -->
+<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" width="200" /></p>
