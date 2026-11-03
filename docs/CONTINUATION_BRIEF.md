@@ -31,6 +31,19 @@ HeadlessAi is a standalone .NET HTTP-agent toolkit. It configures endpoint-speci
 - docs/: problem domain, theory, architecture, usage, provider adapter, security, performance, use cases, measurement, and roadmap documentation.
 - .github/workflows/build.yml: restore, Release build, tests, coverage/Codecov, package pack, and artifact upload; no publish step enabled.
 
+## Versioned agent-turn boundary
+
+- `HeadlessAiAgentTurnEnvelope` carries bounded task/conversation identity, isolated branch and commit provenance, expiry, idempotency identity, evidence references, and resource limits.
+- `HeadlessAiAgentTurnRequest` validates and snapshots canonical request JSON once; providers share the immutable request and SHA-256 fingerprint.
+- `HeadlessAiAgentTurnExecutor` performs one provider invocation. It does not retry, deduplicate, authorize actions, or own durable conversation state.
+- `HeadlessAiAgentTurnComparison` preserves independent provider results and explicitly attributed assessments; it does not infer consensus or choose a winner.
+- `HeadlessAiAgentTurnComparisonSnapshot` captures a bounded canonical comparison payload.
+- `HeadlessAiAgentTurnBinaryCodec` frames request and comparison snapshots over `TheSingularityWorkshop.FSM_Serialization` 1.0.0 and `IBinaryStream`.
+
+The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload length, SHA-256 digest), with a 1,024,000-byte request payload limit and a 40,000,000-byte comparison payload limit. The digest detects corruption; it is not a signature or authentication mechanism. The host owns stream lifetime, storage, encryption, access control, and retention.
+
+**Responsibility split:** Foundry owns lifecycle, durable replay/idempotency, orchestration, authorization, budgets, and action handoff. CiAi supplies CI facts; HeadlessAi preserves evidence references as untrusted, provenance-bearing input. FSM_Serialization supplies the shared binary stream boundary. HeadlessAi must not introduce a competing stream abstraction or depend on Foundry/CiAi.
+
 ## Current implementation slice
 
 - Endpoint profiles and reusable agent templates.
