@@ -184,7 +184,8 @@ public sealed record HeadlessAiAgentTurnLimits
     {
         if (MaxInstructionCharacters <= 0 || MaxPromptCharacters <= 0 || MaxEvidenceItems < 0 ||
             MaxContextReferences < 0 || MaxReferenceCharacters <= 0 || MaxSerializedEnvelopeCharacters <= 0 || MaxLifetime <= TimeSpan.Zero ||
-            Timeout <= TimeSpan.Zero || MaxProviderAttempts < 1 || MaxConcurrentProviders < 1)
+            Timeout <= TimeSpan.Zero || Timeout > TimeSpan.FromMilliseconds(uint.MaxValue - 1d) ||
+            MaxProviderAttempts < 1 || MaxConcurrentProviders < 1)
             throw new ArgumentOutOfRangeException(nameof(HeadlessAiAgentTurnLimits), "Turn limits must be positive (counts may be zero where documented).");
     }
 }
