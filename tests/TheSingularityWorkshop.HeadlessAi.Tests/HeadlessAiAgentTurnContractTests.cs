@@ -460,6 +460,7 @@ public sealed class HeadlessAiAgentTurnContractTests
             new() { MaxSerializedEnvelopeCharacters = 0 },
             new() { MaxLifetime = TimeSpan.Zero },
             new() { Timeout = TimeSpan.FromTicks(-1) },
+            new() { Timeout = TimeSpan.FromDays(50) },
             new() { MaxConcurrentProviders = 0 }
         ];
 
