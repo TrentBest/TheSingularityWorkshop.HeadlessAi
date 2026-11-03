@@ -88,7 +88,7 @@ Use `HeadlessAiAgentTurnComparisonSnapshot.Create(comparison)` to validate and c
 
 ## Binary persistence boundary
 
-The binary codec uses the stable `TheSingularityWorkshop.FSM_Serialization` package and its `IBinaryStream` abstraction. HeadlessAi does not define a competing stream abstraction or take ownership of the host's storage system.
+The binary codec uses `TheSingularityWorkshop.FSM_Serialization`'s `IBinaryStream` abstraction. During development, HeadlessAi references the sibling `FSM_Serialization` repository's `development` branch source project; it does not consume a published NuGet package. Release packaging may opt into an exact dependency version already published on NuGet.org only after the release gates pass. HeadlessAi does not define a competing stream abstraction or take ownership of the host's storage system.
 
 Each frame contains:
 
