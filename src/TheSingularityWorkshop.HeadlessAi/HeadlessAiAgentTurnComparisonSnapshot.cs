@@ -49,8 +49,10 @@ public sealed class HeadlessAiAgentTurnComparisonSnapshot
         ArgumentNullException.ThrowIfNull(comparison);
         comparison.Validate();
 
-        // Dictionary enumeration order is not part of provider-metadata meaning. Sort keys
-        // before serialization so equivalent comparisons have the same canonical payload.
+        // Provider-metadata map key order is not part of its meaning, so sort those keys.
+        // Preserve the supplied order of provider results and all nested comparison collections.
+        // The payload and fingerprint are therefore stable for the same ordered comparison,
+        // not order-independent for comparisons with reordered collections.
         var canonicalComparison = comparison with
         {
             ProviderResults = comparison.ProviderResults
