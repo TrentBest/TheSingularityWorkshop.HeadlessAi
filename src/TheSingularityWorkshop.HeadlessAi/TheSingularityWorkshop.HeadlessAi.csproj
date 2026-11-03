@@ -20,8 +20,13 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="TheSingularityWorkshop.FSM_Serialization" Version="1.0.0" />
+  <!-- Development builds consume the dependency's development source, never a published NuGet package. -->
+  <ItemGroup Condition="'$(UsePublishedDependencies)' != 'true'">
+    <ProjectReference Include="../../dependencies/FSM_Serialization/TheSingularityWorkshop.FSM_Serialization.csproj" />
+  </ItemGroup>
+  <!-- Release packaging opts into the already-approved published dependency explicitly. -->
+  <ItemGroup Condition="'$(UsePublishedDependencies)' == 'true'">
+    <PackageReference Include="TheSingularityWorkshop.FSM_Serialization" Version="$(FsmSerializationPackageVersion)" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
