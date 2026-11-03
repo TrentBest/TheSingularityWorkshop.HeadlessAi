@@ -29,7 +29,7 @@ HeadlessAi is a standalone .NET HTTP-agent toolkit. It configures endpoint-speci
 - tests/TheSingularityWorkshop.HeadlessAi.Tests/: deterministic fixture-based tests.
 - benchmarks/TheSingularityWorkshop.HeadlessAi.Benchmarks/: local BenchmarkDotNet baselines.
 - docs/: problem domain, theory, architecture, usage, provider adapter, security, performance, use cases, measurement, and roadmap documentation.
-- .github/workflows/build.yml: restore, Release build, tests, coverage/Codecov, package pack, and artifact upload; no publish step enabled.
+- `.github/workflows/build.yml`: development-source checkout, restore, Release build, tests, and coverage/Codecov. Development CI does not pack or publish NuGet artifacts.
 
 ## Versioned agent-turn boundary
 
@@ -38,7 +38,7 @@ HeadlessAi is a standalone .NET HTTP-agent toolkit. It configures endpoint-speci
 - `HeadlessAiAgentTurnExecutor` performs one provider invocation. It does not retry, deduplicate, authorize actions, or own durable conversation state.
 - `HeadlessAiAgentTurnComparison` preserves independent provider results and explicitly attributed assessments; it does not infer consensus or choose a winner.
 - `HeadlessAiAgentTurnComparisonSnapshot` captures a bounded canonical comparison payload.
-- `HeadlessAiAgentTurnBinaryCodec` frames request and comparison snapshots over `TheSingularityWorkshop.FSM_Serialization` 1.0.0 and `IBinaryStream`.
+- `HeadlessAiAgentTurnBinaryCodec` frames request and comparison snapshots over the `FSM_Serialization` project reference and `IBinaryStream`.
 
 The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload length, SHA-256 digest), with a 1,024,000-byte request payload limit and a 40,000,000-byte comparison payload limit. The digest detects corruption; it is not a signature or authentication mechanism. The host owns stream lifetime, storage, encryption, access control, and retention.
 
@@ -61,10 +61,10 @@ The built-in adapters currently focus on basic text requests. Streaming, rich mu
 - Active integration: [PR #13](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13), from `feature/resumable-agent-turn-integration` into `development`.
 - PR #11 remains open and untouched; it is not the integration source because its history diverged substantially from current `development`.
 - The integration branch was created from current `development` and selectively ports the v1 implementation, tests, and guide while retaining current build, quickstart, consumer-verification, and AI-onboarding work.
-- Latest verified head: `fd5263aa662b103cb5f9c976fd33b780d32137c4`.
-- [Run #566](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41593915516) passed on that exact head: restore, Release build, tests, coverage preparation/upload, pack, package audit, quickstart compilation against the packed package, clean-consumer verification, and artifact upload.
-- The package audit permits exactly `TheSingularityWorkshop.FSM_Serialization` 1.0.0 and rejects all other package dependencies.
-- NuGet publication remains disabled. No merge, release, deployment, or write to `master` or `development` is included.
+- Previous verified head: `5cc008c533ab704f9bbf08af47068b35f0678dc6` (Run #567). That run predates the corrected development dependency lifecycle and is not evidence for the current workflow.
+- Current development CI checks out `TrentBest/TheSingularityWorkshop.FSM_Serialization` at `development` and builds through a project reference. It does not pack, audit, or publish NuGet packages.
+- Release packaging is a separate future gate: it must use an exact already-published FSM_Serialization dependency version with `UsePublishedDependencies=true`, after all release gates pass. Publication still requires the user's explicit authorization.
+- No merge, release, deployment, or write to `master` or `development` is included.
 
 ## Next logical work
 
