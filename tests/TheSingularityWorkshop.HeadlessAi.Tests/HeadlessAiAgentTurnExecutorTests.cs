@@ -60,12 +60,12 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var envelope = CreateEnvelope() with
         {
             ConversationId = "repair-conversation-17",
-            TaskVersion = "repair-task-v3"
+            TaskVersion = "repair-task-v1"
         };
         var result = await executor.ExecuteAsync(envelope);
 
         Assert.Equal("repair-conversation-17", result.ConversationId);
-        Assert.Equal("repair-task-v3", result.TaskVersion);
+        Assert.Equal("repair-task-v1", result.TaskVersion);
         Assert.Contains("\"taskId\":\"task-100\"", requestBody);
         Assert.Contains("\"repository\":\"TrentBest/HeadlessAi.Consumer\"", requestBody);
         Assert.Equal(raw, result.RawResponse);
@@ -328,7 +328,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var otherConversation = HeadlessAiAgentTurnRequest.Create(
             baseline with { ConversationId = "conversation-2" }, now);
         var otherTaskVersion = HeadlessAiAgentTurnRequest.Create(
-            baseline with { TaskVersion = "task-v2" }, now);
+            baseline with { TaskVersion = "task-revision-b" }, now);
 
         Assert.NotEqual(original.Fingerprint, otherConversation.Fingerprint);
         Assert.NotEqual(original.Fingerprint, otherTaskVersion.Fingerprint);
@@ -571,7 +571,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         {
             ["finish_reason"] = "first-value",
             ["FINISH_REASON"] = "second-value",
-            ["provider_version"] = "fixture-v2"
+            ["provider_version"] = "fixture-v1"
         };
         var template = new HeadlessAiAgentTemplate(
             new HeadlessAiProfile("fixture-profile", new Uri("https://provider.example.test/invoke")),
@@ -582,7 +582,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
 
         Assert.Null(result.ErrorCode);
         Assert.Equal("first-value", result.FinishReason);
-        Assert.Equal("fixture-v2", result.ProviderVersion);
+        Assert.Equal("fixture-v1", result.ProviderVersion);
         Assert.Equal("first-value", result.ProviderMetadata["finish_reason"]);
         Assert.Single(result.ProviderMetadata.Keys,
             key => string.Equals(key, "finish_reason", StringComparison.OrdinalIgnoreCase));
