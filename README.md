@@ -111,7 +111,7 @@ sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
 }
 ```
 
-Expected behavior: the program prints the response text extracted by the selected adapter. The example is compiled as part of the solution build and compiled again against the packed NuGet artifact by CI using [the quickstart sample](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/samples/TheSingularityWorkshop.HeadlessAi.Quickstart/Program.cs); it is not run against a live provider. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
+Expected behavior: the program prints the response text extracted by the selected adapter. The example is compiled as part of the solution build and the [quickstart sample](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/samples/TheSingularityWorkshop.HeadlessAi.Quickstart/Program.cs) is included in development CI; it is not run against a live provider. Development CI uses the `FSM_Serialization` development source project and does not build a NuGet package. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
 
 ## 🟪 06 Documentation and theory
 
