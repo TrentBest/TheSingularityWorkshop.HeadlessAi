@@ -115,6 +115,7 @@ Expected behavior: the program prints the response text extracted by the selecte
 
 ## 🟪 06 Documentation and theory
 
+- **[Agent turns and resumability](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/agent-turns-and-resumability.md)** — create, validate, execute, compare, and persist bounded v1 agent-turn snapshots.
 - **[Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
 - **[What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
 - **[Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md)** — understand why endpoint protocol, transport, identity, and application authority are separate concerns.
