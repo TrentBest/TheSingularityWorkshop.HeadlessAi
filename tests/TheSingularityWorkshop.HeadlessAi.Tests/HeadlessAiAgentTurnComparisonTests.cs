@@ -81,7 +81,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
             ProviderResults =
             [
                 Result("provider-a", "turn-a"),
-                Result("provider-b", "turn-b") with { TaskVersion = "task-v2" }
+                Result("provider-b", "turn-b") with { TaskVersion = "task-revision-b" }
             ]
         };
 
