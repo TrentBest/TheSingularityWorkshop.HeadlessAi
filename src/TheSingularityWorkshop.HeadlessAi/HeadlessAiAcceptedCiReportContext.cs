@@ -11,6 +11,7 @@ namespace TheSingularityWorkshop.HeadlessAi;
 /// </summary>
 public sealed record HeadlessAiAcceptedCiReportContext
 {
+    /// <summary>The only report schema currently accepted by this handoff contract.</summary>
     public const string RequiredSchemaVersion = "ciai.test-results.v1";
     private const int MaximumReportBytes = 1_048_576;
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
