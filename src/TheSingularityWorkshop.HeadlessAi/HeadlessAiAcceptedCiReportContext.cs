@@ -65,6 +65,7 @@ public sealed record HeadlessAiAcceptedCiReportContext
 
         if (bytes.Length > MaximumReportBytes)
             throw new ArgumentException("Accepted report exceeds the one-megabyte byte limit.", nameof(CanonicalReportJson));
+        HeadlessAiAgentTurnEnvelope.RejectCredentialLikeText(CanonicalReportJson, nameof(CanonicalReportJson));
 
         if (!Regex.IsMatch(ReportSha256 ?? string.Empty, "^[0-9a-fA-F]{64}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Accepted report digest must be a full SHA-256 value.", nameof(ReportSha256));
