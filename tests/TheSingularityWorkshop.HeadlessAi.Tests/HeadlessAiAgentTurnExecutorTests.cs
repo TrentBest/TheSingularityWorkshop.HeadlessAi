@@ -814,11 +814,13 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Equal("correlation-100", result.CorrelationId);
         Assert.Equal("TrentBest/HeadlessAi.Consumer", result.Repository);
         Assert.Equal(candidateSha, result.CandidateCommitSha);
+        Assert.Equal(HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion, result.AcceptedReportSchemaVersion);
         Assert.Equal("report-identity-17", result.AcceptedReportIdentity);
         Assert.Equal(digest, result.AcceptedReportSha256);
         Assert.Equal("41950000001", result.AcceptedReportWorkflowRunId);
         Assert.Equal(2, result.AcceptedReportRunAttempt);
         Assert.Equal(candidateSha, result.AcceptedReportCandidateCommitSha);
+        Assert.Equal(HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion, result.Proposal.AcceptedReportSchemaVersion);
         Assert.Equal("report-identity-17", result.Proposal.AcceptedReportIdentity);
         Assert.Equal(digest, result.Proposal.AcceptedReportSha256);
         Assert.NotEqual("model-forged-report", result.Proposal.AcceptedReportIdentity);
@@ -844,6 +846,10 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Throws<ArgumentException>(() =>
             HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with { CandidateCommitSha = candidateSha },
                 acceptedReport, DateTimeOffset.UtcNow));
+
+        Assert.Throws<ArgumentException>(() =>
+            HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with { CandidateCommitSha = candidateSha },
+                acceptedReport with { ReportSha256 = digest, SchemaVersion = "ciai.test-results.v2" }, DateTimeOffset.UtcNow));
 
         Assert.Throws<ArgumentException>(() =>
             HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with
