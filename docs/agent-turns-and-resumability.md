@@ -16,7 +16,8 @@ They do **not** create an autonomous agent loop. The host remains responsible fo
 | Contract | Responsibility |
 |---|---|
 | `HeadlessAiAgentTurnEnvelope` | Host-supplied task, conversation, repository, branch, commit, prompt, expiry, limits, and evidence references |
-| `HeadlessAiAgentTurnRequest` | Validated immutable canonical request shared across provider calls, with a SHA-256 request fingerprint |
+| `HeadlessAiAgentTurnRequest` | Validated immutable canonical request shared across provider calls, with a SHA-256 request fingerprint; optionally carries an opaque, host-accepted CiAi report context |
+| `HeadlessAiAcceptedCiReportContext` | Exact bounded UTF-8 report bytes, digest, report identity, run/attempt, and candidate binding supplied by the trusted host |
 | `HeadlessAiAgentTurnExecutor` | Exactly one provider invocation through a configured `HeadlessAiAgentTemplate` and host-owned `HttpClient` |
 | `HeadlessAiAgentTurnResult` | Provider-attributed result, raw response, normalized untrusted proposal, timestamps, and provenance |
 | `HeadlessAiAgentTurnComparison` | Validated collection of independent provider results and explicitly attributed assessments/relationships |
@@ -70,6 +71,38 @@ Configure authentication through the host's request-time header provider before 
 
 The executor performs one invocation. It does not retry automatically. Host cancellation propagates; the envelope's timeout bounds the invocation. Transport and provider failures are normalized into result data where defined. A malformed or invalid model proposal remains non-actionable; consumers must validate all output independently.
 
+## Supplying an accepted CiAi report
+
+For a CI repair turn, the host may create a `HeadlessAiAcceptedCiReportContext` **only after Foundry has authenticated the delivery, verified the provider artifact and exact run mapping, and accepted the report for the task/candidate**. The report content is carried as opaque UTF-8 JSON text. HeadlessAi does not deserialize the report body, interpret diagnostics, verify a CI verdict, or decide whether the report is trusted.
+
+The host supplies the report bytes and their digest separately from the task envelope. The context also carries the report identity and the trusted run/attempt/candidate binding from Foundry's acceptance record. The request factory verifies the SHA-256 digest over the exact UTF-8 bytes, applies a one-megabyte report-content limit, and requires the candidate SHA to match the current or prior candidate in the envelope. The composite canonical provider request includes both the normal turn envelope and the unchanged report text; the request fingerprint therefore binds both.
+
+```csharp
+using System.Security.Cryptography;
+using System.Text;
+
+// These values come from Foundry's authenticated, persisted acceptance record.
+// reportJson is the exact UTF-8 JSON body returned by CiAi; do not parse/re-serialize it.
+var acceptedCiReport = new HeadlessAiAcceptedCiReportContext
+{
+    ReportIdentity = hostAcceptedReportIdentity,
+    CanonicalReportJson = reportJson,
+    ReportSha256 = Convert.ToHexString(
+        SHA256.HashData(Encoding.UTF8.GetBytes(reportJson))).ToLowerInvariant(),
+    WorkflowRunId = hostAcceptedRunId,
+    RunAttempt = hostAcceptedRunAttempt,
+    CandidateCommitSha = hostAcceptedCandidateSha
+};
+
+var repairRequest = HeadlessAiAgentTurnRequest.Create(
+    repairEnvelope, acceptedCiReport, DateTimeOffset.UtcNow);
+var repairResult = await executor.ExecuteAsync(repairRequest);
+```
+
+The executor attaches the accepted report identity, digest, run/attempt, and candidate SHA to both the normalized proposal and result after parsing the provider response. A model cannot replace these values by echoing forged lineage fields. The proposal remains untrusted and non-executable; Foundry must still validate task/correlation and apply its own authorization and approval policy.
+
+This API verifies byte integrity and consistency with the supplied envelope; it **cannot authenticate that the host actually accepted the report**. Only the Foundry host may construct this context after completing its trust checks. Do not pass raw TRX, an unaccepted artifact, or a caller-asserted verdict. Accepted-report requests are persisted by the binary codec with the report bytes and lineage intact; the frame's request payload limit is two million bytes.
+
 ## Resuming a conversation
 
 The host persists the turn result and decides when a later turn is appropriate. To continue a prior exchange, supply both `PriorTurnId` and `PriorCandidateCommitSha` on the next envelope. The pair is validated together; evidence must be bound to the current candidate SHA or the prior candidate SHA.
@@ -101,7 +134,7 @@ Each frame contains:
 | SHA-256 payload digest | 32 bytes |
 | Canonical JSON payload | bounded |
 
-The fixed header is 43 bytes. Request payloads are limited to 1,024,000 bytes; comparison payloads are limited to 40,000,000 bytes. Readers validate the magic, kind, version, length, digest, strict UTF-8, schema, provenance, and canonical representation. Partial stream reads are supported.
+The fixed header is 43 bytes. Request payloads are limited to 2,000,000 bytes; comparison payloads are limited to 40,000,000 bytes. Readers validate the magic, kind, version, length, digest, strict UTF-8, schema, provenance, and canonical representation. Partial stream reads are supported.
 
 `PackRequest` / `UnpackRequest` and `PackComparison` / `UnpackComparison` operate on caller-supplied streams. The host owns stream lifetime, storage location, encryption at rest, access control, retention, and concurrency. The SHA-256 digest detects accidental corruption; it is **not a signature or authentication mechanism**. Do not treat a frame from an untrusted source as authentic merely because its digest matches.
 
