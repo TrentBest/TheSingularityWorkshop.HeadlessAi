@@ -390,6 +390,8 @@ public sealed record HeadlessAiAgentTurnResult
     public string? PullRequestUrl { get; init; }
     /// <summary>CI evidence references carried by the originating envelope.</summary>
     public IReadOnlyList<HeadlessAiEvidenceReference> Evidence { get; init; } = Array.Empty<HeadlessAiEvidenceReference>();
+    /// <summary>Canonical accepted report schema identifier attached by the host boundary.</summary>
+    public string? AcceptedReportSchemaVersion { get; init; }
     /// <summary>Host-bound accepted report identity attached after provider normalization; never trusted from model output.</summary>
     public string? AcceptedReportIdentity { get; init; }
     /// <summary>Digest of the exact accepted report bytes supplied to this turn.</summary>
