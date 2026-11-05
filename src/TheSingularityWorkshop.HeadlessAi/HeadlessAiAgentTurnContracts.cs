@@ -477,10 +477,15 @@ public sealed record HeadlessAiAgentTurnResult
         if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
         if (PriorCandidateCommitSha is not null && !Regex.IsMatch(PriorCandidateCommitSha, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Prior candidate commit SHA must be a full SHA.", nameof(PriorCandidateCommitSha));
-        if (AcceptedReportSchemaVersion is not null && AcceptedReportSchemaVersion != HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion)
+        if ((AcceptedReportSchemaVersion is null) != (AcceptedReportIdentity is null) ||
+            (AcceptedReportSchemaVersion is not null && AcceptedReportSchemaVersion != HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion))
             throw new ArgumentException("Accepted report schema version is not supported.", nameof(AcceptedReportSchemaVersion));
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
+        if (AcceptedReportCandidateCommitSha is not null &&
+            !(CandidateCommitSha is not null && string.Equals(AcceptedReportCandidateCommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase)) &&
+            !(PriorCandidateCommitSha is not null && string.Equals(AcceptedReportCandidateCommitSha, PriorCandidateCommitSha, StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("Accepted report candidate must match the current or prior result candidate.", nameof(AcceptedReportCandidateCommitSha));
         ArgumentNullException.ThrowIfNull(Evidence);
         if (Evidence.Count > 64)
             throw new ArgumentException("Result evidence is limited to 64 items.", nameof(Evidence));
