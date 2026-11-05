@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using Xunit;
 
@@ -770,5 +771,83 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         result.Validate();
     }
 
+
+    [Fact]
+    public async Task ExecuteAsync_AcceptedCiAiReportInvokesConfiguredAdapterAndBindsProposalToSameLineage()
+    {
+        const string report = "{\\"schema\\":\\"ciai.test-results.v1\\",\\"verdict\\":\\"ActionableFailure\\",\\"diagnostics\\":[{\\"id\\":\\"TEST-17\\",\\"message\\":\\"expected 4 but found 3\\"}]}";
+        const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
+        var acceptedReport = new HeadlessAiAcceptedCiReportContext
+        {
+            ReportIdentity = "report-identity-17",
+            CanonicalReportJson = report,
+            ReportSha256 = digest,
+            WorkflowRunId = "41950000001",
+            RunAttempt = 2,
+            CandidateCommitSha = candidateSha
+        };
+        const string providerResponse = "{\\"diagnosis\\":\\"repair the failing assertion\\",\\"patchIntent\\":\\"update the expected value\\",\\"acceptedReportIdentity\\":\\"model-forged-report\\",\\"acceptedReportSha256\\":\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\"}";
+        string? requestBody = null;
+        var calls = 0;
+        using var client = new HttpClient(new StubHandler(async (request, cancellationToken) =>
+        {
+            calls++;
+            requestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(providerResponse, Encoding.UTF8, "application/json")
+            };
+        }));
+        var executor = CreateExecutor(client);
+        var envelope = CreateEnvelope() with { CandidateCommitSha = candidateSha };
+        var request = HeadlessAiAgentTurnRequest.Create(envelope, acceptedReport, DateTimeOffset.UtcNow);
+
+        var result = await executor.ExecuteAsync(request);
+
+        Assert.Equal(1, calls);
+        Assert.Contains("\\"acceptedCiReport\\"", requestBody);
+        Assert.Contains(report.Replace("\\\"", "\\\\\\""), requestBody);
+        Assert.Contains(digest, requestBody);
+        Assert.Equal("task-100", result.TaskId);
+        Assert.Equal("correlation-100", result.CorrelationId);
+        Assert.Equal("TrentBest/HeadlessAi.Consumer", result.Repository);
+        Assert.Equal(candidateSha, result.CandidateCommitSha);
+        Assert.Equal("report-identity-17", result.AcceptedReportIdentity);
+        Assert.Equal(digest, result.AcceptedReportSha256);
+        Assert.Equal("41950000001", result.AcceptedReportWorkflowRunId);
+        Assert.Equal(2, result.AcceptedReportRunAttempt);
+        Assert.Equal(candidateSha, result.AcceptedReportCandidateCommitSha);
+        Assert.Equal("report-identity-17", result.Proposal.AcceptedReportIdentity);
+        Assert.Equal(digest, result.Proposal.AcceptedReportSha256);
+        Assert.NotEqual("model-forged-report", result.Proposal.AcceptedReportIdentity);
+        result.Validate();
+    }
+
+    [Fact]
+    public void RequestCreation_RejectsAcceptedReportDigestOrCandidateMismatch()
+    {
+        const string report = "{\\"schema\\":\\"ciai.test-results.v1\\"}";
+        const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
+        var acceptedReport = new HeadlessAiAcceptedCiReportContext
+        {
+            ReportIdentity = "report-identity-17",
+            CanonicalReportJson = report,
+            ReportSha256 = new string('a', 64),
+            WorkflowRunId = "41950000001",
+            RunAttempt = 1,
+            CandidateCommitSha = candidateSha
+        };
+
+        Assert.Throws<ArgumentException>(() =>
+            HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with { CandidateCommitSha = candidateSha },
+                acceptedReport, DateTimeOffset.UtcNow));
+
+        Assert.Throws<ArgumentException>(() =>
+            HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with
+                { CandidateCommitSha = "0123456789abcdef0123456789abcdef01234567" },
+                acceptedReport with { ReportSha256 = digest }, DateTimeOffset.UtcNow));
+    }
 
 }
