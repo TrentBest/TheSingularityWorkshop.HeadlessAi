@@ -99,6 +99,7 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         Assert.Equal(original.Fingerprint, restored.Fingerprint);
         Assert.Equal(report, restored.AcceptedCiReport?.CanonicalReportJson);
         Assert.Equal(digest, restored.AcceptedCiReport?.ReportSha256);
+        Assert.Equal(HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion, restored.AcceptedCiReport?.SchemaVersion);
         Assert.Equal("report-identity", restored.AcceptedCiReport?.ReportIdentity);
         Assert.Equal("run-100", restored.AcceptedCiReport?.WorkflowRunId);
         Assert.Equal(3, restored.AcceptedCiReport?.RunAttempt);
