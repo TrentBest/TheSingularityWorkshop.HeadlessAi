@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Security.Cryptography;
+using System.Text;
 using TheSingularityWorkshop.FSM_Serialization;
 using Xunit;
 
@@ -69,6 +70,39 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
 
         Assert.Equal(original.CanonicalPayload, restored.CanonicalPayload);
         Assert.Equal(original.Fingerprint, restored.Fingerprint);
+    }
+
+    [Fact]
+    public void RequestFrame_RoundTripsOpaqueAcceptedCiAiReportAndTrustedLineage()
+    {
+        const string report = "{\\"schema\\":\\"ciai.test-results.v1\\",\\"diagnostic\\":\\"preserve exactly\\nincluding newline\\"}";
+        var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
+        var candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var acceptedReport = new HeadlessAiAcceptedCiReportContext
+        {
+            ReportIdentity = "report-identity",
+            CanonicalReportJson = report,
+            ReportSha256 = digest,
+            WorkflowRunId = "run-100",
+            RunAttempt = 3,
+            CandidateCommitSha = candidateSha
+        };
+        var original = HeadlessAiAgentTurnRequest.Create(
+            Envelope() with { CandidateCommitSha = candidateSha }, acceptedReport, Now);
+        using var stream = new MemoryBinaryStream();
+
+        HeadlessAiAgentTurnBinaryCodec.PackRequest(original, stream);
+        stream.Position = 0;
+        var restored = HeadlessAiAgentTurnBinaryCodec.UnpackRequest(stream, Now);
+
+        Assert.Equal(original.CanonicalPayload, restored.CanonicalPayload);
+        Assert.Equal(original.Fingerprint, restored.Fingerprint);
+        Assert.Equal(report, restored.AcceptedCiReport?.CanonicalReportJson);
+        Assert.Equal(digest, restored.AcceptedCiReport?.ReportSha256);
+        Assert.Equal("report-identity", restored.AcceptedCiReport?.ReportIdentity);
+        Assert.Equal("run-100", restored.AcceptedCiReport?.WorkflowRunId);
+        Assert.Equal(3, restored.AcceptedCiReport?.RunAttempt);
+        Assert.Equal(candidateSha, restored.AcceptedCiReport?.CandidateCommitSha);
     }
 
     [Fact]
@@ -179,7 +213,7 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         using var stream = new MemoryBinaryStream();
         HeadlessAiAgentTurnBinaryCodec.PackRequest(snapshot, stream);
         var bytes = stream.ToArray();
-        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(7, 4), 1_024_001);
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(7, 4), 2_000_001);
         using var corrupted = new MemoryBinaryStream(bytes);
 
         Assert.Throws<InvalidDataException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackRequest(corrupted, Now));
