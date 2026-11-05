@@ -1,0 +1,22 @@
+{
+  "repository": "TrentBest/TheSingularityWorkshop.HeadlessAi",
+  "policy": "exactly-master-and-development",
+  "required_branches": [
+    "development",
+    "master"
+  ],
+  "actual_branches": [
+    "development",
+    "docs/readme-contrast-accessibility",
+    "feature/bounded-artifact-http-adapter",
+    "feature/resumable-agent-turn-contracts",
+    "feature/resumable-agent-turn-integration",
+    "master",
+    "work/http-retry-after-guidance"
+  ],
+  "branch_count": 7,
+  "status": "NON-COMPLIANT",
+  "evaluated_at": "2026-11-05T04:37:05Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/41968905963",
+  "triggering_commit": "c67926829cd9e32288845d4203a3ab7cfef4b1a2"
+}
