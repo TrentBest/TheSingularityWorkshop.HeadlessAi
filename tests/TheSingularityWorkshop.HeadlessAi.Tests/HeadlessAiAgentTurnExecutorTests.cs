@@ -775,7 +775,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     [Fact]
     public async Task ExecuteAsync_AcceptedCiAiReportInvokesConfiguredAdapterAndBindsProposalToSameLineage()
     {
-        const string report = "{\\"schema\\":\\"ciai.test-results.v1\\",\\"verdict\\":\\"ActionableFailure\\",\\"diagnostics\\":[{\\"id\\":\\"TEST-17\\",\\"message\\":\\"expected 4 but found 3\\"}]}";
+        const string report = """{"schema":"ciai.test-results.v1","verdict":"ActionableFailure","diagnostics":[{"id":"TEST-17","message":"expected 4 but found 3"}]}""";
         const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
@@ -787,7 +787,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             RunAttempt = 2,
             CandidateCommitSha = candidateSha
         };
-        const string providerResponse = "{\\"diagnosis\\":\\"repair the failing assertion\\",\\"patchIntent\\":\\"update the expected value\\",\\"acceptedReportIdentity\\":\\"model-forged-report\\",\\"acceptedReportSha256\\":\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\"}";
+        const string providerResponse = """{"diagnosis":"repair the failing assertion","patchIntent":"update the expected value","acceptedReportIdentity":"model-forged-report","acceptedReportSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}""";
         string? requestBody = null;
         var calls = 0;
         using var client = new HttpClient(new StubHandler(async (request, cancellationToken) =>
@@ -830,7 +830,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
     [Fact]
     public void RequestCreation_RejectsAcceptedReportDigestOrCandidateMismatch()
     {
-        const string report = "{\\"schema\\":\\"ciai.test-results.v1\\"}";
+        const string report = """{"schema":"ciai.test-results.v1","verdict":"ActionableFailure","diagnostics":[{"id":"TEST-17","message":"expected 4 but found 3"}]}""";
         const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
