@@ -411,6 +411,71 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsCredentialBearingUrlsAndAllowsOrdinaryQueryParameters()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            IssueUrl = "https://user:password@example.test/issues/1"
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            IssueUrl = "https://example.test/issues/1?access_token=abcdefghijklmnop"
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            PullRequestUrl = "https://example.test/pull/1?api_key=abcdefghijklmnop"
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            PullRequestUrl = "https://example.test/pull/1?signature=abcdefghijklmnop"
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Evidence = [ValidEnvelope().Evidence[0] with
+            {
+                SourceUrl = "https://example.test/run/1?sig=abcdefghijklmnop"
+            }]
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Evidence = [ValidEnvelope().Evidence[0] with
+            {
+                SourceUrl = "https://user:password@example.test/run/1"
+            }]
+        }).Validate(Now));
+
+        (ValidEnvelope() with
+        {
+            IssueUrl = "https://example.test/issues/1?state=open&page=2",
+            PullRequestUrl = "https://example.test/pull/1?diff=unified",
+            Evidence = [ValidEnvelope().Evidence[0] with
+            {
+                SourceUrl = "https://example.test/run/1?attempt=2&view=summary"
+            }]
+        }).Validate(Now);
+    }
+
+    [Fact]
+    public void Envelope_RejectsCredentialQueryAliasesInInstructionsContextAndEvidenceSummary()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Instructions = "Review https://example.test/run?refresh_token=abcdefghijklmnop"
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            ContextReferences = ["https://example.test/context?client_secret=abcdefghijklmnop"]
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Evidence = [ValidEnvelope().Evidence[0] with
+            {
+                BoundedSummary = "Provider echoed https://example.test/?token=abcdefghijklmnop"
+            }]
+        }).Validate(Now));
+    }
+
+    [Fact]
     public void Envelope_RejectsInvalidIssueAndPullRequestUrls()
     {
         Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { IssueUrl = "file:///tmp/issue" }).Validate(Now));
