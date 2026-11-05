@@ -11,8 +11,12 @@ namespace TheSingularityWorkshop.HeadlessAi;
 /// </summary>
 public sealed record HeadlessAiAcceptedCiReportContext
 {
+    public const string RequiredSchemaVersion = "ciai.test-results.v1";
     private const int MaximumReportBytes = 1_048_576;
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
+
+    /// <summary>Canonical report schema identifier; CiAi owns this versioned report surface.</summary>
+    public string SchemaVersion { get; init; } = RequiredSchemaVersion;
 
     /// <summary>Stable identity assigned to the accepted canonical report by its owner.</summary>
     public required string ReportIdentity { get; init; }
@@ -36,6 +40,8 @@ public sealed record HeadlessAiAcceptedCiReportContext
     public void Validate(HeadlessAiAgentTurnEnvelope envelope)
     {
         ArgumentNullException.ThrowIfNull(envelope);
+        if (!string.Equals(SchemaVersion, RequiredSchemaVersion, StringComparison.Ordinal))
+            throw new ArgumentException("Only the canonical ciai.test-results.v1 report is accepted.", nameof(SchemaVersion));
         if (string.IsNullOrWhiteSpace(ReportIdentity) || ReportIdentity.Length > 256)
             throw new ArgumentException("Accepted report identity is required and limited to 256 characters.", nameof(ReportIdentity));
         if (string.IsNullOrWhiteSpace(WorkflowRunId) || WorkflowRunId.Length > 128)
