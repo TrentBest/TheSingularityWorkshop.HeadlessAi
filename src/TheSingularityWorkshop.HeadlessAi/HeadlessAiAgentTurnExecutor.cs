@@ -291,13 +291,13 @@ public sealed class HeadlessAiAgentTurnExecutor
 
     private static HeadlessAiAgentTurnProposal BindAcceptedReportLineage(
         HeadlessAiAgentTurnProposal proposal, HeadlessAiAcceptedCiReportContext? acceptedCiReport)
-        => acceptedCiReport is null ? proposal : proposal with
+        => proposal with
         {
-            AcceptedReportIdentity = acceptedCiReport.ReportIdentity,
-            AcceptedReportSha256 = acceptedCiReport.ReportSha256,
-            AcceptedReportWorkflowRunId = acceptedCiReport.WorkflowRunId,
-            AcceptedReportRunAttempt = acceptedCiReport.RunAttempt,
-            AcceptedReportCandidateCommitSha = acceptedCiReport.CandidateCommitSha
+            AcceptedReportIdentity = acceptedCiReport?.ReportIdentity,
+            AcceptedReportSha256 = acceptedCiReport?.ReportSha256,
+            AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
+            AcceptedReportRunAttempt = acceptedCiReport?.RunAttempt,
+            AcceptedReportCandidateCommitSha = acceptedCiReport?.CandidateCommitSha
         };
 
     private static bool IsCredentialMetadata(string key, string value)
