@@ -135,7 +135,7 @@ public sealed record HeadlessAiAgentTurnEnvelope
         string[] patterns =
         [
             @"(?i)\bBearer\s+\S{12,}",
-            @"(?i)\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password)\s*[:=]\s*['"" ]?[^\s,'"" ]{8,}",
+            @"(?i)\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|token|key|signature|sig|authorization|credential|secret)\s*[:=]\s*['"" ]?[^\s,'"" ]{8,}",
             @"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})\b"
         ];
         if (patterns.Any(pattern => Regex.IsMatch(value, pattern, RegexOptions.CultureInvariant)))
@@ -148,11 +148,36 @@ public sealed record HeadlessAiAgentTurnEnvelope
             throw new ArgumentException($"{name} must be a full 40-character commit SHA.", name);
     }
 
-    private static void ValidateHttpsUrl(string value, string name)
+    internal static void ValidateHttpsUrl(string value, string name)
     {
         if (value.Length > 2_048 ||
-            !Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+            !Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+            uri.Scheme != Uri.UriSchemeHttps)
             throw new ArgumentException($"{name} must be an absolute HTTPS URL limited to 2048 characters.", name);
+
+        if (!string.IsNullOrEmpty(uri.UserInfo) || HasCredentialQueryParameter(uri))
+            throw new ArgumentException($"{name} must not contain embedded credentials or credential-bearing query parameters.", name);
+    }
+
+    private static bool HasCredentialQueryParameter(Uri uri)
+    {
+        string[] credentialNames =
+        [
+            "apikey", "key", "token", "accesstoken", "refreshtoken",
+            "clientsecret", "password", "secret", "authorization",
+            "credential", "signature", "sig"
+        ];
+
+        foreach (var pair in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var separator = pair.IndexOf('=');
+            var rawName = separator < 0 ? pair : pair[..separator];
+            var name = Uri.UnescapeDataString(rawName).Replace("_", string.Empty).Replace("-", string.Empty);
+            if (credentialNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 }
 
@@ -236,9 +261,9 @@ public sealed record HeadlessAiEvidenceReference
             throw new ArgumentException("Step name exceeds 256 characters.", nameof(StepName));
         if (string.IsNullOrWhiteSpace(Conclusion) || Conclusion.Length > 64)
             throw new ArgumentException("Conclusion is required and bounded.", nameof(Conclusion));
-        if (string.IsNullOrWhiteSpace(SourceUrl) || SourceUrl.Length > 2_048 ||
-            !Uri.TryCreate(SourceUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+        if (string.IsNullOrWhiteSpace(SourceUrl))
             throw new ArgumentException("Evidence source must be an absolute HTTPS URL limited to 2048 characters.", nameof(SourceUrl));
+        HeadlessAiAgentTurnEnvelope.ValidateHttpsUrl(SourceUrl, nameof(SourceUrl));
         if (BoundedSummary?.Length > 16_384)
             throw new ArgumentException("Evidence summary exceeds 16384 characters.", nameof(BoundedSummary));
     }
