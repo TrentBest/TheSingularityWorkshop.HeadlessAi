@@ -142,7 +142,7 @@ public sealed record HeadlessAiAgentTurnEnvelope
             throw new ArgumentException($"{name} must contain between 1 and {max} characters.", name);
     }
 
-    private static void RejectCredentialLikeText(string value, string name)
+    internal static void RejectCredentialLikeText(string value, string name)
     {
         string[] patterns =
         [
@@ -493,6 +493,12 @@ public sealed record HeadlessAiAgentTurnResult
                 string.IsNullOrWhiteSpace(p.Key) || p.Key.Length > 128 || p.Value is null || p.Value.Length > 4_096))
             throw new ArgumentException("Provider metadata keys and values must be non-empty and within the allowed bounds.", nameof(ProviderMetadata));
         Proposal.Validate();
+        if (Proposal.AcceptedReportIdentity != AcceptedReportIdentity ||
+            Proposal.AcceptedReportSha256 != AcceptedReportSha256 ||
+            Proposal.AcceptedReportWorkflowRunId != AcceptedReportWorkflowRunId ||
+            Proposal.AcceptedReportRunAttempt != AcceptedReportRunAttempt ||
+            Proposal.AcceptedReportCandidateCommitSha != AcceptedReportCandidateCommitSha)
+            throw new ArgumentException("Proposal accepted-report lineage must exactly match the host-bound result lineage.", nameof(Proposal));
     }
 
     private static void ValidateOptionalHttpsUrl(string? value, string name)
