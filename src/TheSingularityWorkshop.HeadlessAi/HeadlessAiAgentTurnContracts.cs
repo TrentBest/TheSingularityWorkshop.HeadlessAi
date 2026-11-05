@@ -124,6 +124,18 @@ public sealed record HeadlessAiAgentTurnEnvelope
         if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
     }
 
+    private static void ValidateAcceptedReportLineage(
+        string? identity, string? digest, string? runId, int? attempt, string? candidateSha)
+    {
+        var any = identity is not null || digest is not null || runId is not null || attempt is not null || candidateSha is not null;
+        if (!any) return;
+        if (string.IsNullOrWhiteSpace(identity) || identity.Length > 256 ||
+            !Regex.IsMatch(digest ?? string.Empty, "^[0-9a-fA-F]{64}$", RegexOptions.CultureInvariant) ||
+            string.IsNullOrWhiteSpace(runId) || runId.Length > 128 || attempt is null or < 1 ||
+            !Regex.IsMatch(candidateSha ?? string.Empty, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
+            throw new ArgumentException("Accepted report lineage must be supplied completely and within bounds.");
+    }
+
     private static void Require(string value, string name, int max)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length > max)
@@ -297,6 +309,16 @@ public sealed record HeadlessAiAgentTurnProposal
     public string? NextExpectedUpdate { get; init; }
     /// <summary>Human decision or authorization requested by the model.</summary>
     public string? HumanDecisionRequired { get; init; }
+    /// <summary>Host-bound accepted report identity attached after provider normalization; never trusted from model output.</summary>
+    public string? AcceptedReportIdentity { get; init; }
+    /// <summary>Digest of the exact accepted report bytes supplied to this turn.</summary>
+    public string? AcceptedReportSha256 { get; init; }
+    /// <summary>Accepted report workflow run identity supplied by the host.</summary>
+    public string? AcceptedReportWorkflowRunId { get; init; }
+    /// <summary>Accepted report workflow attempt supplied by the host.</summary>
+    public int? AcceptedReportRunAttempt { get; init; }
+    /// <summary>Candidate SHA to which the accepted report is bound.</summary>
+    public string? AcceptedReportCandidateCommitSha { get; init; }
 
     /// <summary>Validates proposal bounds without treating any field as trusted or executable.</summary>
     public void Validate()
@@ -315,6 +337,8 @@ public sealed record HeadlessAiAgentTurnProposal
         Check(Blocker, 4_096, nameof(Blocker));
         Check(NextExpectedUpdate, 2_048, nameof(NextExpectedUpdate));
         Check(HumanDecisionRequired, 4_096, nameof(HumanDecisionRequired));
+        ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
+            AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
     }
 
     private static void Check(string? value, int max, string name)
@@ -361,6 +385,16 @@ public sealed record HeadlessAiAgentTurnResult
     public string? PullRequestUrl { get; init; }
     /// <summary>CI evidence references carried by the originating envelope.</summary>
     public IReadOnlyList<HeadlessAiEvidenceReference> Evidence { get; init; } = Array.Empty<HeadlessAiEvidenceReference>();
+    /// <summary>Host-bound accepted report identity attached after provider normalization; never trusted from model output.</summary>
+    public string? AcceptedReportIdentity { get; init; }
+    /// <summary>Digest of the exact accepted report bytes supplied to this turn.</summary>
+    public string? AcceptedReportSha256 { get; init; }
+    /// <summary>Accepted report workflow run identity supplied by the host.</summary>
+    public string? AcceptedReportWorkflowRunId { get; init; }
+    /// <summary>Accepted report workflow attempt supplied by the host.</summary>
+    public int? AcceptedReportRunAttempt { get; init; }
+    /// <summary>Candidate SHA to which the accepted report is bound.</summary>
+    public string? AcceptedReportCandidateCommitSha { get; init; }
     /// <summary>Provider adapter identity.</summary>
     public required string ProviderId { get; init; }
     /// <summary>Provider model identifier.</summary>
@@ -436,6 +470,8 @@ public sealed record HeadlessAiAgentTurnResult
         if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
         if (PriorCandidateCommitSha is not null && !Regex.IsMatch(PriorCandidateCommitSha, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Prior candidate commit SHA must be a full SHA.", nameof(PriorCandidateCommitSha));
+        ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
+            AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
         ArgumentNullException.ThrowIfNull(Evidence);
         if (Evidence.Count > 64)
             throw new ArgumentException("Result evidence is limited to 64 items.", nameof(Evidence));
