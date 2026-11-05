@@ -212,8 +212,6 @@ public sealed class HeadlessAiAgentTurnExecutor
             PullRequestUrl = envelope.PullRequestUrl,
             Evidence = envelope.Evidence.ToArray(),
             AcceptedReportSchemaVersion = acceptedCiReport?.SchemaVersion,
-            AcceptedReportSchemaVersion = acceptedCiReport?.SchemaVersion,
-            AcceptedReportSchemaVersion = acceptedCiReport?.SchemaVersion,
             AcceptedReportIdentity = acceptedCiReport?.ReportIdentity,
             AcceptedReportSha256 = acceptedCiReport?.ReportSha256,
             AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
@@ -262,6 +260,7 @@ public sealed class HeadlessAiAgentTurnExecutor
             IssueUrl = envelope.IssueUrl,
             PullRequestUrl = envelope.PullRequestUrl,
             Evidence = envelope.Evidence.ToArray(),
+            AcceptedReportSchemaVersion = acceptedCiReport?.SchemaVersion,
             AcceptedReportIdentity = acceptedCiReport?.ReportIdentity,
             AcceptedReportSha256 = acceptedCiReport?.ReportSha256,
             AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
@@ -296,6 +295,7 @@ public sealed class HeadlessAiAgentTurnExecutor
         HeadlessAiAgentTurnProposal proposal, HeadlessAiAcceptedCiReportContext? acceptedCiReport)
         => proposal with
         {
+            AcceptedReportSchemaVersion = acceptedCiReport?.SchemaVersion,
             AcceptedReportIdentity = acceptedCiReport?.ReportIdentity,
             AcceptedReportSha256 = acceptedCiReport?.ReportSha256,
             AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
