@@ -89,11 +89,11 @@ public sealed class HeadlessAiAgentTurnExecutor
             if (IsCredentialMetadata("provider_response", output.Content))
                 return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                     "sensitive_response",
-                    "The provider response contained credential-shaped material and was discarded.", string.Empty);
+                    "The provider response contained credential-shaped material and was discarded.", string.Empty, acceptedCiReport);
             if (output.Content.Length > 1_000_000)
                 return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                     "response_limit_exceeded",
-                    "The provider response exceeds the one-million-character result limit.", string.Empty);
+                    "The provider response exceeds the one-million-character result limit.", string.Empty, acceptedCiReport);
             return CreateSuccess(envelope, acceptedCiReport, output, fingerprint, providerId, modelId, startedAt, completedAt);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -103,19 +103,19 @@ public sealed class HeadlessAiAgentTurnExecutor
         catch (OperationCanceledException) when (timeoutSource.IsCancellationRequested)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
-                "The turn exceeded its configured timeout.", string.Empty);
+                "The turn exceeded its configured timeout.", string.Empty, acceptedCiReport);
         }
         catch (OperationCanceledException)
         {
             // Some HttpClient/handler timeout paths surface cancellation independently of the
             // turn token. Caller cancellation was already propagated by the preceding filter.
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
-                "The provider transport cancelled the request before a response was available.", string.Empty);
+                "The provider transport cancelled the request before a response was available.", string.Empty, acceptedCiReport);
         }
         catch (TimeoutException)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt, "timeout",
-                "The provider request timed out.", string.Empty);
+                "The provider request timed out.", string.Empty, acceptedCiReport);
         }
         catch (HeadlessAiHttpException ex)
         {
@@ -126,12 +126,12 @@ public sealed class HeadlessAiAgentTurnExecutor
         catch (HttpRequestException)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
-                "transport_error", "The provider transport request failed.", string.Empty);
+                "transport_error", "The provider transport request failed.", string.Empty, acceptedCiReport);
         }
         catch (InvalidDataException)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
-                "response_limit_exceeded", "The provider response exceeded a configured size limit.", string.Empty);
+                "response_limit_exceeded", "The provider response exceeded a configured size limit.", string.Empty, acceptedCiReport);
         }
     }
 
