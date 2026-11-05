@@ -339,7 +339,8 @@ public sealed record HeadlessAiAgentTurnProposal
         Check(Blocker, 4_096, nameof(Blocker));
         Check(NextExpectedUpdate, 2_048, nameof(NextExpectedUpdate));
         Check(HumanDecisionRequired, 4_096, nameof(HumanDecisionRequired));
-        if (AcceptedReportSchemaVersion is not null && AcceptedReportSchemaVersion != HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion)
+        if ((AcceptedReportSchemaVersion is null) != (AcceptedReportIdentity is null) ||
+            (AcceptedReportSchemaVersion is not null && AcceptedReportSchemaVersion != HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion))
             throw new ArgumentException("Accepted report schema version is not supported.", nameof(AcceptedReportSchemaVersion));
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
@@ -499,7 +500,8 @@ public sealed record HeadlessAiAgentTurnResult
                 string.IsNullOrWhiteSpace(p.Key) || p.Key.Length > 128 || p.Value is null || p.Value.Length > 4_096))
             throw new ArgumentException("Provider metadata keys and values must be non-empty and within the allowed bounds.", nameof(ProviderMetadata));
         Proposal.Validate();
-        if (Proposal.AcceptedReportIdentity != AcceptedReportIdentity ||
+        if (Proposal.AcceptedReportSchemaVersion != AcceptedReportSchemaVersion ||
+            Proposal.AcceptedReportIdentity != AcceptedReportIdentity ||
             Proposal.AcceptedReportSha256 != AcceptedReportSha256 ||
             Proposal.AcceptedReportWorkflowRunId != AcceptedReportWorkflowRunId ||
             Proposal.AcceptedReportRunAttempt != AcceptedReportRunAttempt ||
