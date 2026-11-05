@@ -806,7 +806,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var result = await executor.ExecuteAsync(request);
 
         Assert.Equal(1, calls);
-        Assert.Contains("\\"acceptedCiReport\\"", requestBody);
+        Assert.Contains("\"acceptedCiReport\"", requestBody);
         Assert.Contains("canonicalReportJson", requestBody);
         Assert.Contains("expected 4 but found 3", requestBody);
         Assert.Contains(digest, requestBody);
