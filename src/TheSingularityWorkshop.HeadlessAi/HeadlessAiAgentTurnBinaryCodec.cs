@@ -17,7 +17,7 @@ public static class HeadlessAiAgentTurnBinaryCodec
     private const byte ComparisonFrameKind = 2;
     private const ushort FrameVersion = 1;
     private const int HeaderLength = 4 + 1 + sizeof(ushort) + sizeof(int) + 32;
-    private const int MaxRequestPayloadBytes = 1_024_000;
+    private const int MaxRequestPayloadBytes = 2_000_000;
     private const int MaxComparisonPayloadBytes = 40_000_000;
     private static ReadOnlySpan<byte> Magic => "HAIB"u8;
 
@@ -44,9 +44,25 @@ public static class HeadlessAiAgentTurnBinaryCodec
     {
         ArgumentNullException.ThrowIfNull(stream);
         var payload = ReadFrame(stream, RequestFrameKind, MaxRequestPayloadBytes);
-        var envelope = JsonSerializer.Deserialize<HeadlessAiAgentTurnEnvelope>(payload, JsonOptions)
-            ?? throw new InvalidDataException("The binary request frame contains an empty envelope.");
-        var snapshot = HeadlessAiAgentTurnRequest.Create(envelope, now);
+        HeadlessAiAgentTurnRequest snapshot;
+        using (var document = JsonDocument.Parse(payload))
+        {
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+                throw new InvalidDataException("The binary request frame must contain a JSON object.");
+
+            if (document.RootElement.TryGetProperty("acceptedCiReport", out _))
+            {
+                var providerPayload = JsonSerializer.Deserialize<HeadlessAiAgentTurnProviderPayload>(payload, JsonOptions)
+                    ?? throw new InvalidDataException("The binary request frame contains an empty accepted-report payload.");
+                snapshot = HeadlessAiAgentTurnRequest.Create(providerPayload.Envelope, providerPayload.AcceptedCiReport, now);
+            }
+            else
+            {
+                var envelope = JsonSerializer.Deserialize<HeadlessAiAgentTurnEnvelope>(payload, JsonOptions)
+                    ?? throw new InvalidDataException("The binary request frame contains an empty envelope.");
+                snapshot = HeadlessAiAgentTurnRequest.Create(envelope, now);
+            }
+        }
         EnsureCanonicalPayload(payload, snapshot.CanonicalPayload);
         return snapshot;
     }
