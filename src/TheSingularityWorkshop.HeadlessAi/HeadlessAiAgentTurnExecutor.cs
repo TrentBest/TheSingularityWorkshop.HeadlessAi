@@ -62,7 +62,9 @@ public sealed class HeadlessAiAgentTurnExecutor
         ArgumentNullException.ThrowIfNull(request);
         var startedAt = _timeProvider.GetUtcNow();
         var envelope = request.Envelope;
+        var acceptedCiReport = request.AcceptedCiReport;
         envelope.Validate(startedAt);
+        acceptedCiReport?.Validate(envelope);
 
         var canonicalRequest = request.CanonicalPayload;
         var fingerprint = request.Fingerprint;
@@ -82,7 +84,7 @@ public sealed class HeadlessAiAgentTurnExecutor
             if (output is null || output.Content is null)
                 return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                     "invalid_adapter_response",
-                    "The provider adapter returned no response content.", string.Empty);
+                    "The provider adapter returned no response content.", string.Empty, acceptedCiReport);
             var completedAt = _timeProvider.GetUtcNow();
             if (IsCredentialMetadata("provider_response", output.Content))
                 return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
@@ -92,7 +94,7 @@ public sealed class HeadlessAiAgentTurnExecutor
                 return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                     "response_limit_exceeded",
                     "The provider response exceeds the one-million-character result limit.", string.Empty);
-            return CreateSuccess(envelope, output, fingerprint, providerId, modelId, startedAt, completedAt);
+            return CreateSuccess(envelope, acceptedCiReport, output, fingerprint, providerId, modelId, startedAt, completedAt);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -119,7 +121,7 @@ public sealed class HeadlessAiAgentTurnExecutor
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
                 ex.StatusCode is { } statusCode ? $"http_{(int)statusCode}" : "http_error",
-                "The provider returned a non-success HTTP response.", SanitizeErrorResponseExcerpt(ex.ResponseExcerpt));
+                "The provider returned a non-success HTTP response.", SanitizeErrorResponseExcerpt(ex.ResponseExcerpt), acceptedCiReport);
         }
         catch (HttpRequestException)
         {
@@ -133,7 +135,8 @@ public sealed class HeadlessAiAgentTurnExecutor
         }
     }
 
-    private HeadlessAiAgentTurnResult CreateSuccess(HeadlessAiAgentTurnEnvelope envelope, HeadlessAiOutput output,
+    private HeadlessAiAgentTurnResult CreateSuccess(HeadlessAiAgentTurnEnvelope envelope,
+        HeadlessAiAcceptedCiReportContext? acceptedCiReport, HeadlessAiOutput output,
         string fingerprint, string providerId, string modelId,
         DateTimeOffset startedAt, DateTimeOffset completedAt)
     {
@@ -166,6 +169,8 @@ public sealed class HeadlessAiAgentTurnExecutor
             errorCode = "invalid_proposal";
             diagnostic = "The provider proposal failed contract validation.";
         }
+
+        proposal = BindAcceptedReportLineage(proposal, acceptedCiReport);
 
         // Provider metadata is untrusted. Keep the first spelling when a provider supplies
         // keys that differ only by casing; a case-insensitive dictionary must not make an
@@ -206,6 +211,11 @@ public sealed class HeadlessAiAgentTurnExecutor
             IssueUrl = envelope.IssueUrl,
             PullRequestUrl = envelope.PullRequestUrl,
             Evidence = envelope.Evidence.ToArray(),
+            AcceptedReportIdentity = acceptedCiReport?.ReportIdentity,
+            AcceptedReportSha256 = acceptedCiReport?.ReportSha256,
+            AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
+            AcceptedReportRunAttempt = acceptedCiReport?.RunAttempt,
+            AcceptedReportCandidateCommitSha = acceptedCiReport?.CandidateCommitSha,
             ProviderId = providerId,
             ModelId = modelId,
             ConfigurationId = _template.Profile.Id,
@@ -227,8 +237,10 @@ public sealed class HeadlessAiAgentTurnExecutor
         };
     }
 
-    private HeadlessAiAgentTurnResult CreateFailure(HeadlessAiAgentTurnEnvelope envelope, string fingerprint,
-        string providerId, string modelId, DateTimeOffset startedAt, string errorCode, string diagnostic, string rawResponse)
+    private HeadlessAiAgentTurnResult CreateFailure(HeadlessAiAgentTurnEnvelope envelope,
+        string fingerprint,
+        string providerId, string modelId, DateTimeOffset startedAt, string errorCode, string diagnostic, string rawResponse,
+        HeadlessAiAcceptedCiReportContext? acceptedCiReport = null)
         => new()
         {
             TurnId = Guid.NewGuid().ToString("N"),
@@ -247,6 +259,11 @@ public sealed class HeadlessAiAgentTurnExecutor
             IssueUrl = envelope.IssueUrl,
             PullRequestUrl = envelope.PullRequestUrl,
             Evidence = envelope.Evidence.ToArray(),
+            AcceptedReportIdentity = acceptedCiReport?.ReportIdentity,
+            AcceptedReportSha256 = acceptedCiReport?.ReportSha256,
+            AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
+            AcceptedReportRunAttempt = acceptedCiReport?.RunAttempt,
+            AcceptedReportCandidateCommitSha = acceptedCiReport?.CandidateCommitSha,
             ProviderId = providerId,
             ModelId = modelId,
             ConfigurationId = _template.Profile.Id,
@@ -254,11 +271,11 @@ public sealed class HeadlessAiAgentTurnExecutor
             StartedAt = startedAt,
             CompletedAt = _timeProvider.GetUtcNow(),
             RawResponse = rawResponse.Length <= 1_000_000 ? rawResponse : rawResponse[..1_000_000],
-            Proposal = new HeadlessAiAgentTurnProposal
+            Proposal = BindAcceptedReportLineage(new HeadlessAiAgentTurnProposal
             {
                 Uncertainty = "The provider invocation did not produce a usable proposal.",
                 StopOrEscalateReason = "The host must decide whether to retry, stop, or escalate."
-            },
+            }, acceptedCiReport),
             FinishReason = "error",
             Diagnostic = diagnostic,
             ErrorCode = errorCode
@@ -271,6 +288,17 @@ public sealed class HeadlessAiAgentTurnExecutor
 
         return excerpt;
     }
+
+    private static HeadlessAiAgentTurnProposal BindAcceptedReportLineage(
+        HeadlessAiAgentTurnProposal proposal, HeadlessAiAcceptedCiReportContext? acceptedCiReport)
+        => acceptedCiReport is null ? proposal : proposal with
+        {
+            AcceptedReportIdentity = acceptedCiReport.ReportIdentity,
+            AcceptedReportSha256 = acceptedCiReport.ReportSha256,
+            AcceptedReportWorkflowRunId = acceptedCiReport.WorkflowRunId,
+            AcceptedReportRunAttempt = acceptedCiReport.RunAttempt,
+            AcceptedReportCandidateCommitSha = acceptedCiReport.CandidateCommitSha
+        };
 
     private static bool IsCredentialMetadata(string key, string value)
     {
