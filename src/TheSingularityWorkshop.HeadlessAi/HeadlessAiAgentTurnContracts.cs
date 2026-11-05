@@ -474,6 +474,8 @@ public sealed record HeadlessAiAgentTurnResult
         if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
         if (PriorCandidateCommitSha is not null && !Regex.IsMatch(PriorCandidateCommitSha, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Prior candidate commit SHA must be a full SHA.", nameof(PriorCandidateCommitSha));
+        if (AcceptedReportSchemaVersion is not null && AcceptedReportSchemaVersion != HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion)
+            throw new ArgumentException("Accepted report schema version is not supported.", nameof(AcceptedReportSchemaVersion));
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
         ArgumentNullException.ThrowIfNull(Evidence);
