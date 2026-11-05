@@ -309,6 +309,8 @@ public sealed record HeadlessAiAgentTurnProposal
     public string? NextExpectedUpdate { get; init; }
     /// <summary>Human decision or authorization requested by the model.</summary>
     public string? HumanDecisionRequired { get; init; }
+    /// <summary>Canonical accepted report schema identifier attached by the host boundary.</summary>
+    public string? AcceptedReportSchemaVersion { get; init; }
     /// <summary>Host-bound accepted report identity attached after provider normalization; never trusted from model output.</summary>
     public string? AcceptedReportIdentity { get; init; }
     /// <summary>Digest of the exact accepted report bytes supplied to this turn.</summary>
@@ -337,6 +339,8 @@ public sealed record HeadlessAiAgentTurnProposal
         Check(Blocker, 4_096, nameof(Blocker));
         Check(NextExpectedUpdate, 2_048, nameof(NextExpectedUpdate));
         Check(HumanDecisionRequired, 4_096, nameof(HumanDecisionRequired));
+        if (AcceptedReportSchemaVersion is not null && AcceptedReportSchemaVersion != HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion)
+            throw new ArgumentException("Accepted report schema version is not supported.", nameof(AcceptedReportSchemaVersion));
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
     }
