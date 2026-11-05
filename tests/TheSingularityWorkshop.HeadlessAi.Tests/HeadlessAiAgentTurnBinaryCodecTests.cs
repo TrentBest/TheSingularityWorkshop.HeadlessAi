@@ -75,7 +75,7 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
     [Fact]
     public void RequestFrame_RoundTripsOpaqueAcceptedCiAiReportAndTrustedLineage()
     {
-        const string report = "{\\"schema\\":\\"ciai.test-results.v1\\",\\"diagnostic\\":\\"preserve exactly\\nincluding newline\\"}";
+        const string report = """{"schema":"ciai.test-results.v1","diagnostic":"preserve exactly\\nincluding newline"}""";
         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
         var candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
