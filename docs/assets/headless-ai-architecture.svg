@@ -8,7 +8,8 @@
     <style>
       .title{font:700 30px system-ui,sans-serif;fill:#f8fafc}.subtitle{font:400 15px system-ui,sans-serif;fill:#cbd5e1}
       .heading{font:700 19px system-ui,sans-serif;fill:#f8fafc}.body{font:400 15px system-ui,sans-serif;fill:#dbe6f0}
-      .small{font:400 13px system-ui,sans-serif;fill:#cbd5e1}.edge{fill:none;stroke:#a7bacd;stroke-width:2.5;marker-end:url(#arrow)}
+      .small{font:400 13px system-ui,sans-serif;fill:#cbd5e1}
+      .dark-heading{fill:#241605}.dark-body{fill:#462607}.dark-small{fill:#462607}.edge{fill:none;stroke:#a7bacd;stroke-width:2.5;marker-end:url(#arrow)}
       .dash{fill:none;stroke:#7c9bb7;stroke-width:2;stroke-dasharray:8 7;marker-end:url(#arrow)}
     </style>
   </defs>
@@ -27,17 +28,17 @@
   <text x="192" y="425" text-anchor="middle" class="small">Optional helpers</text>
   <text x="192" y="444" text-anchor="middle" class="body">ProtocolAi · GrammarAi</text>
   <rect x="440" y="145" width="320" height="340" rx="18" fill="url(#headless)" stroke="#ffe0a3" stroke-width="2"/>
-  <text x="470" y="184" class="heading" fill="#241605">HeadlessAi</text>
-  <text x="470" y="218" class="body" fill="#241605">Reusable invocation toolkit</text>
+  <text x="470" y="184" class="heading dark-heading">HeadlessAi</text>
+  <text x="470" y="218" class="body dark-body">Reusable invocation toolkit</text>
   <rect x="470" y="245" width="260" height="52" rx="10" fill="#fff0cb" stroke="#b96a08"/>
-  <text x="600" y="267" text-anchor="middle" class="heading" fill="#462607">Endpoint profile</text>
-  <text x="600" y="286" text-anchor="middle" class="small" fill="#462607">URI · method · settings · bounds</text>
+  <text x="600" y="267" text-anchor="middle" class="heading dark-heading">Endpoint profile</text>
+  <text x="600" y="286" text-anchor="middle" class="small dark-small">URI · method · settings · bounds</text>
   <rect x="470" y="313" width="260" height="52" rx="10" fill="#fff0cb" stroke="#b96a08"/>
-  <text x="600" y="335" text-anchor="middle" class="heading" fill="#462607">Protocol adapter</text>
-  <text x="600" y="354" text-anchor="middle" class="small" fill="#462607">Explicit request/response mapping</text>
+  <text x="600" y="335" text-anchor="middle" class="heading dark-heading">Protocol adapter</text>
+  <text x="600" y="354" text-anchor="middle" class="small dark-small">Explicit request/response mapping</text>
   <rect x="470" y="381" width="260" height="52" rx="10" fill="#fff0cb" stroke="#b96a08"/>
-  <text x="600" y="403" text-anchor="middle" class="heading" fill="#462607">Bounded HTTP</text>
-  <text x="600" y="422" text-anchor="middle" class="small" fill="#462607">Shared transport · cancel · timeout</text>
+  <text x="600" y="403" text-anchor="middle" class="heading dark-heading">Bounded HTTP</text>
+  <text x="600" y="422" text-anchor="middle" class="small dark-small">Shared transport · cancel · timeout</text>
   <rect x="870" y="145" width="275" height="340" rx="18" fill="#23364a" stroke="#6f8ba5" stroke-width="1.5"/>
   <text x="897" y="184" class="heading">Configured endpoint</text>
   <text x="897" y="218" class="body">Provider-owned contract</text>
