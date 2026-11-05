@@ -207,7 +207,7 @@ public sealed record HeadlessAiAgentTurnLimits
     /// <summary>Maximum length of each context reference.</summary>
     public int MaxReferenceCharacters { get; init; } = 2_048;
     /// <summary>Maximum serialized envelope length before transport.</summary>
-    public int MaxSerializedEnvelopeCharacters { get; init; } = 256_000;
+    public int MaxSerializedEnvelopeCharacters { get; init; } = 1_500_000;
     /// <summary>Maximum allowed envelope lifetime from validation time.</summary>
     public TimeSpan MaxLifetime { get; init; } = TimeSpan.FromHours(2);
     /// <summary>Per-provider invocation timeout.</summary>
