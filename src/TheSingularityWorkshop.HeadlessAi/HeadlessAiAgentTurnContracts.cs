@@ -124,7 +124,7 @@ public sealed record HeadlessAiAgentTurnEnvelope
         if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
     }
 
-    private static void ValidateAcceptedReportLineage(
+    internal static void ValidateAcceptedReportLineage(
         string? identity, string? digest, string? runId, int? attempt, string? candidateSha)
     {
         var any = identity is not null || digest is not null || runId is not null || attempt is not null || candidateSha is not null;
@@ -337,7 +337,7 @@ public sealed record HeadlessAiAgentTurnProposal
         Check(Blocker, 4_096, nameof(Blocker));
         Check(NextExpectedUpdate, 2_048, nameof(NextExpectedUpdate));
         Check(HumanDecisionRequired, 4_096, nameof(HumanDecisionRequired));
-        ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
+        HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
     }
 
@@ -470,7 +470,7 @@ public sealed record HeadlessAiAgentTurnResult
         if (IdempotencyKey is not null) Require(IdempotencyKey, nameof(IdempotencyKey), 256);
         if (PriorCandidateCommitSha is not null && !Regex.IsMatch(PriorCandidateCommitSha, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Prior candidate commit SHA must be a full SHA.", nameof(PriorCandidateCommitSha));
-        ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
+        HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
         ArgumentNullException.ThrowIfNull(Evidence);
         if (Evidence.Count > 64)
