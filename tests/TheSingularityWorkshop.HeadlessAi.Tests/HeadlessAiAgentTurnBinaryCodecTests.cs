@@ -80,7 +80,7 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         var candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
-            ReportIdentity = "report-identity",
+            ReportIdentity = "sha256:" + digest,
             CanonicalReportJson = report,
             ReportSha256 = digest,
             WorkflowRunId = "run-100",
