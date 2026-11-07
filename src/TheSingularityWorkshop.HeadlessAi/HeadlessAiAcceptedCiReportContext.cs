@@ -78,7 +78,11 @@ public sealed record HeadlessAiAcceptedCiReportContext
             throw new ArgumentException("Accepted report digest must be a full SHA-256 value.", nameof(ReportSha256));
 
         var actualDigest = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-        if (!string.Equals(actualDigest, ReportSha256, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(actualDigest, ReportSha256, StringComparison.Ordinal))
             throw new ArgumentException("Accepted report digest does not match its exact UTF-8 bytes.", nameof(ReportSha256));
+
+        var expectedIdentity = "sha256:" + actualDigest;
+        if (!string.Equals(ReportIdentity, expectedIdentity, StringComparison.Ordinal))
+            throw new ArgumentException("Accepted report identity must be sha256: followed by the lowercase digest of the exact UTF-8 bytes.", nameof(ReportIdentity));
     }
 }
