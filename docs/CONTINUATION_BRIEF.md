@@ -40,7 +40,7 @@ HeadlessAi is a standalone .NET HTTP-agent toolkit. It configures endpoint-speci
 - `HeadlessAiAgentTurnComparisonSnapshot` captures a bounded canonical comparison payload.
 - `HeadlessAiAgentTurnBinaryCodec` frames request and comparison snapshots over the `FSM_Serialization` project reference and `IBinaryStream`.
 
-The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload length, SHA-256 digest), with a 1,024,000-byte request payload limit and a 40,000,000-byte comparison payload limit. The digest detects corruption; it is not a signature or authentication mechanism. The host owns stream lifetime, storage, encryption, access control, and retention.
+The binary frame uses a 43-byte header (`HAIB` magic, kind, version, payload length, SHA-256 digest), with a 2,000,000-byte request payload limit and a 40,000,000-byte comparison payload limit. The digest detects corruption; it is not a signature or authentication mechanism. The host owns stream lifetime, storage, encryption, access control, and retention.
 
 **Responsibility split:** Foundry owns lifecycle, durable replay/idempotency, orchestration, authorization, budgets, and action handoff. CiAi supplies CI facts; HeadlessAi preserves evidence references as untrusted, provenance-bearing input. FSM_Serialization supplies the shared binary stream boundary. HeadlessAi must not introduce a competing stream abstraction or depend on Foundry/CiAi.
 
