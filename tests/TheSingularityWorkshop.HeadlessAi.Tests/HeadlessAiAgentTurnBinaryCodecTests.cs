@@ -100,7 +100,7 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         Assert.Equal(report, restored.AcceptedCiReport?.CanonicalReportJson);
         Assert.Equal(digest, restored.AcceptedCiReport?.ReportSha256);
         Assert.Equal(HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion, restored.AcceptedCiReport?.SchemaVersion);
-        Assert.Equal("report-identity", restored.AcceptedCiReport?.ReportIdentity);
+        Assert.Equal("sha256:" + digest, restored.AcceptedCiReport?.ReportIdentity);
         Assert.Equal("run-100", restored.AcceptedCiReport?.WorkflowRunId);
         Assert.Equal(3, restored.AcceptedCiReport?.RunAttempt);
         Assert.Equal(candidateSha, restored.AcceptedCiReport?.CandidateCommitSha);
