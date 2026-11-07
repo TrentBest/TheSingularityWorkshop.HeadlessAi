@@ -175,9 +175,11 @@ public sealed record HeadlessAiAgentTurnEnvelope
     {
         string[] credentialNames =
         [
-            "apikey", "key", "token", "accesstoken", "refreshtoken",
-            "clientsecret", "password", "secret", "authorization",
-            "credential", "signature", "sig"
+            "apikey", "xapikey", "key", "token", "apitoken", "authtoken",
+            "accesstoken", "refreshtoken", "idtoken", "sessiontoken",
+            "accesskey", "privatekey", "secretkey", "clientsecret",
+            "password", "secret", "authorization", "bearer", "jwt",
+            "credential", "signature", "sig", "sas"
         ];
 
         foreach (var pair in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
