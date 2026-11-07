@@ -75,7 +75,7 @@ The executor performs one invocation. It does not retry automatically. Host canc
 
 For a CI repair turn, the host may create a `HeadlessAiAcceptedCiReportContext` **only after Foundry has authenticated the delivery, verified the provider artifact and exact run mapping, and accepted the report for the task/candidate**. The report content is carried as opaque UTF-8 JSON text. HeadlessAi does not deserialize the report body, interpret diagnostics, verify a CI verdict, or decide whether the report is trusted.
 
-The host supplies the report bytes and their digest separately from the task envelope. The context is explicitly limited to the canonical `ciai.test-results.v1` surface and also carries the report identity and trusted run/attempt/candidate binding from Foundry's acceptance record. The request factory verifies the SHA-256 digest over the exact UTF-8 bytes, applies a one-megabyte report-content limit and a 1.5-megabyte overall canonical-request limit by default, and requires the candidate SHA to match the current or prior candidate in the envelope. The composite canonical provider request includes both the normal turn envelope and the unchanged report text; the request fingerprint therefore binds both.
+The host supplies the exact canonical report bytes, their lowercase SHA-256 digest, and the derived report identity separately from the task envelope. The identity must be exactly `sha256:` followed by that lowercase digest; the digest is computed over the complete canonical UTF-8 bytes, not an indented display representation. The context is explicitly limited to the canonical `ciai.test-results.v1` surface and also carries the trusted run/attempt/candidate binding from Foundry's acceptance record. The request factory verifies both the digest and its identity derivation over the exact UTF-8 bytes, applies a one-megabyte report-content limit and a 1.5-megabyte overall canonical-request limit by default, and requires the candidate SHA to match the current or prior candidate in the envelope. The composite canonical provider request includes both the normal turn envelope and the unchanged report text; the request fingerprint therefore binds both.
 
 ```csharp
 using System.Security.Cryptography;
@@ -85,6 +85,7 @@ using System.Text;
 // reportJson is the exact UTF-8 JSON body returned by CiAi; do not parse/re-serialize it.
 var acceptedCiReport = new HeadlessAiAcceptedCiReportContext
 {
+    // Must equal "sha256:" + the lowercase ReportSha256 value.
     ReportIdentity = hostAcceptedReportIdentity,
     CanonicalReportJson = reportJson,
     ReportSha256 = Convert.ToHexString(
