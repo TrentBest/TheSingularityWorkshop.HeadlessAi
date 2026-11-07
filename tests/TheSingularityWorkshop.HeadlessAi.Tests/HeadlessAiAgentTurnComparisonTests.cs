@@ -392,6 +392,98 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     }
 
     [Theory]
+    [InlineData("identity")]
+    [InlineData("digest")]
+    [InlineData("run-id")]
+    [InlineData("attempt")]
+    [InlineData("candidate")]
+    public void Comparison_RejectsDifferentAcceptedReportLineage(string mismatch)
+    {
+        var first = WithAcceptedReport(Result("provider-a", "turn-a"), new string('a', 64));
+        var second = WithAcceptedReport(Result("provider-b", "turn-b"), new string('a', 64));
+        second = mismatch switch
+        {
+            "identity" => second with
+            {
+                AcceptedReportIdentity = "sha256:" + new string('b', 64),
+                Proposal = second.Proposal with { AcceptedReportIdentity = "sha256:" + new string('b', 64) }
+            },
+            "digest" => second with
+            {
+                AcceptedReportSha256 = new string('b', 64),
+                AcceptedReportIdentity = "sha256:" + new string('b', 64),
+                Proposal = second.Proposal with
+                {
+                    AcceptedReportSha256 = new string('b', 64),
+                    AcceptedReportIdentity = "sha256:" + new string('b', 64)
+                }
+            },
+            "run-id" => second with
+            {
+                AcceptedReportWorkflowRunId = "run-456",
+                Proposal = second.Proposal with { AcceptedReportWorkflowRunId = "run-456" }
+            },
+            "attempt" => second with
+            {
+                AcceptedReportRunAttempt = 2,
+                Proposal = second.Proposal with { AcceptedReportRunAttempt = 2 }
+            },
+            "candidate" => second with
+            {
+                AcceptedReportCandidateCommitSha = new string('b', 40),
+                CandidateCommitSha = new string('b', 40),
+                Proposal = second.Proposal with { AcceptedReportCandidateCommitSha = new string('b', 40) }
+            },
+            _ => second
+        };
+
+        var comparison = Comparison() with
+        {
+            CandidateCommitSha = Sha,
+            ProviderResults = [first, second]
+        };
+
+        Assert.Throws<ArgumentException>(comparison.Validate);
+    }
+
+    [Fact]
+    public void Comparison_RejectsMixingAcceptedAndUnacceptedReportResults()
+    {
+        var accepted = WithAcceptedReport(Result("provider-a", "turn-a"), new string('a', 64));
+        var comparison = Comparison() with
+        {
+            CandidateCommitSha = Sha,
+            ProviderResults = [accepted, Result("provider-b", "turn-b")]
+        };
+
+        Assert.Throws<ArgumentException>(comparison.Validate);
+    }
+
+    private static HeadlessAiAgentTurnResult WithAcceptedReport(HeadlessAiAgentTurnResult result, string digest)
+    {
+        var identity = "sha256:" + digest;
+        return result with
+        {
+            CandidateCommitSha = Sha,
+            AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
+            AcceptedReportIdentity = identity,
+            AcceptedReportSha256 = digest,
+            AcceptedReportWorkflowRunId = "run-123",
+            AcceptedReportRunAttempt = 1,
+            AcceptedReportCandidateCommitSha = Sha,
+            Proposal = result.Proposal with
+            {
+                AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
+                AcceptedReportIdentity = identity,
+                AcceptedReportSha256 = digest,
+                AcceptedReportWorkflowRunId = "run-123",
+                AcceptedReportRunAttempt = 1,
+                AcceptedReportCandidateCommitSha = Sha
+            }
+        };
+    }
+
+    [Theory]
     [InlineData("issue")]
     [InlineData("pull-request")]
     public void Result_RejectsNonHttpsTaskLinks(string link)
