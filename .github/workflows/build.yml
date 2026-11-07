@@ -1,4 +1,4 @@
-name: Build, Test, Coverage, and Pack
+name: Development Build, Test, and Coverage
 
 on:
   push:
@@ -6,12 +6,6 @@ on:
   pull_request:
     branches: [master, development]
   workflow_dispatch:
-    inputs:
-      publish:
-        description: 'Publish the verified package to NuGet.org'
-        required: true
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -21,16 +15,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          path: HeadlessAi
+      - name: Checkout FSM_Serialization development source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.FSM_Serialization
+          ref: development
+          path: dependencies/FSM_Serialization
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
           dotnet-version: 8.0.x
       - name: Restore
+        working-directory: HeadlessAi
         run: dotnet restore TheSingularityWorkshop.HeadlessAi.slnx
       - name: Build
+        working-directory: HeadlessAi
         run: dotnet build TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-restore
       - name: Test with coverage
+        working-directory: HeadlessAi
         run: dotnet test TheSingularityWorkshop.HeadlessAi.slnx --configuration Release --no-build --collect:"XPlat Code Coverage;Format=cobertura" --results-directory ./TestResults
       - name: Prepare coverage report
+        working-directory: HeadlessAi
         shell: bash
         run: |
           set -euo pipefail
@@ -47,134 +54,10 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: TrentBest/TheSingularityWorkshop.HeadlessAi
-          files: ./TestResults/coverage.cobertura.xml
+          files: HeadlessAi/TestResults/coverage.cobertura.xml
           fail_ci_if_error: true
-      - name: Pack
-        run: dotnet pack src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj --configuration Release --no-build --output ./artifacts
-      - name: Audit packed NuGet artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import glob, re, zipfile
-          from xml.etree import ElementTree as ET
-          packages = glob.glob('artifacts/*.nupkg')
-          if len(packages) != 1:
-              raise SystemExit(f'Expected exactly one .nupkg, found {len(packages)}: {packages}')
-          package = packages[0]
-          with zipfile.ZipFile(package) as z:
-              names = z.namelist()
-              readme_names = [n for n in names if n.lower() == 'readme.md']
-              nuspec_names = [n for n in names if n.endswith('.nuspec')]
-              dlls = [n for n in names if n.startswith('lib/net8.0/') and n.endswith('.dll')]
-              xml_docs = [n for n in names if n.startswith('lib/net8.0/') and n.endswith('.xml')]
-              docs = [n for n in names if n.startswith('docs/') and n.endswith('.md')]
-              svg_docs = [n for n in names if n.startswith('docs/') and n.endswith('.svg')]
-              assert readme_names, 'Package is missing README.md'
-              assert nuspec_names, 'Package is missing its .nuspec manifest'
-              assert dlls, 'Package is missing the net8.0 assembly'
-              assert xml_docs, 'Package is missing XML API documentation'
-              assert docs, 'Package is missing Markdown documentation under docs/'
-              assert 'docs/GALLERY.md' in names, 'Package is missing docs/GALLERY.md'
-              assert svg_docs, 'Package is missing documentation SVG assets'
-              readme = z.read(readme_names[0]).decode('utf-8')
-              assert 'raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/docs/assets/headless-ai-architecture.svg' in readme, 'README architecture visual must use a package-safe absolute URL'
-              relative = re.findall(r'\]\((?!https?://|mailto:|#)([^)\s]+)\)', readme)
-              assert not relative, f'NuGet README contains relative links that will not resolve on nuget.org: {relative}'
-              root = ET.fromstring(z.read(nuspec_names[0]))
-              metadata = root.find('.//{*}metadata')
-              assert metadata is not None, 'Package metadata is missing'
-              def value(tag):
-                  node = metadata.find('{*}' + tag)
-                  return node.text.strip() if node is not None and node.text else ''
-              assert value('id') == 'TheSingularityWorkshop.HeadlessAi', f"Unexpected package id: {value('id')}"
-              assert value('version') == '0.1.0-alpha.1', f"Unexpected package version: {value('version')}"
-              assert value('license') or value('licenseUrl'), 'License metadata is missing'
-              assert value('readme') == 'README.md', f"Unexpected package README metadata: {value('readme')}"
-              dependency_nodes = root.findall('.//{*}dependency')
-              assert not dependency_nodes, f'HeadlessAi core must remain dependency-free; found package dependencies: {[node.attrib for node in dependency_nodes]}'
-              print(f'PASS: {package} contains assembly, XML docs, README, license metadata, expected id/version, absolute visual URL, and no relative README links.')
-          PY
-      - name: Compile quickstart against packed NuGet artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          package="$(find ./artifacts -maxdepth 1 -type f -name '*.nupkg' -print -quit)"
-          package_version="$(python3 - "$package" <<'PY'
-          import sys, zipfile
-          from xml.etree import ElementTree as ET
-          with zipfile.ZipFile(sys.argv[1]) as package:
-              nuspec = next(name for name in package.namelist() if name.endswith('.nuspec'))
-              root = ET.fromstring(package.read(nuspec))
-              metadata = root.find('.//{*}metadata')
-              version = metadata.find('{*}version') if metadata is not None else None
-              if version is None or not version.text:
-                  raise SystemExit('Package version is missing.')
-              print(version.text.strip())
-          PY
-          )"
-          sample="samples/TheSingularityWorkshop.HeadlessAi.Quickstart/TheSingularityWorkshop.HeadlessAi.Quickstart.csproj"
-          dotnet restore "$sample" --source "$PWD/artifacts" -p:UsePackedHeadlessAi=true -p:HeadlessAiPackageVersion="$package_version"
-          dotnet build "$sample" --configuration Release --no-restore -p:UsePackedHeadlessAi=true -p:HeadlessAiPackageVersion="$package_version"
 
-      - name: Verify package in a clean consumer project
-        shell: bash
-        run: |
-          set -euo pipefail
-          package="$(find ./artifacts -maxdepth 1 -type f -name '*.nupkg' -print -quit)"
-          mapfile -t package_metadata < <(python3 - "$package" <<'PY'
-          import sys, zipfile
-          from xml.etree import ElementTree as ET
-          with zipfile.ZipFile(sys.argv[1]) as package:
-              nuspec = next(name for name in package.namelist() if name.endswith('.nuspec'))
-              root = ET.fromstring(package.read(nuspec))
-              metadata = root.find('.//{*}metadata')
-              if metadata is None:
-                  raise SystemExit('Package metadata is missing.')
-              for field in ('id', 'version'):
-                  node = metadata.find('{*}' + field)
-                  if node is None or not node.text:
-                      raise SystemExit(f'Package {field} is missing.')
-                  print(node.text.strip())
-          PY
-          )
-          package_id="${package_metadata[0]:-}"
-          package_version="${package_metadata[1]:-}"
-          if [[ -z "$package_id" || -z "$package_version" ]]; then
-            echo "Could not read package ID/version from the generated NuGet package."
-            exit 1
-          fi
-          consumer_dir="$(mktemp -d)"
-          trap 'rm -rf "$consumer_dir"' EXIT
-          dotnet new console --framework net8.0 --output "$consumer_dir" --no-restore
-          dotnet add "$consumer_dir" package "$package_id" --version "$package_version" --source "$PWD/artifacts"
-          dotnet build "$consumer_dir" --configuration Release
-
-      - name: Upload package artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: headlessai-package
-          path: artifacts/*.nupkg
-
-
-  publish_nuget:
-    needs: verify
-    runs-on: ubuntu-latest
-    # Publication remains deliberately disabled until Trent explicitly authorizes a release.
-    if: ${{ false }}
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Download NuGet package
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
-        with:
-          name: headlessai-package
-          path: ./artifacts
-      - name: Authenticate with NuGet Trusted Publishing
-        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
-        id: login
-        with:
-          user: TheSingularityWorkshop
-      - name: Publish package to NuGet.org
-        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
+# This workflow is development verification only. It deliberately does not pack,
+# build a release package, or publish to NuGet. A separately authorized release
+# workflow must first pass all gates, then opt into UsePublishedDependencies=true
+# with an exact dependency version that already exists on NuGet.org.

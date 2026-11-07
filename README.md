@@ -112,10 +112,11 @@ sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
 }
 ```
 
-Expected behavior: the program prints the response text extracted by the selected adapter. The example is compiled as part of the solution build and compiled again against the packed NuGet artifact by CI using [the quickstart sample](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/samples/TheSingularityWorkshop.HeadlessAi.Quickstart/Program.cs); it is not run against a live provider. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
+Expected behavior: the program prints the response text extracted by the selected adapter. The example is compiled as part of the solution build and the [quickstart sample](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/samples/TheSingularityWorkshop.HeadlessAi.Quickstart/Program.cs) is included in development CI; it is not run against a live provider. Development CI uses the `FSM_Serialization` development source project and does not build a NuGet package. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
 
 ## 🟪 06 Documentation and theory
 
+- **[Agent turns and resumability](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/agent-turns-and-resumability.md)** — create, validate, execute, compare, and persist bounded v1 agent-turn snapshots.
 - **[Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
 - **[What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
 - **[Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md)** — understand why endpoint protocol, transport, identity, and application authority are separate concerns.
