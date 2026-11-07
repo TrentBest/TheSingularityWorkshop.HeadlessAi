@@ -476,6 +476,28 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsAdditionalCredentialQueryAliasesIncludingEncodedNames()
+    {
+        string[] aliases =
+        [
+            "x-api-key", "api_token", "auth_token", "id_token",
+            "session_token", "access_key", "private_key", "secret_key",
+            "bearer", "jwt", "sas"
+        ];
+
+        foreach (var alias in aliases)
+        {
+            var url = $"https://example.test/resource?{alias}=abcdefghijklmnop";
+            Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { IssueUrl = url }).Validate(Now));
+        }
+
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            PullRequestUrl = "https://example.test/pull/1?access%5Ftoken=abcdefghijklmnop"
+        }).Validate(Now));
+    }
+
+    [Fact]
     public void Envelope_RejectsInvalidIssueAndPullRequestUrls()
     {
         Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { IssueUrl = "file:///tmp/issue" }).Validate(Now));
