@@ -780,7 +780,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
-            ReportIdentity = "report-identity-17",
+            ReportIdentity = "sha256:" + digest,
             CanonicalReportJson = report,
             ReportSha256 = digest,
             WorkflowRunId = "41950000001",
@@ -835,7 +835,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
-            ReportIdentity = "report-identity-17",
+            ReportIdentity = "sha256:" + digest,
             CanonicalReportJson = report,
             ReportSha256 = new string('a', 64),
             WorkflowRunId = "41950000001",
@@ -855,6 +855,11 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with
                 { CandidateCommitSha = "0123456789abcdef0123456789abcdef01234567" },
                 acceptedReport with { ReportSha256 = digest }, DateTimeOffset.UtcNow));
+
+        Assert.Throws<ArgumentException>(() =>
+            HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with { CandidateCommitSha = candidateSha },
+                acceptedReport with { ReportIdentity = "report-identity-17", ReportSha256 = digest },
+                DateTimeOffset.UtcNow));
     }
 
 }
