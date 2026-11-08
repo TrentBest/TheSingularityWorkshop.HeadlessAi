@@ -90,6 +90,27 @@ The host is responsible for validating outbound endpoint configuration for its d
 
 The profile timeout applies in addition to the caller's cancellation token. Successful response bodies are bounded by `MaxResponseBytes`, and non-success excerpts are bounded to 2048 bytes. The host owns conversation state, role policy, budgets, permissions, semantic validation, and tool mediation. Shared adapters and header providers should be stateless or thread-safe.
 
+### Handling temporary HTTP failures
+
+When an endpoint returns a non-success status, `HeadlessAiHttpException` preserves the HTTP status, a response excerpt capped at 2048 bytes, and the optional `Retry-After` value supplied by the server. The value may be a delay or an HTTP date.
+
+HeadlessAi does **not** retry automatically. The host must decide whether the operation is safe to repeat, enforce its own attempt budget and overall deadline, honor caller cancellation, and avoid retrying permanent failures as though they were transient. Treat `ResponseExcerpt` as potentially sensitive and redact it before logging or persistence.
+
+```csharp
+try
+{
+    var output = await agent.SendAsync(input, cancellationToken);
+}
+catch (HeadlessAiHttpException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+{
+    if (ex.RetryAfter is not null)
+        logger.LogWarning("Endpoint retry guidance: {RetryAfter}", ex.RetryAfter);
+
+    // Apply host-owned retry and idempotency policy; do not blindly replay.
+    throw;
+}
+```
+
 ## Build and test
 
 From the repository root:
