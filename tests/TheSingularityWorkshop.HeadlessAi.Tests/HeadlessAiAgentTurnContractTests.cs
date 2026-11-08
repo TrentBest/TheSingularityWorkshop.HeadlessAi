@@ -556,6 +556,45 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Request_RejectsCanonicalEnvelopeAboveAggregateCharacterLimitBeforeTransport()
+    {
+        var envelope = ValidEnvelope() with
+        {
+            Instructions = new string('x', 4_096),
+            Limits = new HeadlessAiAgentTurnLimits { MaxSerializedEnvelopeCharacters = 1_024 }
+        };
+
+        Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnRequest.Create(envelope, Now));
+    }
+
+    [Fact]
+    public void Request_AggregateCharacterLimitIncludesAcceptedCiAiReportPayload()
+    {
+        const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var report = "{\\"schema\\":\\"ciai.test-results.v1\\",\\"details\\":\\"" +
+            new string('x', 8_192) + "\\"}";
+        var digest = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
+        var acceptedReport = new HeadlessAiAcceptedCiReportContext
+        {
+            ReportIdentity = "sha256:" + digest,
+            CanonicalReportJson = report,
+            ReportSha256 = digest,
+            WorkflowRunId = "run-aggregate-limit",
+            RunAttempt = 1,
+            CandidateCommitSha = candidateSha
+        };
+        var envelope = ValidEnvelope() with
+        {
+            CandidateCommitSha = candidateSha,
+            Limits = new HeadlessAiAgentTurnLimits { MaxSerializedEnvelopeCharacters = 4_096 }
+        };
+
+        Assert.Throws<ArgumentException>(() =>
+            HeadlessAiAgentTurnRequest.Create(envelope, acceptedReport, Now));
+    }
+
+    [Fact]
     public void Evidence_RejectsInvalidAttemptAndOversizedSummary()
     {
         var invalidAttempt = ValidEnvelope().Evidence[0] with { Attempt = 0 };
