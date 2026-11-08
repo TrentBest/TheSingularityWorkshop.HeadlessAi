@@ -571,8 +571,7 @@ public sealed class HeadlessAiAgentTurnContractTests
     public void Request_AggregateCharacterLimitIncludesAcceptedCiAiReportPayload()
     {
         const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
-        var report = "{\\"schema\\":\\"ciai.test-results.v1\\",\\"details\\":\\"" +
-            new string('x', 8_192) + "\\"}";
+        var report = $$"""{"schema":"ciai.test-results.v1","details":"{{new string('x', 8_192)}}"}""";
         var digest = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
             System.Text.Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
