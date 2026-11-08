@@ -61,7 +61,7 @@ The current API separates four responsibilities:
 
 The host can configure a target and create many logical callers while reusing its HTTP transport. It still owns task planning, concurrency, cost budgets, role permissions, conversation state, output validation, and approval of consequential actions.
 
-The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These are concrete protocol adapters around generic invocation contracts; the core domain remains independent of provider and model types.
+The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These are concrete protocol adapters around generic invocation contracts; the core domain remains independent of provider and model types. Non-success HTTP responses preserve bounded excerpts and optional `Retry-After` guidance; HeadlessAi reports that metadata without automatically replaying the request.
 
 ## 🟢 05 See it in a minute
 
