@@ -26,10 +26,11 @@
   </ItemGroup>
   <!-- Release packaging opts into the already-approved published dependency explicitly. -->
   <ItemGroup Condition="'$(UsePublishedDependencies)' == 'true'">
-    <PackageReference Include="TheSingularityWorkshop.FSM_Serialization" Version="$(FsmSerializationPackageVersion)" />
+    <PackageReference Include="TheSingularityWorkshop.FSM_Serialization" Version="[$(FsmSerializationPackageVersion), $(FsmSerializationPackageVersion)]" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" />
     <None Include="../../docs/**/*.md" Pack="true" PackagePath="docs/%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../docs/**/*.svg" Pack="true" PackagePath="docs/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
