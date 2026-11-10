@@ -144,14 +144,54 @@ public sealed record HeadlessAiAgentTurnEnvelope
 
     internal static void RejectCredentialLikeText(string value, string name)
     {
+        if (ContainsCredentialLikeMaterial(value))
+            throw new ArgumentException("Prompt and evidence payloads must not contain credentials; use the host-managed header provider.", name);
+    }
+
+    internal static bool ContainsCredentialLikeMaterial(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return false;
+
         string[] patterns =
         [
             @"(?i)\bBearer\s+\S{12,}",
-            @"(?i)\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|token|key|signature|sig|authorization|credential|secret)\s*[:=]\s*['"" ]?[^\s,'"" ]{8,}",
+            @"(?i)(?:^|[^A-Za-z0-9])(?:x[_-]?api[_-]?key|api[_-]?token|auth[_-]?token|id[_-]?token|session[_-]?token|access[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|secret[_-]?key|x-amz-credential|x-amz-security-token|x-amz-signature|authorization|credential|password|token|key|signature|sig|jwt|sas|secret)\s*[:=]\s*['"" ]?[^\\s,'"" ]{8,}",
             @"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})\b"
         ];
         if (patterns.Any(pattern => Regex.IsMatch(value, pattern, RegexOptions.CultureInvariant)))
-            throw new ArgumentException("Prompt and evidence payloads must not contain credentials; use the host-managed header provider.", name);
+            return true;
+
+        // Free-text fields can contain URLs. Apply the same URI-level user-info and
+        // query-name checks used for the dedicated IssueUrl/PullRequestUrl/SourceUrl fields.
+        foreach (Match match in Regex.Matches(value, @"https?://[^\s<>""']+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            var candidate = match.Value.TrimEnd('.', ',', ';', ':', '!', '?', ')', ']', '}');
+            if (Uri.TryCreate(candidate, UriKind.Absolute, out var uri) &&
+                (!string.IsNullOrEmpty(uri.UserInfo) || HasCredentialQueryParameter(uri)))
+                return true;
+        }
+
+        return false;
+    }
+
+    internal static bool IsCredentialFieldName(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return false;
+        var normalized = Regex.Replace(key, "[^A-Za-z0-9]", string.Empty);
+        string[] aliases =
+        [
+            "authorization", "apikey", "accesstoken", "refreshtoken", "authtoken",
+            "apitoken", "idtoken", "sessiontoken", "securitytoken", "clientsecret",
+            "privatekey", "secretkey", "credential", "password", "secret",
+            "signature", "xamzcredential", "xamzsignature", "xamzsecuritytoken"
+        ];
+
+        return aliases.Any(alias => normalized.Contains(alias, StringComparison.OrdinalIgnoreCase)) ||
+            normalized.Equals("token", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("key", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("sig", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("jwt", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("sas", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ValidateSha(string sha, string name)
@@ -176,10 +216,11 @@ public sealed record HeadlessAiAgentTurnEnvelope
         string[] credentialNames =
         [
             "apikey", "xapikey", "key", "token", "apitoken", "authtoken",
-            "accesstoken", "refreshtoken", "idtoken", "sessiontoken",
+            "accesstoken", "refreshtoken", "idtoken", "sessiontoken", "securitytoken",
             "accesskey", "privatekey", "secretkey", "clientsecret",
             "password", "secret", "authorization", "bearer", "jwt",
-            "credential", "signature", "sig", "sas"
+            "credential", "signature", "sig", "sas",
+            "xamzcredential", "xamzsecuritytoken", "xamzsignature"
         ];
 
         foreach (var pair in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
