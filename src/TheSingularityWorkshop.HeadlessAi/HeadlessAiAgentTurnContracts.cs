@@ -156,6 +156,7 @@ public sealed record HeadlessAiAgentTurnEnvelope
         [
             @"(?i)\bBearer\s+\S{12,}",
             @"(?i)(?:^|[^A-Za-z0-9])(?:x[_-]?api[_-]?key|api[_-]?token|auth[_-]?token|id[_-]?token|session[_-]?token|access[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|secret[_-]?key|x-amz-credential|x-amz-security-token|x-amz-signature|authorization|credential|password|token|key|signature|sig|jwt|sas|secret)\s*[:=]\s*['"" ]?[^\s,'"" ]{8,}",
+            @"(?i)['""](?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|secret[_-]?key|password|credential|secret|x-amz-credential|x-amz-security-token|x-amz-signature)['""]\s*:",
             @"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})\b"
         ];
         if (patterns.Any(pattern => Regex.IsMatch(value, pattern, RegexOptions.CultureInvariant)))
