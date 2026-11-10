@@ -26,7 +26,7 @@ GitHub reports exactly seven branches:
 | `docs/readme-contrast-accessibility` | `5081f462dffc037dbc9c93b13eab71c0de1bb6c8` | 1 ahead / 93 behind | **READY FOR OWNER DELETION** — its only unique change is the four SVG text-color declarations; the active PR #13 SVG carries the equivalent dark-text treatment as explicit fills on the pale boxes. |
 | `feature/bounded-artifact-http-adapter` | `f61990c78a9e228aba564a158a5478d227db4e13` | 0 ahead / 3 behind | **READY FOR OWNER DELETION** — every commit is already reachable from development; there is no branch-unique diff. Issue #12 remains open and must remain available for any unfinished follow-up. |
 | `feature/resumable-agent-turn-contracts` | `12e28b437313e0c8d055442f58fb403469844caa` | 159 ahead / 72 behind | PRESERVE — closed PR #11 does not make this divergent history disposable. PR #13 selectively integrates a subset; the remaining unique work has not been fully reconciled. |
-| `feature/resumable-agent-turn-integration` | `f9aba30512c8f887879c9fded18741a49b311d90` | 92 ahead / 0 behind | PRESERVE — active PR #13 head; exact-head Development Build, Test, and Coverage run #629 passed. |
+| `feature/resumable-agent-turn-integration` | Active PR #13 (current head is tracked in PR metadata) | Ahead of development / 0 behind (94 ahead at this follow-up snapshot) | PRESERVE — active integration branch; latest code/workflow candidate is recorded below. |
 | `work/http-retry-after-guidance` | `cb1366d76335ac005fba55517c3f8a3144d8accb` | 15 ahead / 93 behind | **READY FOR OWNER DELETION** — its seven changed paths are superseded in PR #13. The retry-after contract, original three-argument exception constructor, no-automatic-retry behavior, documentation, and regression tests are present on the active PR branch. |
 
 ### Sith disposition
@@ -46,7 +46,8 @@ The `master...development` comparison is still **diverged**: development is 150 
 - The current development branch still has the older combined build/pack workflow.
 - PR #13 separates ordinary development restore/build/test/coverage from the manual-only, non-publishing release-verification workflow.
 - Release verification has not been dispatched; package archive audit and clean-consumer verification remain unverified.
-- PR #13 exact head `f9aba30512c8f887879c9fded18741a49b311d90` passed Development Build, Test, and Coverage run [#629](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/42738203157): 236 passed, 0 failed, 0 skipped.
+- PR #13 code/workflow candidate `da4a74952932d0bf76edf3205d95881a2e1b87df` passed Development Build, Test, and Coverage run [#631](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/42739139867): build succeeded; 236 passed, 0 failed, 0 skipped; coverage upload succeeded.
+- The manual release-verification workflow now checks the exact HeadlessAi assembly/XML paths and creates a new isolated .NET consumer project to install and build the produced package. This workflow has not been dispatched, so its package/archive/consumer execution remains unverified.
 - No merge, release, deployment, package publication, or branch deletion has been performed.
 
 ## Historical branch evidence — 2026-10-22
