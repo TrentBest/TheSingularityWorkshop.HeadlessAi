@@ -304,25 +304,8 @@ public sealed class HeadlessAiAgentTurnExecutor
         };
 
     private static bool IsCredentialMetadata(string key, string value)
-    {
-        var normalizedKey = key.Replace("-", string.Empty, StringComparison.Ordinal)
-            .Replace("_", string.Empty, StringComparison.Ordinal)
-            .Replace(".", string.Empty, StringComparison.Ordinal);
-
-        if (normalizedKey.Contains("authorization", StringComparison.OrdinalIgnoreCase) ||
-            normalizedKey.Contains("apikey", StringComparison.OrdinalIgnoreCase) ||
-            normalizedKey.Contains("accesstoken", StringComparison.OrdinalIgnoreCase) ||
-            normalizedKey.Contains("refreshtoken", StringComparison.OrdinalIgnoreCase) ||
-            normalizedKey.Contains("clientsecret", StringComparison.OrdinalIgnoreCase) ||
-            normalizedKey.Contains("password", StringComparison.OrdinalIgnoreCase) ||
-            normalizedKey.Contains("credential", StringComparison.OrdinalIgnoreCase) ||
-            normalizedKey.Contains("secret", StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        return System.Text.RegularExpressions.Regex.IsMatch(value,
-            @"(?i)\bBearer\s+\S{12,}|[?&](?:token|key|signature|sig|api[_-]?key|access[_-]?token|refresh[_-]?token)=([^&\s]{8,})|\b(?:api[_-]?key|access[_-]?token|client[_-]?secret|password)\s*[:=]\s*['"" ]?[^\s,'"" ]{8,}|['""](?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|credential|secret)['""]\s*:",
-            System.Text.RegularExpressions.RegexOptions.CultureInvariant);
-    }
+        => HeadlessAiAgentTurnEnvelope.IsCredentialFieldName(key) ||
+            HeadlessAiAgentTurnEnvelope.ContainsCredentialLikeMaterial(value);
 
     private static long? ReadTokenCount(IReadOnlyDictionary<string, string> metadata, params string[] keys)
     {
