@@ -160,12 +160,6 @@ Local benchmarks use deterministic fixture HTTP responses rather than live provi
 - **PayPal:** [Make a donation](https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J)
 
 <p align="center">
-  <a href="https://github.com/TrentBest">
-    <img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop avatar and brand" width="200">
-  </a>
-</p>
-
-<p align="center">
   <a href="https://github.com/TrentBest">GitHub</a> ·
   <a href="https://coderlegion.com/">Coder Legion</a> ·
   <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
@@ -181,4 +175,4 @@ Local benchmarks use deterministic fixture HTTP responses rather than live provi
 ---
 
 <!-- THE SINGULARITY WORKSHOP FOOTER -->
-<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop avatar" width="200" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" width="200" /></p>
