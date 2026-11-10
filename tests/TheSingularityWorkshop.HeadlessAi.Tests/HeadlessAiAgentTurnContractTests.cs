@@ -498,6 +498,40 @@ public sealed class HeadlessAiAgentTurnContractTests
     }
 
     [Fact]
+    public void Envelope_RejectsEncodedAndAdditionalCredentialAliasesInFreeTextFields()
+    {
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Instructions = "Review https://example.test/run?access%5Ftoken=abcdefghijklmnop"
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            ContextReferences = ["https://example.test/context?jwt=abcdefghijklmnop"]
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Evidence = [ValidEnvelope().Evidence[0] with
+            {
+                BoundedSummary = "Review https://example.test/run?sas=abcdefghijklmnop"
+            }]
+        }).Validate(Now));
+        Assert.Throws<ArgumentException>(() => (ValidEnvelope() with
+        {
+            Instructions = "https://example.test/run?X-Amz-Signature=abcdefghijklmnop"
+        }).Validate(Now));
+
+        (ValidEnvelope() with
+        {
+            Instructions = "Review https://example.test/run?state=open&attempt=2",
+            ContextReferences = ["https://example.test/context?page=3&view=summary"],
+            Evidence = [ValidEnvelope().Evidence[0] with
+            {
+                BoundedSummary = "Build details: https://example.test/run?attempt=2&view=summary"
+            }]
+        }).Validate(Now);
+    }
+
+    [Fact]
     public void Envelope_RejectsInvalidIssueAndPullRequestUrls()
     {
         Assert.Throws<ArgumentException>(() => (ValidEnvelope() with { IssueUrl = "file:///tmp/issue" }).Validate(Now));
