@@ -54,10 +54,32 @@ public sealed class JsonHeadlessAiAdapter : IHeadlessAiAdapter
     {
         ArgumentNullException.ThrowIfNull(response);
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var content = _responseSelector(document.RootElement)
-            ?? throw new InvalidOperationException($"JSON adapter '{Id}' returned null response content.");
-        var metadata = _metadataSelector?.Invoke(document.RootElement);
-        return new HeadlessAiOutput(content, response.StatusCode, response.Content.Headers.ContentType?.MediaType, metadata);
+        JsonDocument document;
+        try
+        {
+            document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (JsonException)
+        {
+            var malformedBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            throw new HeadlessAiProviderResponseException("malformed_provider_json", malformedBody);
+        }
+
+        using (document)
+        {
+            try
+            {
+                var content = _responseSelector(document.RootElement)
+                    ?? throw new InvalidDataException($"JSON adapter '{Id}' returned null response content.");
+                var metadata = _metadataSelector?.Invoke(document.RootElement);
+                return new HeadlessAiOutput(content, response.StatusCode,
+                    response.Content.Headers.ContentType?.MediaType, metadata);
+            }
+            catch (InvalidDataException)
+            {
+                var invalidBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                throw new HeadlessAiProviderResponseException("invalid_provider_response", invalidBody);
+            }
+        }
     }
 }
