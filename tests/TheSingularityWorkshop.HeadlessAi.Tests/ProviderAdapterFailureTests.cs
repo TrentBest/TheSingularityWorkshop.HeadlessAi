@@ -26,8 +26,10 @@ public sealed class ProviderAdapterFailureTests
             Content = new StringContent("{}")
         };
 
-        await Assert.ThrowsAsync<InvalidDataException>(
+        var exception = await Assert.ThrowsAnyAsync<Exception>(
             async () => await adapter.ReadResponseAsync(response));
+
+        Assert.Equal("HeadlessAiProviderResponseException", exception.GetType().Name);
     }
 
     [Theory]
@@ -39,8 +41,10 @@ public sealed class ProviderAdapterFailureTests
             Content = new StringContent("{ definitely not json")
         };
 
-        await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(
+        var exception = await Assert.ThrowsAnyAsync<Exception>(
             async () => await adapter.ReadResponseAsync(response));
+
+        Assert.Equal("HeadlessAiProviderResponseException", exception.GetType().Name);
     }
 
     [Theory]
@@ -52,8 +56,10 @@ public sealed class ProviderAdapterFailureTests
             Content = new StringContent(string.Empty)
         };
 
-        await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(
+        var exception = await Assert.ThrowsAnyAsync<Exception>(
             async () => await adapter.ReadResponseAsync(response));
+
+        Assert.Equal("HeadlessAiProviderResponseException", exception.GetType().Name);
     }
 
     [Theory]
