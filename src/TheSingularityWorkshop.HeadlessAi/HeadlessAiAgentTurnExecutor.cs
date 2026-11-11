@@ -123,6 +123,17 @@ public sealed class HeadlessAiAgentTurnExecutor
                 ex.StatusCode is { } statusCode ? $"http_{(int)statusCode}" : "http_error",
                 "The provider returned a non-success HTTP response.", SanitizeErrorResponseExcerpt(ex.ResponseExcerpt), acceptedCiReport);
         }
+        catch (HeadlessAiProviderResponseException ex)
+        {
+            var rawResponse = IsCredentialMetadata("provider_response", ex.ResponseBody)
+                ? string.Empty
+                : ex.ResponseBody;
+            var diagnostic = ex.ErrorCode == "malformed_provider_json"
+                ? "The provider returned a response body that was not valid JSON."
+                : "The provider returned valid JSON without the expected response content.";
+            return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
+                ex.ErrorCode, diagnostic, rawResponse, acceptedCiReport);
+        }
         catch (HttpRequestException)
         {
             return CreateFailure(envelope, fingerprint, providerId, modelId, startedAt,
