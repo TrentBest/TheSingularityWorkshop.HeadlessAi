@@ -11,44 +11,41 @@
 **Scope:** `master` versus `development`  
 **Disposition:** Audit and documentation reconciliation only. No merge, cherry-pick, reset, or branch deletion has been performed. NuGet publication remains hard-disabled.
 
-## Live audit — 2026-11-10 (authoritative current inventory)
+## Live audit — 2026-11-10 UTC (refreshed after exact-head verification)
 
-This section supersedes the historical 2026-10-22 snapshot below.
+This section supersedes the older live-audit snapshot below. GitHub currently reports **7 persistent branches**.
 
-### Verified branch inventory
+### Verified inventory and comparison with `development`
 
-GitHub reports exactly seven branches:
+| Branch | Comparison | Disposition |
+|---|---:|---|
+| `master` | 17 ahead / 150 behind | PRESERVE — released baseline; do not reconcile automatically. |
+| `development` | canonical active baseline | PRESERVE. |
+| `feature/resumable-agent-turn-integration` | 96 ahead / 0 behind | PRESERVE — active PR #13; current head `b0648e47c2fc447cd9962bba1bbbce4d89bda102`. |
+| `feature/resumable-agent-turn-contracts` | 159 ahead / 72 behind | PRESERVE — 159 unique commits and substantial divergence remain; closed PR #11 does not make this history disposable. |
+| `work/http-retry-after-guidance` | 15 ahead / 93 behind | PRESERVE — branch has 15 unique commits and seven changed paths relative to development. PR #13 contains related retry-after work, but the branch's unique history and current files are not byte-identical to the integration branch; complete semantic reconciliation is still required before deletion readiness. |
+| `docs/readme-contrast-accessibility` | 1 ahead / 93 behind | PRESERVE — one unique SVG commit remains. PR #13 has a similar contrast treatment, but equivalence of the unique commit has not yet been established sufficiently to mark this branch ready for deletion. |
+| `feature/bounded-artifact-http-adapter` | 0 ahead / 3 behind | **READY FOR OWNER DELETION** — all branch commits are already reachable from development; no branch-unique commits or diff remain. Issue #12 remains open for its independent transport-boundary work. |
 
-| Branch | Head SHA | Compare with `development` | Disposition |
-|---|---|---:|---|
-| `master` | `8ee70d8a5e014e6e60e9de00ebff254febf98fc5` | 17 commits ahead of development | Preserve as released baseline. |
-| `development` | `3cb5ace24fe97822eaa1e9b65b3aa8da8589ab07` | Canonical active baseline | Preserve. |
-| `docs/readme-contrast-accessibility` | `5081f462dffc037dbc9c93b13eab71c0de1bb6c8` | 1 ahead / 93 behind | **READY FOR OWNER DELETION** — its only unique change is the four SVG text-color declarations; the active PR #13 SVG carries the equivalent dark-text treatment as explicit fills on the pale boxes. |
-| `feature/bounded-artifact-http-adapter` | `f61990c78a9e228aba564a158a5478d227db4e13` | 0 ahead / 3 behind | **READY FOR OWNER DELETION** — every commit is already reachable from development; there is no branch-unique diff. Issue #12 remains open and must remain available for any unfinished follow-up. |
-| `feature/resumable-agent-turn-contracts` | `12e28b437313e0c8d055442f58fb403469844caa` | 159 ahead / 72 behind | PRESERVE — closed PR #11 does not make this divergent history disposable. PR #13 selectively integrates a subset; the remaining unique work has not been fully reconciled. |
-| `feature/resumable-agent-turn-integration` | Active PR #13 (current head is tracked in PR metadata) | Ahead of development / 0 behind (94 ahead at this follow-up snapshot) | PRESERVE — active integration branch; latest code/workflow candidate is recorded below. |
-| `work/http-retry-after-guidance` | `cb1366d76335ac005fba55517c3f8a3144d8accb` | 15 ahead / 93 behind | **READY FOR OWNER DELETION** — its seven changed paths are superseded in PR #13. The retry-after contract, original three-argument exception constructor, no-automatic-retry behavior, documentation, and regression tests are present on the active PR branch. |
+### Owner cleanup batch
 
-### Sith disposition
+Only one surplus branch is currently supported by the evidence as ready for owner deletion:
 
-Three surplus branches are ready for the owner's single cleanup batch:
-
-- `TrentBest/TheSingularityWorkshop.HeadlessAi:docs/readme-contrast-accessibility`
 - `TrentBest/TheSingularityWorkshop.HeadlessAi:feature/bounded-artifact-http-adapter`
-- `TrentBest/TheSingularityWorkshop.HeadlessAi:work/http-retry-after-guidance`
 
-Do not delete them automatically. The two resumable-agent branches remain protected: the integration branch is the active PR, and the older contracts branch contains substantially divergent unique history.
+Do not delete it automatically. Keep the retry-guidance and documentation branches until their unique commits are explicitly reconciled against PR #13. Preserve both resumable-agent branches. The owner performs any deletion as a single deliberate cleanup batch after reviewing the readiness list.
 
-The `master...development` comparison is still **diverged**: development is 150 commits ahead of master and 17 commits behind it. Do not reconcile by blind merge, reset, or force-push. Keep both canonical branches intact.
+### Canonical branch safety
 
-### Release and CI boundary
+The `master...development` comparison remains diverged: development is 150 commits ahead of master and 17 commits behind it. Do not reconcile by blind merge, reset, or force-push. Keep both canonical branches intact.
 
-- The current development branch still has the older combined build/pack workflow.
-- PR #13 separates ordinary development restore/build/test/coverage from the manual-only, non-publishing release-verification workflow.
-- Release verification has not been dispatched; package archive audit and clean-consumer verification remain unverified.
-- PR #13 code/workflow candidate `da4a74952932d0bf76edf3205d95881a2e1b87df` passed Development Build, Test, and Coverage run [#631](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/42739139867): build succeeded; 236 passed, 0 failed, 0 skipped; coverage upload succeeded.
-- The manual release-verification workflow now checks the exact HeadlessAi assembly/XML paths and creates a new isolated .NET consumer project to install and build the produced package. This workflow has not been dispatched, so its package/archive/consumer execution remains unverified.
-- No merge, release, deployment, package publication, or branch deletion has been performed.
+### Exact-head verification and package boundary
+
+- PR #13 head `b0648e47c2fc447cd9962bba1bbbce4d89bda102` passed Development Build, Test, and Coverage run [#633](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/42763540451): build succeeded; **236 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded.
+- The exact-head result verifies ordinary development CI only. It does not verify the manual package workflow.
+- The separate `.github/workflows/release-verification.yml` workflow is manual-only and non-publishing. It checks the published FSM_Serialization allowlist, packs one candidate, audits the archive/manifest/docs, builds a clean consumer, and uploads an artifact. It has **not been dispatched**; package archive and consumer verification remain unverified.
+- Ordinary development CI uses the FSM_Serialization `development` source and does not pack or publish.
+- No merge, release, deployment, package publication, canonical-branch write, or branch deletion has been performed.
 
 ## Historical branch evidence — 2026-10-22
 
