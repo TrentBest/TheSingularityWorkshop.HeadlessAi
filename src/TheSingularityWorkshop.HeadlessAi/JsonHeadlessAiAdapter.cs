@@ -75,7 +75,7 @@ public sealed class JsonHeadlessAiAdapter : IHeadlessAiAdapter
                 return new HeadlessAiOutput(content, response.StatusCode,
                     response.Content.Headers.ContentType?.MediaType, metadata);
             }
-            catch (InvalidDataException)
+            catch (Exception ex) when (ex is InvalidDataException or InvalidOperationException or KeyNotFoundException)
             {
                 var invalidBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 throw new HeadlessAiProviderResponseException("invalid_provider_response", invalidBody);
