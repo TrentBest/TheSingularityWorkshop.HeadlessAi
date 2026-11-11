@@ -72,6 +72,19 @@ public sealed class JsonProviderResponseFailureTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_JsonWithUnexpectedRootShapeIsNormalized()
+    {
+        const string raw = """["unexpected","array"]""";
+        var (result, calls) = await ExecuteAsync(raw);
+
+        Assert.Equal(1, calls);
+        Assert.Equal("invalid_provider_response", result.ErrorCode);
+        Assert.Equal(raw, result.RawResponse);
+        Assert.Null(result.Proposal.PatchIntent);
+        result.Validate();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_MalformedProviderJsonContainingCredentialsIsNotRetained()
     {
         const string secret = "provider-secret-value-12345";
