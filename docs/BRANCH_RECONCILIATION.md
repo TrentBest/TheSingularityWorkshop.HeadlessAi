@@ -21,7 +21,7 @@ This section supersedes the older live-audit snapshot below. GitHub currently re
 |---|---:|---|
 | `master` | 18 ahead / 150 behind | PRESERVE — released baseline; do not reconcile automatically. |
 | `development` | canonical active baseline | PRESERVE. |
-| `feature/resumable-agent-turn-integration` | 98 ahead / 0 behind | PRESERVE — active PR #13; current head `7bff6fba85f05f14f52e4f3e29e6c6e017d4ffa5`. |
+| `feature/resumable-agent-turn-integration` | active PR #13; use the live PR for current head and ahead/behind counts | PRESERVE. |
 | `feature/resumable-agent-turn-contracts` | 159 ahead / 72 behind | PRESERVE — 159 unique commits and substantial divergence remain; closed PR #11 does not make this history disposable. |
 | `work/http-retry-after-guidance` | 15 ahead / 93 behind | PRESERVE — branch has 15 unique commits and seven changed paths relative to development. PR #13 contains related retry-after work, but the branch's unique history and current files are not byte-identical to the integration branch; complete semantic reconciliation is still required before deletion readiness. |
 | `docs/readme-contrast-accessibility` | 1 ahead / 93 behind | PRESERVE — one unique SVG commit remains. PR #13 has a similar contrast treatment, but equivalence of the unique commit has not yet been established sufficiently to mark this branch ready for deletion. |
@@ -41,8 +41,8 @@ The `master...development` comparison remains diverged: development is 150 commi
 
 ### Exact-head verification and package boundary
 
-- PR #13 implementation candidate `b0648e47c2fc447cd9962bba1bbbce4d89bda102` passed Development Build, Test, and Coverage run [#633](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/42763540451): build succeeded; **236 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded.
-- The current PR head is `7bff6fba85f05f14f52e4f3e29e6c6e017d4ffa5`, two documentation-only commits beyond that verified implementation candidate. The latest head has **not** yet completed an exact-head CI run; do not describe it as verified until its own run succeeds.
+- Development Build, Test, and Coverage run [#633](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/42763540451) passed on implementation candidate `b0648e47c2fc447cd9962bba1bbbce4d89bda102`: build succeeded; **236 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded.
+- Run #633 does not verify subsequent documentation-only ledger refreshes. The live PR #13 checks are the source of truth for exact-head verification; do not infer current-head success from an earlier candidate's green run.
 - Run #633 verifies ordinary development CI only. It does not verify package integrity or clean-consumer compatibility.
 - The separate `.github/workflows/release-verification.yml` workflow is manual-only and non-publishing. It checks the published FSM_Serialization allowlist, packs one candidate, audits the archive/manifest/docs, builds a clean consumer, and uploads an artifact. It has **not been dispatched**; package archive and consumer verification remain unverified, and run #633 produced no package artifact.
 - Ordinary development CI uses the FSM_Serialization `development` source and does not pack or publish packages.
