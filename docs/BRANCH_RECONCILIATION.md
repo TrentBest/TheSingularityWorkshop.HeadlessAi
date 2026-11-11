@@ -37,7 +37,7 @@ Do not delete it automatically. Keep the retry-guidance and documentation branch
 
 ### Canonical branch safety
 
-The `master...development` comparison remains diverged: development is 150 commits ahead of master and 17 commits behind it. Do not reconcile by blind merge, reset, or force-push. Keep both canonical branches intact.
+The `master...development` comparison remains diverged: development is 150 commits ahead of master and 18 commits behind it. Do not reconcile by blind merge, reset, or force-push. Keep both canonical branches intact.
 
 ### Exact-head verification and package boundary
 
