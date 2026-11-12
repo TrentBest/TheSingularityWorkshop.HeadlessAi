@@ -45,7 +45,7 @@ The intended CiAi release sequence is:
 5. Only after the owner authorizes this exact HeadlessAi package/version may the central release authority publish it.
 6. Build downstream NuGet dependents against the released HeadlessAi package version. Do not substitute a source ProjectReference or a floating package range for a released dependency in a release build.
 
-The repository does not implement a competing publication controller. CiAi should own cross-repository ordering, release authorization evidence, and dependent rebuild scheduling. The release-verification workflow in this repository is intentionally non-publishing and has no package-push step or write permission.
+The repository does not implement a competing publication controller. CiAi should own cross-repository ordering, release authorization evidence, and dependent rebuild scheduling. The release-verification workflow exposes both manual `workflow_dispatch` and reusable `workflow_call` entry points. Both require an exact 40-character candidate SHA and exact published dependency version. The called workflow checks out that immutable HeadlessAi SHA, verifies and uploads a package artifact, and has no package-push step or write permission. CiAi can therefore invoke verification as one stage of its release graph after this workflow is integrated into the canonical branch; publication remains a separate central, owner-authorized operation.
 
 The current dependency is explicit in `TheSingularityWorkshop.HeadlessAi.csproj`: development uses the sibling source project, while release packaging uses an exact package version passed by the orchestrator. The active candidate and remaining gates are recorded in [Next Release Candidate](RELEASE_CANDIDATE.md).
 
