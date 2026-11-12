@@ -397,6 +397,78 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
 
 
     [Fact]
+    public void ComparisonFrame_RejectsAcceptedReportIdentityThatDoesNotMatchDigestAfterDeserialization()
+    {
+        const string digest = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        var comparison = Comparison() with
+        {
+            CandidateCommitSha = Sha,
+            ProviderResults =
+            [
+                WithAcceptedReport(Result("provider-a", "turn-a"), digest),
+                WithAcceptedReport(Result("provider-b", "turn-b"), digest)
+            ]
+        };
+        var snapshot = HeadlessAiAgentTurnComparisonSnapshot.Create(comparison);
+        using var stream = new MemoryBinaryStream();
+        HeadlessAiAgentTurnBinaryCodec.PackComparison(snapshot, stream);
+
+        var frame = stream.ToArray();
+        var json = Encoding.UTF8.GetString(frame, 43, frame.Length - 43);
+        var validIdentity = "\\"acceptedReportIdentity\\":\\"sha256:" + digest + "\\"";
+        var invalidIdentity = "\\"acceptedReportIdentity\\":\\"sha256x:" + digest + "\\"";
+        var index = json.IndexOf(validIdentity, StringComparison.Ordinal);
+        Assert.True(index >= 0);
+        var alteredJson = json[..index] + invalidIdentity + json[(index + validIdentity.Length)..];
+        using var corrupted = new MemoryBinaryStream(Reframe(frame, Encoding.UTF8.GetBytes(alteredJson)));
+
+        Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+    }
+
+    [Fact]
+    public void ComparisonFrame_RejectsCredentialBearingTaskUrlAfterDeserialization()
+    {
+        var snapshot = HeadlessAiAgentTurnComparisonSnapshot.Create(Comparison());
+        using var stream = new MemoryBinaryStream();
+        HeadlessAiAgentTurnBinaryCodec.PackComparison(snapshot, stream);
+
+        var frame = stream.ToArray();
+        var json = Encoding.UTF8.GetString(frame, 43, frame.Length - 43);
+        const string validUrl = "\\"issueUrl\\":null";
+        const string invalidUrl = "\\"issueUrl\\":\\"https://user:password@example.test/issues/1\\"";
+        var index = json.IndexOf(validUrl, StringComparison.Ordinal);
+        Assert.True(index >= 0);
+        var alteredJson = json[..index] + invalidUrl + json[(index + validUrl.Length)..];
+        using var corrupted = new MemoryBinaryStream(Reframe(frame, Encoding.UTF8.GetBytes(alteredJson)));
+
+        Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
+    }
+
+    private static HeadlessAiAgentTurnResult WithAcceptedReport(HeadlessAiAgentTurnResult result, string digest)
+    {
+        var identity = "sha256:" + digest;
+        return result with
+        {
+            CandidateCommitSha = Sha,
+            AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
+            AcceptedReportIdentity = identity,
+            AcceptedReportSha256 = digest,
+            AcceptedReportWorkflowRunId = "run-123",
+            AcceptedReportRunAttempt = 1,
+            AcceptedReportCandidateCommitSha = Sha,
+            Proposal = result.Proposal with
+            {
+                AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
+                AcceptedReportIdentity = identity,
+                AcceptedReportSha256 = digest,
+                AcceptedReportWorkflowRunId = "run-123",
+                AcceptedReportRunAttempt = 1,
+                AcceptedReportCandidateCommitSha = Sha
+            }
+        };
+    }
+
+    [Fact]
     public void ComparisonFrame_RejectsUnsupportedVersion()
     {
         var bytes = PackComparisonFrame();
