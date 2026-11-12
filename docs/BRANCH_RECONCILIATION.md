@@ -21,7 +21,7 @@ GitHub reports **7 persistent branches**. The comparisons below were refreshed a
 |---|---:|---|
 | `master` | 19 / 150 | PRESERVE — released baseline. Its divergence includes workflow and Sith-policy differences; no blind reconciliation. |
 | `development` | canonical | PRESERVE — active integration baseline. |
-| `feature/resumable-agent-turn-integration` | 111 / 0 | PRESERVE — active PR #13 head; exact-head CI run [#43158837034](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43158837034) passed with 248 tests. |
+| `feature/resumable-agent-turn-integration` | 117 / 0 | PRESERVE — active PR #13 head `0cd0e888f8ffa1bc98f3bfd10013b325bf4d800f`; current exact-head CI run #649 is in progress. Prior exact-head run [#43160452720](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43160452720) passed 248 tests. |
 | `feature/resumable-agent-turn-contracts` | 159 / 72 | PRESERVE — 159 unique commits and substantial divergence. Do not discard its history merely because PR #11 was superseded. |
 | `work/http-retry-after-guidance` | 15 / 93 | PRESERVE — 15 unique commits and seven changed paths remain. PR #13 contains related retry-after behavior, but this branch's unique history has not been fully reconciled semantically. |
 | `docs/readme-contrast-accessibility` | 1 / 93 | PRESERVE — one unique architecture-SVG commit remains. Similar contrast treatment in PR #13 is not by itself proof that the original change is fully superseded. |
@@ -36,8 +36,8 @@ The owner performs any eventual deletion. Do not delete branches automatically, 
 ### Active integration and exact-head verification
 
 - PR #13: [Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13), from `feature/resumable-agent-turn-integration` into `development`; it remains draft, open, and unmerged.
-- Current recorded PR head: `1a47f838f464b5e50389bcd2cb724732a7458cd8`.
-- Exact-head Development Build, Test, and Coverage run [#43158837034](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43158837034) completed successfully: build succeeded; **248 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded.
+- Current PR head: `0cd0e888f8ffa1bc98f3bfd10013b325bf4d800f` (117 commits ahead, 0 behind `development`).
+- Prior exact-head Development Build, Test, and Coverage run [#43160452720](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43160452720) completed successfully: build succeeded; **248 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded. Current candidate run [#649](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161205474) is in progress.
 - The permanent branch-policy check remains failing because seven branches exist instead of exactly `master` and `development`. This policy failure is not a reason to delete unreconciled work.
 
 ### Release and authority boundary
@@ -72,7 +72,7 @@ The master README is 163 lines and development's README is 160 lines. The master
 
 ## Release-critical differences
 
-- Both branches declare `0.1.0-alpha.1` and target .NET 8.
+- `master` and the current `development` baseline retain the previously published `0.1.0-alpha.1`; the active PR candidate advances to `0.1.0-alpha.2`. Both target .NET 8.
 - Development includes Markdown under `docs/` and SVG assets in the NuGet package. Master packs only the root README in the project file. Keep the development package-documentation behavior.
 - The current development workflow has no package-publishing job and no pack step. The manual release-verification workflow has read-only repository permissions and no publishing step.
 - Development pins NuGet Trusted Publishing's action to an immutable commit SHA; master uses a mutable version tag.
@@ -81,7 +81,7 @@ The master README is 163 lines and development's README is 160 lines. The master
 ## Required before declaring branch reconciliation complete
 
 - [ ] Compare the master-only README additions with the development README and preserve useful identity/standard content.
-- [ ] Refresh exact branch SHAs and ahead/behind counts after the documentation-only follow-up commits; verify CI for the resulting head.
+- [x] Refresh exact PR head and ahead/behind count after the release-candidate documentation and version changes; current exact-head CI is in progress.
 - [ ] Use [Domain Completeness Plan](DOMAIN_COMPLETENESS.md) as the ordered source of truth for contract, security, docs, and artifact gates.
 - [ ] Verify all provider adapters and their failure/security contracts against source and tests.
 - [ ] Review the full workflow history; never restore automatic publication.
