@@ -195,6 +195,46 @@ public sealed class ProviderAdapterTests
         Assert.Null(output.Metadata);
     }
 
+    [Fact]
+    public async Task GeminiAdapter_DoesNotTreatMaxTokenPartialCandidateAsSuccess()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"candidates":[{"content":{"parts":[{"text":"partial answer"}]},"finishReason":"MAX_TOKENS"}],"usageMetadata":{"candidatesTokenCount":64}}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("gemini",
+            new Uri("https://generativelanguage.googleapis.com/v1beta/models/model-test:generateContent"));
+        var agent = new HeadlessAiAgent(client, profile, new GeminiGenerateContentAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial answer", exception.Message);
+    }
+
+    [Fact]
+    public async Task AnthropicAdapter_DoesNotTreatMaxTokenPartialMessageAsSuccess()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"id":"msg_partial","stop_reason":"max_tokens","content":[{"type":"text","text":"partial answer"}],"usage":{"input_tokens":10,"output_tokens":100}}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
+        var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial answer", exception.Message);
+    }
+
     private sealed class StubHandler(
         Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {
