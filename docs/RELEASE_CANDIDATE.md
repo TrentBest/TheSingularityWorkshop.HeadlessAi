@@ -22,6 +22,7 @@
 | Required package dependency | `TheSingularityWorkshop.FSM_Serialization 1.0.0` |
 | Candidate branch | `feature/resumable-agent-turn-integration` |
 | Candidate commit at review start | `5ca7b42af7bb90453f5ef4334c594a291771b36a` |
+| Current candidate head | `0cd0e888f8ffa1bc98f3bfd10013b325bf4d800f` |
 | Integration PR | [#13 — Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13) |
 
 NuGet currently lists `0.1.0-alpha.1` as the published HeadlessAi version. The next package must not reuse that immutable version. The project version has therefore been advanced to `0.1.0-alpha.2` for this candidate. See the [NuGet package listing](https://www.nuget.org/packages/TheSingularityWorkshop.HeadlessAi).
