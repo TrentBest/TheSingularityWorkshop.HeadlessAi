@@ -18,11 +18,13 @@ The built-in OpenAI Responses, Gemini generateContent, and Anthropic Messages ad
 | Response body | Expected behavior | Why |
 |---|---|---|
 | Valid JSON with the expected text structure | Extract the supported text and available metadata | Normalize only the fields the adapter actually understands. |
-| Valid JSON such as `{}` with no usable text | Throw `InvalidDataException` | A structurally valid JSON document can still be an unusable provider response. |
-| Malformed JSON | Throw a `System.Text.Json.JsonException` (including a derived reader exception) | Do not convert malformed payloads into successful empty content. |
-| Empty body | Throw a `System.Text.Json.JsonException` | An empty body is not a valid JSON response. |
+| Valid JSON such as `{}` with no usable text | Throw `HeadlessAiProviderResponseException` with error code `invalid_provider_response` | A structurally valid JSON document can still be an unusable provider response. |
+| Malformed JSON | Throw `HeadlessAiProviderResponseException` with error code `malformed_provider_json` | Do not convert malformed payloads into successful empty content. |
+| Empty body | Throw `HeadlessAiProviderResponseException` with error code `malformed_provider_json` | An empty body is not a valid JSON response. |
 
-The malformed and empty-body response expectations are covered by parameterized tests in `ProviderAdapterFailureTests.cs`. The same test suite verifies actionable errors for malformed integer, number, and Boolean configuration values. These tests establish a common minimum, not exhaustive compatibility with every provider success variant, refusal, content-block type, error envelope, or API version.
+`HeadlessAiProviderResponseException` is public so direct adapter callers can catch and classify parse failures without depending on provider-specific exception types. Its `ErrorCode` is stable and provider-neutral. Raw response text is deliberately not exposed through the public exception because it may contain credentials or other sensitive material; the agent-turn host path screens raw content before retaining it.
+
+The parameterized tests in `ProviderAdapterFailureTests.cs` verify all three built-in adapters against malformed JSON, empty bodies, and valid JSON without usable text. The same test suite verifies actionable errors for malformed integer, number, and Boolean configuration values. These tests establish a common minimum, not exhaustive compatibility with every provider success variant, refusal, content-block type, error envelope, or API version.
 
 ## Invocation failures and host response
 
@@ -48,7 +50,7 @@ Callers should handle failures at the host boundary, where they can decide wheth
 
 ## Deliberate gaps
 
-The following remain release-hardening work rather than implied support: comprehensive official-schema fixtures for success variants and error envelopes; a stable public adapter parse-error taxonomy; safe correlation-aware diagnostics; and a fake-server example that exercises a complete invocation and failure diagnosis without a live provider.
+The following remain release-hardening work rather than implied support: comprehensive official-schema fixtures for success variants and error envelopes; safe correlation-aware diagnostics; and a fake-server example that exercises a complete invocation and failure diagnosis without a live provider.
 
 See [Provider Adapters](provider-adapters.md), [Security Model](security.md), [Architecture Boundaries](architecture-boundaries.md), and the [Roadmap](roadmap.md).
 
@@ -63,7 +65,7 @@ See [Provider Adapters](provider-adapters.md), [Security Model](security.md), [A
   <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
   <a href="https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J">PayPal</a>
   <br>
-  <a href="https://github.com/TrentBest/FSM_API">FSM_API</a> ·
+  <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_API">FSM_API</a> ·
   <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_Serialization">FSM_Serialization</a> ·
   <a href="https://github.com/TrentBest/WebPage">WebPage</a>
 </p>
