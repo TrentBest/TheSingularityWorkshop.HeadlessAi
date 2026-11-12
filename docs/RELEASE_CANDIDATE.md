@@ -44,14 +44,14 @@ HeadlessAi is a provider-neutral .NET library for bounded HTTP invocation agains
 - [x] Build succeeded; 248 tests passed, 0 failed, 0 skipped.
 - [x] Coverage preparation and Codecov upload succeeded.
 - [x] Ordinary development workflow uses FSM_Serialization `development` source and does not pack or publish.
-- [x] Release verification workflow is manual-only, read-only, and contains no NuGet push, release creation, deployment, merge, or write permission.
+- [x] Release verification workflow exposes manual and reusable CiAi entry points, checks out an exact candidate SHA, is read-only, and contains no NuGet push, release creation, deployment, merge, or write permission.
 - [ ] Run the manual non-publishing release verification on the exact `0.1.0-alpha.2` candidate.
 - [ ] Confirm the published FSM_Serialization `1.0.0` dependency is restored from NuGet in that run.
 - [ ] Inspect the resulting `.nupkg` artifact and nuspec, including assembly, XML docs, README, license, Markdown/SVG assets, exact dependency allowlist, and package ID/version.
 - [ ] Confirm the isolated clean-consumer project installs the produced package and builds successfully.
 - [ ] Review the actual public API, package contents, and documented limitations before release approval.
 
-The manual verification workflow has not yet been run. The connected GitHub actions available in this session do not expose a workflow-dispatch operation, so the workflow must be started from the repository's Actions page. Its workflow is intentionally non-publishing.
+The package verification workflow has not yet been run. Its workflow file currently exists on the PR branch, not yet on the canonical base branch, so GitHub cannot dispatch or reuse it from CiAi until the PR is integrated. The available connected GitHub actions in this session do not expose workflow dispatch. The workflow is intentionally non-publishing.
 
 ## Repository and ecosystem gates
 
