@@ -100,8 +100,14 @@ jobs:
           if len(packages) != 1:
               raise SystemExit(f"Expected exactly one package, found: {packages}")
           package = packages[0]
-          expected_id = "TheSingularityWorkshop.HeadlessAi"
-          expected_version = "0.1.0-alpha.1"
+          project = ET.parse("src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj").getroot()
+          properties = project.find("PropertyGroup")
+          if properties is None:
+              raise SystemExit("Package project properties are missing.")
+          expected_id = properties.findtext("PackageId")
+          expected_version = properties.findtext("Version")
+          if not expected_id or not expected_version:
+              raise SystemExit("PackageId or Version is missing from the project.")
           expected_dependency = "TheSingularityWorkshop.FSM_Serialization"
           expected_dependency_version = os.environ["FSM_SERIALIZATION_VERSION"]
 
