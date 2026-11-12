@@ -415,8 +415,8 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
 
         var frame = stream.ToArray();
         var json = Encoding.UTF8.GetString(frame, 43, frame.Length - 43);
-        var validIdentity = "\\"acceptedReportIdentity\\":\\"sha256:" + digest + "\\"";
-        var invalidIdentity = "\\"acceptedReportIdentity\\":\\"sha256x:" + digest + "\\"";
+        var validIdentity = "\"acceptedReportIdentity\":\"sha256:" + digest + "\"";
+        var invalidIdentity = "\"acceptedReportIdentity\":\"sha256x:" + digest + "\"";
         var index = json.IndexOf(validIdentity, StringComparison.Ordinal);
         Assert.True(index >= 0);
         var alteredJson = json[..index] + invalidIdentity + json[(index + validIdentity.Length)..];
@@ -434,8 +434,8 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
 
         var frame = stream.ToArray();
         var json = Encoding.UTF8.GetString(frame, 43, frame.Length - 43);
-        const string validUrl = "\\"issueUrl\\":null";
-        const string invalidUrl = "\\"issueUrl\\":\\"https://user:password@example.test/issues/1\\"";
+        const string validUrl = "\"issueUrl\":null";
+        const string invalidUrl = "\"issueUrl\":\"https://user:password@example.test/issues/1\"";
         var index = json.IndexOf(validUrl, StringComparison.Ordinal);
         Assert.True(index >= 0);
         var alteredJson = json[..index] + invalidUrl + json[(index + validUrl.Length)..];
