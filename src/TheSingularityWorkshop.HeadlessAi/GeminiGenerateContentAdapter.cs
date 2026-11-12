@@ -65,6 +65,11 @@ public sealed class GeminiGenerateContentAdapter : IHeadlessAiAdapter
             var text = new StringBuilder();
             foreach (var candidate in candidates.EnumerateArray())
             {
+                // This adapter has no continuation/tool protocol: only a normal STOP finish is complete.
+                var finishReason = JsonProviderAdapterHelpers.ReadString(candidate, "finishReason");
+                if (finishReason is not null && finishReason != "STOP")
+                    throw new InvalidDataException("Gemini generateContent candidate did not finish normally.");
+
                 if (!candidate.TryGetProperty("content", out var content) ||
                     !content.TryGetProperty("parts", out var parts) || parts.ValueKind != JsonValueKind.Array)
                     continue;
