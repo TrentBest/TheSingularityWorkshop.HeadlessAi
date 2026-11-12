@@ -50,6 +50,12 @@ public sealed class AnthropicMessagesAdapter : IHeadlessAiAdapter
 
     private static string ExtractText(JsonElement root)
     {
+        // Only completed message turns are valid text responses for this non-tool adapter.
+        var stopReason = JsonProviderAdapterHelpers.ReadString(root, "stop_reason");
+        if (stopReason is not null &&
+            stopReason is not ("end_turn" or "stop_sequence"))
+            throw new InvalidDataException("Anthropic Messages API did not complete a plain-text response.");
+
         if (root.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.Array)
         {
             var text = new StringBuilder();
