@@ -119,6 +119,26 @@ public sealed class ProviderAdapterTests
 
 
     [Fact]
+    public async Task OpenAiResponsesAdapter_DoesNotTreatIncompletePartialTextAsSuccess()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"id":"resp_incomplete","status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output":[{"type":"message","content":[{"type":"output_text","text":"partial answer"}]}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("openai", new Uri("https://api.openai.com/v1/responses"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test" });
+        var agent = new HeadlessAiAgent(client, profile, new OpenAiResponsesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial answer", exception.Message);
+    }
+
+    [Fact]
     public async Task OpenAiResponsesAdapter_CombinesTextPartsWithoutOptionalMetadata()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
