@@ -22,7 +22,7 @@
 | Required package dependency | `TheSingularityWorkshop.FSM_Serialization 1.0.0` |
 | Candidate branch | `feature/resumable-agent-turn-integration` |
 | Candidate commit at review start | `5ca7b42af7bb90453f5ef4334c594a291771b36a` |
-| Candidate implementation/version baseline | `0cd0e888f8ffa1bc98f3bfd10013b325bf4d800f` |
+| Current exact source-verified PR head | `8d57d2a0f3abeec3357ac603f72ba81a31207d88` |
 | Integration PR | [#13 — Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13) |
 
 NuGet currently lists `0.1.0-alpha.1` as the published HeadlessAi version. The next package must not reuse that immutable version. The project version has therefore been advanced to `0.1.0-alpha.2` for this candidate. See the [NuGet package listing](https://www.nuget.org/packages/TheSingularityWorkshop.HeadlessAi).
@@ -40,23 +40,24 @@ HeadlessAi is a provider-neutral .NET library for bounded HTTP invocation agains
 
 ## Verification evidence
 
-- [x] Development Build, Test, and Coverage passed at the package-version candidate baseline: [run #43161297815](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161297815), SHA `bb10aaf02d98191c5a4ba0064d1f54885bdcf9e7`.
-- [x] Build succeeded; 248 tests passed, 0 failed, 0 skipped.
+- [x] Current exact PR head `8d57d2a0f3abeec3357ac603f72ba81a31207d88` passed Development Build, Test, and Coverage: [run #43161560404](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161560404).
+- [x] Build succeeded; **248 tests passed, 0 failed, 0 skipped**.
 - [x] Coverage preparation and Codecov upload succeeded.
+- [x] Earlier package-version baseline also passed: [run #43161297815](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161297815), SHA `bb10aaf02d98191c5a4ba0064d1f54885bdcf9e7`.
 - [x] Ordinary development workflow uses FSM_Serialization `development` source and does not pack or publish.
 - [x] Release verification workflow exposes manual and reusable CiAi entry points, checks out an exact candidate SHA, is read-only, and contains no NuGet push, release creation, deployment, merge, or write permission.
-- [ ] Run the manual non-publishing release verification on the exact `0.1.0-alpha.2` candidate.
+- [ ] Run the non-publishing release verification on the exact `0.1.0-alpha.2` candidate after the workflow is integrated into a canonical branch.
 - [ ] Confirm the published FSM_Serialization `1.0.0` dependency is restored from NuGet in that run.
 - [ ] Inspect the resulting `.nupkg` artifact and nuspec, including assembly, XML docs, README, license, Markdown/SVG assets, exact dependency allowlist, and package ID/version.
 - [ ] Confirm the isolated clean-consumer project installs the produced package and builds successfully.
 - [ ] Review the actual public API, package contents, and documented limitations before release approval.
 
-The package verification workflow has not yet been run. Its workflow file currently exists on the PR branch, not yet on a canonical branch, so GitHub cannot dispatch or reuse it from CiAi until the PR is integrated. The available connected GitHub actions in this session do not expose workflow dispatch. The workflow is intentionally non-publishing.
+The package verification workflow has not yet been run. Its workflow file currently exists on the PR branch, not yet on a canonical branch, so GitHub cannot dispatch or reuse it from CiAi until the PR is integrated. The workflow is intentionally non-publishing. A source-verified commit is not yet a package-verified artifact.
 
 ## Repository and ecosystem gates
 
 - [ ] Reconcile the long-lived feature branch and PR #13 into the permanent `development` branch through the owner's review/merge process.
-- [ ] Restore the exact two-branch Sith policy: `master` and `development`. Current inventory has seven persistent branches; no surplus branch is presently proven safe to delete.
+- [ ] Restore the exact two-branch Sith policy: `master` and `development`. Current inventory has seven persistent branches; no surplus branch is presently proven safe for owner deletion.
 - [ ] Keep dependency ordering explicit: FSM_Serialization `1.0.0` is the already-published dependency used for this HeadlessAi candidate. A later dependency change requires its own published package version and a clean rebuild.
 - [ ] Register HeadlessAi in CiAi's repository dependency/build graph so the release pipeline builds this package after its dependencies, records exact candidate evidence, and builds dependents only against the released package.
 - [ ] Preserve the split between NuGet library packages and MicroBundle derivatives: HeadlessAi is a NuGet library; it is not a MicroBundle derivative.
