@@ -7,46 +7,44 @@
 
 # Branch Reconciliation Ledger
 
-**Review date:** 2026-11-10 UTC  
-**Scope:** `master` versus `development`  
-**Disposition:** Audit and documentation reconciliation only. No merge, cherry-pick, reset, or branch deletion has been performed. NuGet publication remains hard-disabled.
+**Review date:** 2026-11-12 UTC  
+**Scope:** all persistent branches, with comparisons against `development`  
+**Disposition:** Audit and documentation reconciliation only. No merge, cherry-pick, reset, force-push, or branch deletion has been performed. NuGet publication remains unauthorized.
 
-## Live audit — 2026-11-10 UTC (refreshed after exact-head verification)
+## Live audit — 2026-11-12 UTC
 
-This section supersedes the older live-audit snapshot below. GitHub currently reports **7 persistent branches**.
+GitHub reports **7 persistent branches**. The comparisons below were refreshed against the current `development` head `3cb5ace24fe97822eaa1e9b65b3aa8da8589ab07`.
 
-### Verified inventory and comparison with `development`
+### Verified inventory
 
-| Branch | Comparison | Disposition |
+| Branch | Commits ahead / behind `development` | Evidence and disposition |
 |---|---:|---|
-| `master` | 18 ahead / 150 behind | PRESERVE — released baseline; do not reconcile automatically. |
-| `development` | canonical active baseline | PRESERVE. |
-| `feature/resumable-agent-turn-integration` | active PR #13; use the live PR for current head and ahead/behind counts | PRESERVE. |
-| `feature/resumable-agent-turn-contracts` | 159 ahead / 72 behind | PRESERVE — 159 unique commits and substantial divergence remain; closed PR #11 does not make this history disposable. |
-| `work/http-retry-after-guidance` | 15 ahead / 93 behind | PRESERVE — branch has 15 unique commits and seven changed paths relative to development. PR #13 contains related retry-after work, but the branch's unique history and current files are not byte-identical to the integration branch; complete semantic reconciliation is still required before deletion readiness. |
-| `docs/readme-contrast-accessibility` | 1 ahead / 93 behind | PRESERVE — one unique SVG commit remains. PR #13 has a similar contrast treatment, but equivalence of the unique commit has not yet been established sufficiently to mark this branch ready for deletion. |
-| `feature/bounded-artifact-http-adapter` | 0 ahead / 3 behind | **READY FOR OWNER DELETION** — all branch commits are already reachable from development; no branch-unique commits or diff remain. Issue #12 remains open for its independent transport-boundary work. |
+| `master` | 19 / 150 | PRESERVE — released baseline. Its divergence includes workflow and Sith-policy differences; no blind reconciliation. |
+| `development` | canonical | PRESERVE — active integration baseline. |
+| `feature/resumable-agent-turn-integration` | 111 / 0 | PRESERVE — active PR #13 head; exact-head CI run [#43158837034](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43158837034) passed with 248 tests. |
+| `feature/resumable-agent-turn-contracts` | 159 / 72 | PRESERVE — 159 unique commits and substantial divergence. Do not discard its history merely because PR #11 was superseded. |
+| `work/http-retry-after-guidance` | 15 / 93 | PRESERVE — 15 unique commits and seven changed paths remain. PR #13 contains related retry-after behavior, but this branch's unique history has not been fully reconciled semantically. |
+| `docs/readme-contrast-accessibility` | 1 / 93 | PRESERVE — one unique architecture-SVG commit remains. Similar contrast treatment in PR #13 is not by itself proof that the original change is fully superseded. |
+| `feature/bounded-artifact-http-adapter` | 0 / 3 | HOLD — no unique commits or file diff remain against `development`, but HeadlessAi Issue #12 is still open and specifies the bounded artifact-fetch integration needed by Foundry. Do not mark ready for deletion until Issue #12, Foundry #8, and the FSM_REST #13/#15 transport ownership work are reconciled and any useful branch-specific design is preserved. |
 
 ### Owner cleanup batch
 
-Only one surplus branch is currently supported by the evidence as ready for owner deletion:
+**No surplus branch is currently marked READY FOR OWNER DELETION by this audit.** In particular, the zero-ahead bounded-adapter branch is only a candidate: its associated Issue #12 remains open, so commit-count equality does not establish that the work or design intent is disposable.
 
-- `TrentBest/TheSingularityWorkshop.HeadlessAi:feature/bounded-artifact-http-adapter`
+The owner performs any eventual deletion. Do not delete branches automatically, and group only branches with completed semantic/reference reconciliation into one owner-reviewed cleanup batch.
 
-Do not delete it automatically. Keep the retry-guidance and documentation branches until their unique commits are explicitly reconciled against PR #13. Preserve both resumable-agent branches. The owner performs any deletion as a single deliberate cleanup batch after reviewing the readiness list.
+### Active integration and exact-head verification
 
-### Canonical branch safety
+- PR #13: [Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13), from `feature/resumable-agent-turn-integration` into `development`; it remains draft, open, and unmerged.
+- Current recorded PR head: `1a47f838f464b5e50389bcd2cb724732a7458cd8`.
+- Exact-head Development Build, Test, and Coverage run [#43158837034](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43158837034) completed successfully: build succeeded; **248 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded.
+- The permanent branch-policy check remains failing because seven branches exist instead of exactly `master` and `development`. This policy failure is not a reason to delete unreconciled work.
 
-The `master...development` comparison remains diverged: development is 150 commits ahead of master and 18 commits behind it. Do not reconcile by blind merge, reset, or force-push. Keep both canonical branches intact.
+### Release and authority boundary
 
-### Exact-head verification and package boundary
-
-- Development Build, Test, and Coverage run [#633](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/42763540451) passed on implementation candidate `b0648e47c2fc447cd9962bba1bbbce4d89bda102`: build succeeded; **236 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded.
-- Run #633 does not verify subsequent documentation-only ledger refreshes. The live PR #13 checks are the source of truth for exact-head verification; do not infer current-head success from an earlier candidate's green run.
-- Run #633 verifies ordinary development CI only. It does not verify package integrity or clean-consumer compatibility.
-- The separate `.github/workflows/release-verification.yml` workflow is manual-only and non-publishing. It checks the published FSM_Serialization allowlist, packs one candidate, audits the archive/manifest/docs, builds a clean consumer, and uploads an artifact. It has **not been dispatched**; package archive and consumer verification remain unverified, and run #633 produced no package artifact.
-- Ordinary development CI uses the FSM_Serialization `development` source and does not pack or publish packages.
-- No merge, release, deployment, package publication, canonical-branch write, or branch deletion has been performed.
+- Issue #15 tracks a manual-only, non-publishing NuGet verification gate. It has not been dispatched; package archive integrity and clean-consumer compatibility remain unverified.
+- Ordinary development CI continues to use the FSM_Serialization `development` source and does not pack or publish packages.
+- No merge, release, deployment, NuGet publication, canonical-branch write, manual release-verification dispatch, or branch deletion has been performed.
 
 ## Historical branch evidence — 2026-10-22
 
