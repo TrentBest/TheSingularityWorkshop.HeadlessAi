@@ -131,9 +131,10 @@ public sealed record HeadlessAiAgentTurnEnvelope
         if (!any) return;
         if (string.IsNullOrWhiteSpace(identity) || identity.Length > 256 ||
             !Regex.IsMatch(digest ?? string.Empty, "^[0-9a-fA-F]{64}$", RegexOptions.CultureInvariant) ||
+            !string.Equals(identity, "sha256:" + digest, StringComparison.Ordinal) ||
             string.IsNullOrWhiteSpace(runId) || runId.Length > 128 || attempt is null or < 1 ||
             !Regex.IsMatch(candidateSha ?? string.Empty, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
-            throw new ArgumentException("Accepted report lineage must be supplied completely and within bounds.");
+            throw new ArgumentException("Accepted report lineage must be complete, bounded, and bind identity to its SHA-256 digest.");
     }
 
     private static void Require(string value, string name, int max)
@@ -562,10 +563,8 @@ public sealed record HeadlessAiAgentTurnResult
 
     private static void ValidateOptionalHttpsUrl(string? value, string name)
     {
-        if (value is not null &&
-            (value.Length > 2_048 || !Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
-             uri.Scheme != Uri.UriSchemeHttps))
-            throw new ArgumentException($"{name} must be an absolute HTTPS URL limited to 2048 characters when supplied.", name);
+        if (value is not null)
+            HeadlessAiAgentTurnEnvelope.ValidateHttpsUrl(value, name);
     }
 
     private static void Require(string value, string name, int max)
