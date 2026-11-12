@@ -496,6 +496,60 @@ public sealed class HeadlessAiAgentTurnComparisonTests
         Assert.Throws<ArgumentException>(result.Validate);
     }
 
+    [Theory]
+    [InlineData("identity-prefix")]
+    [InlineData("identity-digest-case")]
+    public void Result_RejectsAcceptedReportIdentityThatDoesNotMatchDigest(string mismatch)
+    {
+        const string digest = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        var result = WithAcceptedReport(Result("provider-a", "turn-a"), digest);
+        var identity = mismatch == "identity-prefix"
+            ? "sha256x:" + digest
+            : "sha256:" + digest.ToUpperInvariant();
+        result = result with
+        {
+            AcceptedReportIdentity = identity,
+            Proposal = result.Proposal with { AcceptedReportIdentity = identity }
+        };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+        Assert.Throws<ArgumentException>(() =>
+            HeadlessAiAgentTurnComparisonSnapshot.Create(Comparison() with
+            {
+                CandidateCommitSha = Sha,
+                ProviderResults =
+                [
+                    result,
+                    WithAcceptedReport(Result("provider-b", "turn-b"), digest)
+                ]
+            }));
+    }
+
+    [Theory]
+    [InlineData("issue-user-info")]
+    [InlineData("issue-query")]
+    [InlineData("pull-request-user-info")]
+    [InlineData("pull-request-query")]
+    public void Result_RejectsCredentialBearingTaskUrls(string link)
+    {
+        var result = Result("provider-a", "turn-a");
+        result = link switch
+        {
+            "issue-user-info" => result with { IssueUrl = "https://user:password@example.test/issues/1" },
+            "issue-query" => result with { IssueUrl = "https://example.test/issues/1?access_token=abcdefghijklmnop" },
+            "pull-request-user-info" => result with { PullRequestUrl = "https://user:password@example.test/pull/1" },
+            "pull-request-query" => result with { PullRequestUrl = "https://example.test/pull/1?client_secret=abcdefghijklmnop" },
+            _ => result
+        };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+        Assert.Throws<ArgumentException>(() =>
+            HeadlessAiAgentTurnComparisonSnapshot.Create(Comparison() with
+            {
+                ProviderResults = [result, Result("provider-b", "turn-b")]
+            }));
+    }
+
     [Fact]
     public void Result_RejectsStandaloneEvidenceCollectionAboveContractLimit()
     {
