@@ -65,7 +65,7 @@ See [Provider Adapters](provider-adapters.md), [Security Model](security.md), [A
   <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
   <a href="https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J">PayPal</a>
   <br>
-  <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_API">FSM_API</a> ·
+  <a href="https://github.com/TrentBest/FSM_API">FSM_API</a> ·
   <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_Serialization">FSM_Serialization</a> ·
   <a href="https://github.com/TrentBest/WebPage">WebPage</a>
 </p>
