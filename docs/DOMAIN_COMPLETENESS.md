@@ -9,6 +9,8 @@
 
 **Purpose:** define the smallest coherent domain HeadlessAi owns, verify it against implementation and tests, and make every public promise traceable to evidence. This is the working plan for alpha release hardening—not a claim that every item is already complete.
 
+**Current release status:** this plan contains historical unchecked items and older evidence references. The active package/version, current exact-head CI, and release gates are tracked in [Next Release Candidate](RELEASE_CANDIDATE.md); use that page for present readiness. Do not infer current completion from the historical checklist below.
+
 ## 1. Domain definition
 
 HeadlessAi is a provider-neutral .NET library for making bounded, explicit HTTP invocations against configured AI-capable endpoints. It maps normalized input through a selected endpoint protocol and returns extracted content plus available metadata. It does not decide why to call, what the answer means, or what the application should do next.
