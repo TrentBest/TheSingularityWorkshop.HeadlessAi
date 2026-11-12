@@ -21,7 +21,7 @@ GitHub reports **7 persistent branches**. The comparisons below were refreshed a
 |---|---:|---|
 | `master` | 19 / 150 | PRESERVE — released baseline. Its divergence includes workflow and Sith-policy differences; no blind reconciliation. |
 | `development` | canonical | PRESERVE — active integration baseline. |
-| `feature/resumable-agent-turn-integration` | 117 / 0 | PRESERVE — active PR #13 head `0cd0e888f8ffa1bc98f3bfd10013b325bf4d800f`; current exact-head CI run #649 is in progress. Prior exact-head run [#43160452720](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43160452720) passed 248 tests. |
+| `feature/resumable-agent-turn-integration` | 126 / 0 | PRESERVE — active PR #13 head `7f3df570f58686481e0ab797cae9de5094ad8188`. Latest completed source CI [run #43161297815](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161297815) passed 248 tests at `bb10aaf02d98191c5a4ba0064d1f54885bdcf9e7`; later commits are documentation and release-workflow integration changes. |
 | `feature/resumable-agent-turn-contracts` | 159 / 72 | PRESERVE — 159 unique commits and substantial divergence. Do not discard its history merely because PR #11 was superseded. |
 | `work/http-retry-after-guidance` | 15 / 93 | PRESERVE — 15 unique commits and seven changed paths remain. PR #13 contains related retry-after behavior, but this branch's unique history has not been fully reconciled semantically. |
 | `docs/readme-contrast-accessibility` | 1 / 93 | PRESERVE — one unique architecture-SVG commit remains. Similar contrast treatment in PR #13 is not by itself proof that the original change is fully superseded. |
@@ -36,13 +36,13 @@ The owner performs any eventual deletion. Do not delete branches automatically, 
 ### Active integration and exact-head verification
 
 - PR #13: [Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13), from `feature/resumable-agent-turn-integration` into `development`; it remains draft, open, and unmerged.
-- Current PR head: `0cd0e888f8ffa1bc98f3bfd10013b325bf4d800f` (117 commits ahead, 0 behind `development`).
-- Prior exact-head Development Build, Test, and Coverage run [#43160452720](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43160452720) completed successfully: build succeeded; **248 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded. Current candidate run [#649](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161205474) is in progress.
+- Current PR head at this ledger update: `7f3df570f58686481e0ab797cae9de5094ad8188` (126 commits ahead, 0 behind `development`).
+- Prior exact-head Development Build, Test, and Coverage run [#43160452720](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43160452720) completed successfully: build succeeded; **248 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded. Follow-up run [#43161297815](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161297815) also completed successfully: build succeeded; **248 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded. Its tested SHA is `bb10aaf02d98191c5a4ba0064d1f54885bdcf9e7`; later changes are documentation/workflow integration only.
 - The permanent branch-policy check remains failing because seven branches exist instead of exactly `master` and `development`. This policy failure is not a reason to delete unreconciled work.
 
 ### Release and authority boundary
 
-- Issue #15 tracks a manual-only, non-publishing NuGet verification gate. It has not been dispatched; package archive integrity and clean-consumer compatibility remain unverified.
+- Issue #15 tracks the non-publishing NuGet verification gate. It now exposes manual dispatch and a reusable CiAi workflow-call interface that requires an immutable candidate SHA. The workflow exists on PR #13 but not yet on a canonical branch, so it cannot be dispatched/called until integration. Package archive integrity and clean-consumer compatibility remain unverified.
 - Ordinary development CI continues to use the FSM_Serialization `development` source and does not pack or publish packages.
 - No merge, release, deployment, NuGet publication, canonical-branch write, manual release-verification dispatch, or branch deletion has been performed.
 
