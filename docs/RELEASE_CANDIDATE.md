@@ -22,7 +22,7 @@
 | Required package dependency | `TheSingularityWorkshop.FSM_Serialization 1.0.0` |
 | Candidate branch | `feature/resumable-agent-turn-integration` |
 | Candidate commit at review start | `5ca7b42af7bb90453f5ef4334c594a291771b36a` |
-| Current candidate head | `0cd0e888f8ffa1bc98f3bfd10013b325bf4d800f` |
+| Candidate implementation/version baseline | `0cd0e888f8ffa1bc98f3bfd10013b325bf4d800f` |
 | Integration PR | [#13 — Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13) |
 
 NuGet currently lists `0.1.0-alpha.1` as the published HeadlessAi version. The next package must not reuse that immutable version. The project version has therefore been advanced to `0.1.0-alpha.2` for this candidate. See the [NuGet package listing](https://www.nuget.org/packages/TheSingularityWorkshop.HeadlessAi).
@@ -40,7 +40,7 @@ HeadlessAi is a provider-neutral .NET library for bounded HTTP invocation agains
 
 ## Verification evidence
 
-- [x] Development Build, Test, and Coverage passed for exact PR head `5ca7b42af7bb90453f5ef4334c594a291771b36a`: [run #43160452720](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43160452720).
+- [x] Development Build, Test, and Coverage passed at the package-version candidate baseline: [run #43161297815](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161297815), SHA `bb10aaf02d98191c5a4ba0064d1f54885bdcf9e7`.
 - [x] Build succeeded; 248 tests passed, 0 failed, 0 skipped.
 - [x] Coverage preparation and Codecov upload succeeded.
 - [x] Ordinary development workflow uses FSM_Serialization `development` source and does not pack or publish.
@@ -51,7 +51,7 @@ HeadlessAi is a provider-neutral .NET library for bounded HTTP invocation agains
 - [ ] Confirm the isolated clean-consumer project installs the produced package and builds successfully.
 - [ ] Review the actual public API, package contents, and documented limitations before release approval.
 
-The package verification workflow has not yet been run. Its workflow file currently exists on the PR branch, not yet on the canonical base branch, so GitHub cannot dispatch or reuse it from CiAi until the PR is integrated. The available connected GitHub actions in this session do not expose workflow dispatch. The workflow is intentionally non-publishing.
+The package verification workflow has not yet been run. Its workflow file currently exists on the PR branch, not yet on a canonical branch, so GitHub cannot dispatch or reuse it from CiAi until the PR is integrated. The available connected GitHub actions in this session do not expose workflow dispatch. The workflow is intentionally non-publishing.
 
 ## Repository and ecosystem gates
 
