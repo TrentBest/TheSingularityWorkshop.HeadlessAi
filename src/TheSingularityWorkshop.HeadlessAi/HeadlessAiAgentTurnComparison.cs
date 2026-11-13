@@ -79,6 +79,7 @@ public sealed record HeadlessAiAgentTurnComparison
                 !string.Equals(result.PullRequestUrl, firstResult.PullRequestUrl, StringComparison.Ordinal) ||
                 !string.Equals(result.AcceptedReportSchemaVersion, firstResult.AcceptedReportSchemaVersion, StringComparison.Ordinal) ||
                 !string.Equals(result.AcceptedReportIdentity, firstResult.AcceptedReportIdentity, StringComparison.Ordinal) ||
+                !string.Equals(result.AcceptedReportNoticeIdentitySha256, firstResult.AcceptedReportNoticeIdentitySha256, StringComparison.Ordinal) ||
                 !string.Equals(result.AcceptedReportSha256, firstResult.AcceptedReportSha256, StringComparison.Ordinal) ||
                 !string.Equals(result.AcceptedReportWorkflowRunId, firstResult.AcceptedReportWorkflowRunId, StringComparison.Ordinal) ||
                 result.AcceptedReportRunAttempt != firstResult.AcceptedReportRunAttempt ||
