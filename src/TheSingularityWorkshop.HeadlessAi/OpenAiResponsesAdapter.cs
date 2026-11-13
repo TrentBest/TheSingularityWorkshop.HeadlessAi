@@ -56,7 +56,13 @@ public sealed class OpenAiResponsesAdapter : IHeadlessAiAdapter
             var text = new StringBuilder();
             foreach (var item in output.EnumerateArray())
             {
-                if (JsonProviderAdapterHelpers.ReadString(item, "type") != "message" ||
+                var itemType = JsonProviderAdapterHelpers.ReadString(item, "type");
+                // This adapter is text-only. Never silently discard a tool invocation
+                // and return adjacent text as though the whole response were plain text.
+                if (itemType?.EndsWith("_call", StringComparison.Ordinal) == true)
+                    throw new InvalidDataException("OpenAI Responses API returned an unsupported tool call.");
+
+                if (itemType != "message" ||
                     !item.TryGetProperty("content", out var content) || content.ValueKind != JsonValueKind.Array)
                     continue;
                 foreach (var part in content.EnumerateArray())
