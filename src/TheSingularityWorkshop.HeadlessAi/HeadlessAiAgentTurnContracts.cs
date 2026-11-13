@@ -366,6 +366,10 @@ public sealed record HeadlessAiAgentTurnProposal
     public int? AcceptedReportRunAttempt { get; init; }
     /// <summary>Candidate SHA to which the accepted report is bound.</summary>
     public string? AcceptedReportCandidateCommitSha { get; init; }
+    /// <summary>Host-accepted CI verdict attached after provider normalization.</summary>
+    public string? AcceptedReportVerdict { get; init; }
+    /// <summary>Fingerprint of the independently observed nested TRX source artifact.</summary>
+    public string? AcceptedReportSourceArtifactIdentitySha256 { get; init; }
 
     /// <summary>Validates proposal bounds without treating any field as trusted or executable.</summary>
     public void Validate()
@@ -389,6 +393,25 @@ public sealed record HeadlessAiAgentTurnProposal
             throw new ArgumentException("Accepted report schema version is not supported.", nameof(AcceptedReportSchemaVersion));
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
+        ValidateAcceptedReportProvenance(AcceptedReportSchemaVersion, AcceptedReportVerdict,
+            AcceptedReportSourceArtifactIdentitySha256);
+    }
+
+    private static void ValidateAcceptedReportProvenance(string? schemaVersion, string? verdict, string? sourceIdentity)
+    {
+        if (schemaVersion is null)
+        {
+            if (verdict is not null || sourceIdentity is not null)
+                throw new ArgumentException("Accepted report verdict and source identity require an accepted report schema.");
+            return;
+        }
+        if (verdict is not ("CompletePass" or "ActionableFailure" or "NonActionableFailure" or "IncompleteOrUntrusted"))
+            throw new ArgumentException("Accepted report verdict is unknown.", nameof(verdict));
+        if (sourceIdentity is not null &&
+            (sourceIdentity.Length != 64 || !sourceIdentity.All(Uri.IsHexDigit)))
+            throw new ArgumentException("Accepted report source identity must be a SHA-256 fingerprint.", nameof(sourceIdentity));
+        if (verdict is "CompletePass" or "ActionableFailure" or "NonActionableFailure" && sourceIdentity is null)
+            throw new ArgumentException("Complete accepted reports require nested source-artifact identity.", nameof(sourceIdentity));
     }
 
     private static void Check(string? value, int max, string name)
@@ -447,6 +470,10 @@ public sealed record HeadlessAiAgentTurnResult
     public int? AcceptedReportRunAttempt { get; init; }
     /// <summary>Candidate SHA to which the accepted report is bound.</summary>
     public string? AcceptedReportCandidateCommitSha { get; init; }
+    /// <summary>Host-accepted CI verdict attached after provider normalization.</summary>
+    public string? AcceptedReportVerdict { get; init; }
+    /// <summary>Fingerprint of the independently observed nested TRX source artifact.</summary>
+    public string? AcceptedReportSourceArtifactIdentitySha256 { get; init; }
     /// <summary>Provider adapter identity.</summary>
     public required string ProviderId { get; init; }
     /// <summary>Provider model identifier.</summary>
@@ -527,6 +554,8 @@ public sealed record HeadlessAiAgentTurnResult
             throw new ArgumentException("Accepted report schema version is not supported.", nameof(AcceptedReportSchemaVersion));
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
+        HeadlessAiAgentTurnProposal.ValidateAcceptedReportProvenance(
+            AcceptedReportSchemaVersion, AcceptedReportVerdict, AcceptedReportSourceArtifactIdentitySha256);
         if (AcceptedReportCandidateCommitSha is not null &&
             !(CandidateCommitSha is not null && string.Equals(AcceptedReportCandidateCommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase)) &&
             !(PriorCandidateCommitSha is not null && string.Equals(AcceptedReportCandidateCommitSha, PriorCandidateCommitSha, StringComparison.OrdinalIgnoreCase)))
@@ -557,7 +586,9 @@ public sealed record HeadlessAiAgentTurnResult
             Proposal.AcceptedReportSha256 != AcceptedReportSha256 ||
             Proposal.AcceptedReportWorkflowRunId != AcceptedReportWorkflowRunId ||
             Proposal.AcceptedReportRunAttempt != AcceptedReportRunAttempt ||
-            Proposal.AcceptedReportCandidateCommitSha != AcceptedReportCandidateCommitSha)
+            Proposal.AcceptedReportCandidateCommitSha != AcceptedReportCandidateCommitSha ||
+            Proposal.AcceptedReportVerdict != AcceptedReportVerdict ||
+            Proposal.AcceptedReportSourceArtifactIdentitySha256 != AcceptedReportSourceArtifactIdentitySha256)
             throw new ArgumentException("Proposal accepted-report lineage must exactly match the host-bound result lineage.", nameof(Proposal));
     }
 
