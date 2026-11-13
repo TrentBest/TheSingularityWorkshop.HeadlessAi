@@ -494,7 +494,7 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
             AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
             AcceptedReportIdentity = identity,
             AcceptedReportSha256 = digest,
-            AcceptedReportWorkflowRunId = "run-123",
+            AcceptedReportWorkflowRunId = "123",
             AcceptedReportRunAttempt = 1,
             AcceptedReportCandidateCommitSha = Sha,
             AcceptedReportVerdict = "ActionableFailure",
