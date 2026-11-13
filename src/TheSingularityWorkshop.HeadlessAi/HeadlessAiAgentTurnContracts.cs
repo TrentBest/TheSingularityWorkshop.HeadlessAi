@@ -358,6 +358,8 @@ public sealed record HeadlessAiAgentTurnProposal
     public string? AcceptedReportSchemaVersion { get; init; }
     /// <summary>Host-bound accepted report identity attached after provider normalization; never trusted from model output.</summary>
     public string? AcceptedReportIdentity { get; init; }
+    /// <summary>Fingerprint of the authenticated outer notice and durable receipt, distinct from report bytes.</summary>
+    public string? AcceptedReportNoticeIdentitySha256 { get; init; }
     /// <summary>Digest of the exact accepted report bytes supplied to this turn.</summary>
     public string? AcceptedReportSha256 { get; init; }
     /// <summary>Accepted report workflow run identity supplied by the host.</summary>
@@ -394,17 +396,20 @@ public sealed record HeadlessAiAgentTurnProposal
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
         ValidateAcceptedReportProvenance(AcceptedReportSchemaVersion, AcceptedReportVerdict,
-            AcceptedReportSourceArtifactIdentitySha256);
+            AcceptedReportSourceArtifactIdentitySha256, AcceptedReportNoticeIdentitySha256);
     }
 
-    internal static void ValidateAcceptedReportProvenance(string? schemaVersion, string? verdict, string? sourceIdentity)
+    internal static void ValidateAcceptedReportProvenance(string? schemaVersion, string? verdict, string? sourceIdentity, string? noticeIdentity)
     {
         if (schemaVersion is null)
         {
-            if (verdict is not null || sourceIdentity is not null)
+            if (verdict is not null || sourceIdentity is not null || noticeIdentity is not null)
                 throw new ArgumentException("Accepted report verdict and source identity require an accepted report schema.");
             return;
         }
+        if (noticeIdentity is not { Length: 64 } || !noticeIdentity.All(Uri.IsHexDigit) ||
+            !string.Equals(noticeIdentity, noticeIdentity.ToLowerInvariant(), StringComparison.Ordinal))
+            throw new ArgumentException("Accepted outer notice identity must be a lowercase SHA-256 fingerprint.", nameof(noticeIdentity));
         if (verdict is not ("CompletePass" or "ActionableFailure" or "NonActionableFailure" or "IncompleteOrUntrusted"))
             throw new ArgumentException("Accepted report verdict is unknown.", nameof(verdict));
         if (sourceIdentity is not null &&
@@ -462,6 +467,8 @@ public sealed record HeadlessAiAgentTurnResult
     public string? AcceptedReportSchemaVersion { get; init; }
     /// <summary>Host-bound accepted report identity attached after provider normalization; never trusted from model output.</summary>
     public string? AcceptedReportIdentity { get; init; }
+    /// <summary>Fingerprint of the authenticated outer notice and durable receipt, distinct from report bytes.</summary>
+    public string? AcceptedReportNoticeIdentitySha256 { get; init; }
     /// <summary>Digest of the exact accepted report bytes supplied to this turn.</summary>
     public string? AcceptedReportSha256 { get; init; }
     /// <summary>Accepted report workflow run identity supplied by the host.</summary>
@@ -555,7 +562,8 @@ public sealed record HeadlessAiAgentTurnResult
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
         HeadlessAiAgentTurnProposal.ValidateAcceptedReportProvenance(
-            AcceptedReportSchemaVersion, AcceptedReportVerdict, AcceptedReportSourceArtifactIdentitySha256);
+            AcceptedReportSchemaVersion, AcceptedReportVerdict, AcceptedReportSourceArtifactIdentitySha256,
+            AcceptedReportNoticeIdentitySha256);
         if (AcceptedReportCandidateCommitSha is not null &&
             !(CandidateCommitSha is not null && string.Equals(AcceptedReportCandidateCommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase)) &&
             !(PriorCandidateCommitSha is not null && string.Equals(AcceptedReportCandidateCommitSha, PriorCandidateCommitSha, StringComparison.OrdinalIgnoreCase)))
