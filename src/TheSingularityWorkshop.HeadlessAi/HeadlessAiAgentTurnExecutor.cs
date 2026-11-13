@@ -158,6 +158,19 @@ public sealed class HeadlessAiAgentTurnExecutor
         {
             proposal = JsonSerializer.Deserialize<HeadlessAiAgentTurnProposal>(output.Content, JsonOptions)
                 ?? throw new JsonException("The provider returned an empty proposal.");
+            // Accepted-report lineage is host-owned. Strip any provider-supplied values before
+            // validating the model proposal; the executor reattaches the immutable host context below.
+            proposal = proposal with
+            {
+                AcceptedReportSchemaVersion = null,
+                AcceptedReportVerdict = null,
+                AcceptedReportIdentity = null,
+                AcceptedReportSha256 = null,
+                AcceptedReportWorkflowRunId = null,
+                AcceptedReportRunAttempt = null,
+                AcceptedReportCandidateCommitSha = null,
+                AcceptedReportSourceArtifactIdentitySha256 = null
+            };
             proposal.Validate();
         }
         catch (JsonException)
@@ -228,6 +241,8 @@ public sealed class HeadlessAiAgentTurnExecutor
             AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
             AcceptedReportRunAttempt = acceptedCiReport?.RunAttempt,
             AcceptedReportCandidateCommitSha = acceptedCiReport?.CandidateCommitSha,
+            AcceptedReportVerdict = acceptedCiReport?.Verdict,
+            AcceptedReportSourceArtifactIdentitySha256 = acceptedCiReport?.SourceArtifact?.IdentitySha256,
             ProviderId = providerId,
             ModelId = modelId,
             ConfigurationId = _template.Profile.Id,
@@ -277,6 +292,8 @@ public sealed class HeadlessAiAgentTurnExecutor
             AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
             AcceptedReportRunAttempt = acceptedCiReport?.RunAttempt,
             AcceptedReportCandidateCommitSha = acceptedCiReport?.CandidateCommitSha,
+            AcceptedReportVerdict = acceptedCiReport?.Verdict,
+            AcceptedReportSourceArtifactIdentitySha256 = acceptedCiReport?.SourceArtifact?.IdentitySha256,
             ProviderId = providerId,
             ModelId = modelId,
             ConfigurationId = _template.Profile.Id,
@@ -311,7 +328,9 @@ public sealed class HeadlessAiAgentTurnExecutor
             AcceptedReportSha256 = acceptedCiReport?.ReportSha256,
             AcceptedReportWorkflowRunId = acceptedCiReport?.WorkflowRunId,
             AcceptedReportRunAttempt = acceptedCiReport?.RunAttempt,
-            AcceptedReportCandidateCommitSha = acceptedCiReport?.CandidateCommitSha
+            AcceptedReportCandidateCommitSha = acceptedCiReport?.CandidateCommitSha,
+            AcceptedReportVerdict = acceptedCiReport?.Verdict,
+            AcceptedReportSourceArtifactIdentitySha256 = acceptedCiReport?.SourceArtifact?.IdentitySha256
         };
 
     private static bool IsCredentialMetadata(string key, string value)
