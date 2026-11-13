@@ -640,6 +640,7 @@ public sealed class HeadlessAiAgentTurnContractTests
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
             ReportIdentity = "sha256:" + digest,
+            NoticeIdentitySha256 = new string('d', 64),
             CanonicalReportJson = report,
             ReportSha256 = digest,
             WorkflowRunId = "41950000001",
