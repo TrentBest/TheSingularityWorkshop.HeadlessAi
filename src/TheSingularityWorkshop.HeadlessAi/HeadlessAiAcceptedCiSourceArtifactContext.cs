@@ -40,8 +40,9 @@ public sealed record HeadlessAiAcceptedCiSourceArtifactContext
         static bool IsSha(string? value) => value is { Length: 40 } && value.All(Uri.IsHexDigit);
         static bool IsDigest(string? value) => value is { Length: 64 } && value.All(Uri.IsHexDigit);
 
-        if (Repository is null || Repository.Split('/') is not { Length: 2 } ||
-            !Clean(Repository, 200) || Repository.Split('/').Any(part => !Clean(part, 100)) ||
+        var repositoryParts = Repository?.Split('/') ?? Array.Empty<string>();
+        if (!Clean(Repository, 200) || repositoryParts.Length != 2 ||
+            repositoryParts.Any(part => !Clean(part, 100)) ||
             !Clean(WorkflowPath, 512) || !WorkflowPath.StartsWith(".github/workflows/", StringComparison.Ordinal) ||
             RunId <= 0 || RunAttempt <= 0 || !IsSha(CandidateCommitSha) ||
             JobId <= 0 || !Clean(JobName, 200) || !Clean(JobKey, 100) ||
