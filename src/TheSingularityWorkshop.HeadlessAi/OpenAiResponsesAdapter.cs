@@ -61,6 +61,11 @@ public sealed class OpenAiResponsesAdapter : IHeadlessAiAdapter
                     continue;
                 foreach (var part in content.EnumerateArray())
                 {
+                    // This adapter returns plain text only. A refusal must never be
+                    // hidden by adjacent output_text content in the same response.
+                    if (JsonProviderAdapterHelpers.ReadString(part, "type") == "refusal")
+                        throw new InvalidDataException("OpenAI Responses API returned a refusal.");
+
                     if (JsonProviderAdapterHelpers.ReadString(part, "type") == "output_text" &&
                         part.TryGetProperty("text", out var value) && value.ValueKind == JsonValueKind.String)
                     {
