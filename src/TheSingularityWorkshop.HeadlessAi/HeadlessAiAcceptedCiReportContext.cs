@@ -37,6 +37,8 @@ public sealed record HeadlessAiAcceptedCiReportContext
 
     /// <summary>Stable identity assigned to the accepted canonical report by its owner.</summary>
     public required string ReportIdentity { get; init; }
+    /// <summary>Fingerprint of the authenticated outer notice, durable receipt, and report artifact identity.</summary>
+    public required string NoticeIdentitySha256 { get; init; }
 
     /// <summary>Exact canonical report JSON, represented as its original UTF-8 text.</summary>
     public required string CanonicalReportJson { get; init; }
@@ -61,6 +63,9 @@ public sealed record HeadlessAiAcceptedCiReportContext
             throw new ArgumentException("Only the canonical ciai.test-results.v1 report is accepted.", nameof(SchemaVersion));
         if (string.IsNullOrWhiteSpace(ReportIdentity) || ReportIdentity.Length > 256)
             throw new ArgumentException("Accepted report identity is required and limited to 256 characters.", nameof(ReportIdentity));
+        if (NoticeIdentitySha256 is not { Length: 64 } || !NoticeIdentitySha256.All(Uri.IsHexDigit) ||
+            !string.Equals(NoticeIdentitySha256, NoticeIdentitySha256.ToLowerInvariant(), StringComparison.Ordinal))
+            throw new ArgumentException("Accepted outer notice identity must be a lowercase SHA-256 fingerprint.", nameof(NoticeIdentitySha256));
         if (string.IsNullOrWhiteSpace(WorkflowRunId) || WorkflowRunId.Length > 128)
             throw new ArgumentException("Accepted report workflow run identity is required and bounded.", nameof(WorkflowRunId));
         if (RunAttempt < 1)
