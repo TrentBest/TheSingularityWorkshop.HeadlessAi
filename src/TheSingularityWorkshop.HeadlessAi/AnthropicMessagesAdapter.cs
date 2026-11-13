@@ -61,7 +61,13 @@ public sealed class AnthropicMessagesAdapter : IHeadlessAiAdapter
             var text = new StringBuilder();
             foreach (var part in content.EnumerateArray())
             {
-                if (JsonProviderAdapterHelpers.ReadString(part, "type") == "text" &&
+                // This adapter cannot execute tool calls. Reject explicit tool-use blocks even
+                // when a response omits stop_reason or mixes tool use with ordinary text.
+                var blockType = JsonProviderAdapterHelpers.ReadString(part, "type");
+                if (blockType == "tool_use" || blockType?.EndsWith("_tool_use", StringComparison.Ordinal) == true)
+                    throw new InvalidDataException("Anthropic Messages API returned an unsupported tool-use block.");
+
+                if (blockType == "text" &&
                     part.TryGetProperty("text", out var value) && value.ValueKind == JsonValueKind.String)
                 {
                     if (text.Length > 0)
