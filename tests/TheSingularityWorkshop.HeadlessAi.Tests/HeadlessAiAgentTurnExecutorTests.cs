@@ -787,6 +787,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
             ReportIdentity = "sha256:" + digest,
+            NoticeIdentitySha256 = new string('d', 64),
             CanonicalReportJson = report,
             ReportSha256 = digest,
             WorkflowRunId = "41950000001",
@@ -854,6 +855,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
             ReportIdentity = "sha256:" + digest,
+            NoticeIdentitySha256 = new string('d', 64),
             CanonicalReportJson = report,
             ReportSha256 = new string('a', 64),
             WorkflowRunId = "41950000001",
