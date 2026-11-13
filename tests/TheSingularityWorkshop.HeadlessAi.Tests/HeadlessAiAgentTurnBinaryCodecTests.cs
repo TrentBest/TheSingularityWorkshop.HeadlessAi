@@ -78,14 +78,20 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         const string report = """{"schema":"ciai.test-results.v1","diagnostic":"preserve exactly\\nincluding newline"}""";
         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
         var candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var reportObservedAt = Now.AddMinutes(-1);
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
             ReportIdentity = "sha256:" + digest,
             CanonicalReportJson = report,
             ReportSha256 = digest,
-            WorkflowRunId = "run-100",
+            WorkflowRunId = "100",
             RunAttempt = 3,
-            CandidateCommitSha = candidateSha
+            CandidateCommitSha = candidateSha,
+            Verdict = "ActionableFailure",
+            Repository = "TrentBest/Example",
+            WorkflowPath = ".github/workflows/ci.yml",
+            ReportObservedAt = reportObservedAt,
+            SourceArtifact = CreateSourceArtifact(candidateSha, reportObservedAt)
         };
         var original = HeadlessAiAgentTurnRequest.Create(
             Envelope() with { CandidateCommitSha = candidateSha }, acceptedReport, Now);
@@ -101,9 +107,45 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         Assert.Equal(digest, restored.AcceptedCiReport?.ReportSha256);
         Assert.Equal(HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion, restored.AcceptedCiReport?.SchemaVersion);
         Assert.Equal("sha256:" + digest, restored.AcceptedCiReport?.ReportIdentity);
-        Assert.Equal("run-100", restored.AcceptedCiReport?.WorkflowRunId);
+        Assert.Equal("100", restored.AcceptedCiReport?.WorkflowRunId);
+        Assert.Equal("ActionableFailure", restored.AcceptedCiReport?.Verdict);
+        Assert.Equal("TrentBest/Example", restored.AcceptedCiReport?.Repository);
+        Assert.Equal(".github/workflows/ci.yml", restored.AcceptedCiReport?.WorkflowPath);
+        Assert.Equal(acceptedReport.SourceArtifact?.IdentitySha256, restored.AcceptedCiReport?.SourceArtifact?.IdentitySha256);
         Assert.Equal(3, restored.AcceptedCiReport?.RunAttempt);
         Assert.Equal(candidateSha, restored.AcceptedCiReport?.CandidateCommitSha);
+    }
+
+
+    private static HeadlessAiAcceptedCiSourceArtifactContext CreateSourceArtifact(
+        string candidateSha, DateTimeOffset reportObservedAt)
+    {
+        var source = new HeadlessAiAcceptedCiSourceArtifactContext
+        {
+            Repository = "TrentBest/Example",
+            WorkflowPath = ".github/workflows/ci.yml",
+            RunId = 100,
+            RunAttempt = 3,
+            CandidateCommitSha = candidateSha,
+            JobId = 987654321,
+            JobName = "test",
+            JobKey = "required-tests",
+            ArtifactId = 7001,
+            ArtifactName = "test-results",
+            ProviderArchiveDigest = "sha256:" + new string('a', 64),
+            ArchiveSizeBytes = 512,
+            JobStartedAt = reportObservedAt.AddMinutes(-9),
+            JobCompletedAt = reportObservedAt.AddMinutes(-4),
+            ArtifactCreatedAt = reportObservedAt.AddMinutes(-5),
+            ArtifactExpiresAt = reportObservedAt.AddDays(7),
+            PayloadSha256 = new string('f', 64),
+            PayloadSizeBytes = 256,
+            IdentitySha256 = string.Empty
+        };
+        return source with
+        {
+            IdentitySha256 = HeadlessAiAcceptedCiSourceArtifactContext.ComputeIdentitySha256(source)
+        };
     }
 
     [Fact]
