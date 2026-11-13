@@ -780,6 +780,10 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         const string report = """{"schema":"ciai.test-results.v1","verdict":"ActionableFailure","diagnostics":[{"id":"TEST-17","message":"expected 4 but found 3"}]}""";
         const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
+        var now = DateTimeOffset.UtcNow;
+        var sourceArtifact = CreateSourceArtifact(
+            "TrentBest/HeadlessAi.Consumer", ".github/workflows/ci.yml",
+            41950000001, 2, candidateSha, now);
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
             ReportIdentity = "sha256:" + digest,
@@ -787,7 +791,12 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             ReportSha256 = digest,
             WorkflowRunId = "41950000001",
             RunAttempt = 2,
-            CandidateCommitSha = candidateSha
+            CandidateCommitSha = candidateSha,
+            Verdict = "ActionableFailure",
+            Repository = "TrentBest/HeadlessAi.Consumer",
+            WorkflowPath = ".github/workflows/ci.yml",
+            ReportObservedAt = now.AddMinutes(-1),
+            SourceArtifact = sourceArtifact
         };
         const string providerResponse = """{"diagnosis":"repair the failing assertion","patchIntent":"update the expected value","acceptedReportIdentity":"model-forged-report","acceptedReportSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}""";
         string? requestBody = null;
@@ -803,13 +812,15 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         }));
         var executor = CreateExecutor(client);
         var envelope = CreateEnvelope() with { CandidateCommitSha = candidateSha };
-        var request = HeadlessAiAgentTurnRequest.Create(envelope, acceptedReport, DateTimeOffset.UtcNow);
+        var request = HeadlessAiAgentTurnRequest.Create(envelope, acceptedReport, now);
 
         var result = await executor.ExecuteAsync(request);
 
         Assert.Equal(1, calls);
         Assert.Contains("acceptedCiReport", requestBody);
         Assert.Contains("canonicalReportJson", requestBody);
+        Assert.Contains("sourceArtifact", requestBody);
+        Assert.Contains(sourceArtifact.IdentitySha256, requestBody);
         Assert.Contains("expected 4 but found 3", requestBody);
         Assert.Contains(digest, requestBody);
         Assert.Equal("task-100", result.TaskId);
@@ -822,9 +833,13 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Equal("41950000001", result.AcceptedReportWorkflowRunId);
         Assert.Equal(2, result.AcceptedReportRunAttempt);
         Assert.Equal(candidateSha, result.AcceptedReportCandidateCommitSha);
+        Assert.Equal("ActionableFailure", result.AcceptedReportVerdict);
+        Assert.Equal(sourceArtifact.IdentitySha256, result.AcceptedReportSourceArtifactIdentitySha256);
         Assert.Equal(HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion, result.Proposal.AcceptedReportSchemaVersion);
         Assert.Equal("sha256:" + digest, result.Proposal.AcceptedReportIdentity);
         Assert.Equal(digest, result.Proposal.AcceptedReportSha256);
+        Assert.Equal("ActionableFailure", result.Proposal.AcceptedReportVerdict);
+        Assert.Equal(sourceArtifact.IdentitySha256, result.Proposal.AcceptedReportSourceArtifactIdentitySha256);
         Assert.NotEqual("model-forged-report", result.Proposal.AcceptedReportIdentity);
         result.Validate();
     }
@@ -835,6 +850,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         const string report = """{"schema":"ciai.test-results.v1","verdict":"ActionableFailure","diagnostics":[{"id":"TEST-17","message":"expected 4 but found 3"}]}""";
         const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(report))).ToLowerInvariant();
+        var now = DateTimeOffset.UtcNow;
         var acceptedReport = new HeadlessAiAcceptedCiReportContext
         {
             ReportIdentity = "sha256:" + digest,
@@ -842,12 +858,19 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             ReportSha256 = new string('a', 64),
             WorkflowRunId = "41950000001",
             RunAttempt = 1,
-            CandidateCommitSha = candidateSha
+            CandidateCommitSha = candidateSha,
+            Verdict = "ActionableFailure",
+            Repository = "TrentBest/HeadlessAi.Consumer",
+            WorkflowPath = ".github/workflows/ci.yml",
+            ReportObservedAt = now.AddMinutes(-1),
+            SourceArtifact = CreateSourceArtifact(
+                "TrentBest/HeadlessAi.Consumer", ".github/workflows/ci.yml",
+                41950000001, 1, candidateSha, now)
         };
 
         Assert.Throws<ArgumentException>(() =>
             HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with { CandidateCommitSha = candidateSha },
-                acceptedReport, DateTimeOffset.UtcNow));
+                acceptedReport, now));
 
         Assert.Throws<ArgumentException>(() =>
             HeadlessAiAgentTurnRequest.Create(CreateEnvelope() with { CandidateCommitSha = candidateSha },
@@ -863,5 +886,35 @@ public sealed class HeadlessAiAgentTurnExecutorTests
                 acceptedReport with { ReportIdentity = "report-identity-17", ReportSha256 = digest },
                 DateTimeOffset.UtcNow));
     }
+
+    private static HeadlessAiAcceptedCiSourceArtifactContext CreateSourceArtifact(
+        string repository, string workflowPath, long runId, int runAttempt,
+        string candidateSha, DateTimeOffset now)
+    {
+        var source = new HeadlessAiAcceptedCiSourceArtifactContext
+        {
+            Repository = repository,
+            WorkflowPath = workflowPath,
+            RunId = runId,
+            RunAttempt = runAttempt,
+            CandidateCommitSha = candidateSha,
+            JobId = 987654321,
+            JobName = "test-minesweeper",
+            JobKey = "minesweeper-required-check",
+            ArtifactId = 7001,
+            ArtifactName = "minesweeper-test-results",
+            ProviderArchiveDigest = "sha256:" + new string('a', 64),
+            ArchiveSizeBytes = 512,
+            JobStartedAt = now.AddMinutes(-10),
+            JobCompletedAt = now.AddMinutes(-5),
+            ArtifactCreatedAt = now.AddMinutes(-6),
+            ArtifactExpiresAt = now.AddDays(7),
+            PayloadSha256 = new string('f', 64),
+            PayloadSizeBytes = 512,
+            IdentitySha256 = string.Empty
+        };
+        return source with { IdentitySha256 = HeadlessAiAcceptedCiSourceArtifactContext.ComputeIdentitySha256(source) };
+    }
+
 
 }
