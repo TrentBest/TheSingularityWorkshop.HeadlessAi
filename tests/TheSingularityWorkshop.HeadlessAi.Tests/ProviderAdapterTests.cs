@@ -177,22 +177,23 @@ public sealed class ProviderAdapterTests
     }
 
     [Fact]
-    public async Task AnthropicAdapter_CombinesTextBlocksWithoutOptionalMetadata()
+    public async Task AnthropicAdapter_RejectsToolUseMixedWithTextWhenStopReasonIsMissing()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(
-                "{\"content\":[{\"type\":\"text\",\"text\":\"first\"},{\"type\":\"tool_use\",\"id\":\"tool-1\"},{\"type\":\"text\",\"text\":\"second\"}]}",
+                """{"content":[{"type":"text","text":"partial text"},{"type":"tool_use","id":"tool-1","name":"run"}]}""",
                 System.Text.Encoding.UTF8, "application/json")
         })));
         var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
             settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
         var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
 
-        var output = await agent.SendAsync(new HeadlessAiInput("task"));
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
 
-        Assert.Equal($"first{Environment.NewLine}second", output.Content);
-        Assert.Null(output.Metadata);
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial text", exception.Message);
     }
 
     [Fact]
