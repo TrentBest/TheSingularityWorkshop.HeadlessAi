@@ -197,6 +197,26 @@ public sealed class ProviderAdapterTests
     }
 
     [Fact]
+    public async Task AnthropicAdapter_RejectsToolResultMixedWithTextWhenStopReasonIsMissing()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"content":[{"type":"text","text":"partial text"},{"type":"tool_result","tool_use_id":"tool-1","content":"tool output"}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
+        var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial text", exception.Message);
+    }
+
+    [Fact]
     public async Task OpenAiResponsesAdapter_DoesNotAcceptRefusalAlongsideOutputText()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
