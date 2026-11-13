@@ -498,14 +498,18 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
             AcceptedReportWorkflowRunId = "run-123",
             AcceptedReportRunAttempt = 1,
             AcceptedReportCandidateCommitSha = Sha,
+            AcceptedReportVerdict = "ActionableFailure",
+            AcceptedReportSourceArtifactIdentitySha256 = Fingerprint,
             Proposal = result.Proposal with
             {
                 AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
                 AcceptedReportIdentity = identity,
                 AcceptedReportSha256 = digest,
-                AcceptedReportWorkflowRunId = "run-123",
+                AcceptedReportWorkflowRunId = "123",
                 AcceptedReportRunAttempt = 1,
-                AcceptedReportCandidateCommitSha = Sha
+                AcceptedReportCandidateCommitSha = Sha,
+                AcceptedReportVerdict = "ActionableFailure",
+                AcceptedReportSourceArtifactIdentitySha256 = Fingerprint
             }
         };
     }
