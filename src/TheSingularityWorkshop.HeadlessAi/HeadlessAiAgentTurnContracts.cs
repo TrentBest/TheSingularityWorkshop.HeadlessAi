@@ -397,7 +397,7 @@ public sealed record HeadlessAiAgentTurnProposal
             AcceptedReportSourceArtifactIdentitySha256);
     }
 
-    private static void ValidateAcceptedReportProvenance(string? schemaVersion, string? verdict, string? sourceIdentity)
+    internal static void ValidateAcceptedReportProvenance(string? schemaVersion, string? verdict, string? sourceIdentity)
     {
         if (schemaVersion is null)
         {
@@ -410,7 +410,7 @@ public sealed record HeadlessAiAgentTurnProposal
         if (sourceIdentity is not null &&
             (sourceIdentity.Length != 64 || !sourceIdentity.All(Uri.IsHexDigit)))
             throw new ArgumentException("Accepted report source identity must be a SHA-256 fingerprint.", nameof(sourceIdentity));
-        if (verdict is "CompletePass" or "ActionableFailure" or "NonActionableFailure" && sourceIdentity is null)
+        if ((verdict is "CompletePass" or "ActionableFailure" or "NonActionableFailure") && sourceIdentity is null)
             throw new ArgumentException("Complete accepted reports require nested source-artifact identity.", nameof(sourceIdentity));
     }
 
