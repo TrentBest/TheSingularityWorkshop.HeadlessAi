@@ -9,14 +9,13 @@
     "development",
     "docs/readme-contrast-accessibility",
     "feature/bounded-artifact-http-adapter",
-    "feature/resumable-agent-turn-contracts",
     "feature/resumable-agent-turn-integration",
     "master",
     "work/http-retry-after-guidance"
   ],
-  "branch_count": 7,
+  "branch_count": 6,
   "status": "NON-COMPLIANT",
-  "evaluated_at": "2026-11-13T12:14:59Z",
-  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43423520490",
-  "triggering_commit": "af668542f21dc775b9d06bfd12d69f2d077323b3"
+  "evaluated_at": "2026-11-13T22:38:19Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43520888561",
+  "triggering_commit": "13ba191feea5b43d75e15ba3c35de466d2971903"
 }
