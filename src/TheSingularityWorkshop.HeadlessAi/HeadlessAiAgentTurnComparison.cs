@@ -83,6 +83,8 @@ public sealed record HeadlessAiAgentTurnComparison
                 !string.Equals(result.AcceptedReportWorkflowRunId, firstResult.AcceptedReportWorkflowRunId, StringComparison.Ordinal) ||
                 result.AcceptedReportRunAttempt != firstResult.AcceptedReportRunAttempt ||
                 !string.Equals(result.AcceptedReportCandidateCommitSha, firstResult.AcceptedReportCandidateCommitSha, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(result.AcceptedReportVerdict, firstResult.AcceptedReportVerdict, StringComparison.Ordinal) ||
+                !string.Equals(result.AcceptedReportSourceArtifactIdentitySha256, firstResult.AcceptedReportSourceArtifactIdentitySha256, StringComparison.Ordinal) ||
                 !HaveSameEvidence(result.Evidence, firstResult.Evidence))
                 throw new ArgumentException("Every provider result must preserve identical task, request, repository, branch, commit, resume, idempotency, issue, pull-request, and CI evidence provenance.");
             if (!providerIds.Add(result.ProviderId))
