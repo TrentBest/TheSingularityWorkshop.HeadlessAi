@@ -196,6 +196,67 @@ public sealed class ProviderAdapterTests
     }
 
     [Fact]
+    public async Task OpenAiResponsesAdapter_DoesNotAcceptRefusalAlongsideOutputText()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"status":"completed","output":[{"type":"message","content":[{"type":"refusal","refusal":"I cannot help with that request."},{"type":"output_text","text":"untrusted adjacent text"}]}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("openai", new Uri("https://api.openai.com/v1/responses"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test" });
+        var agent = new HeadlessAiAgent(client, profile, new OpenAiResponsesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("I cannot help", exception.Message);
+        Assert.DoesNotContain("untrusted adjacent text", exception.Message);
+    }
+
+    [Fact]
+    public async Task GeminiAdapter_RejectsPromptBlockedResponse()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"promptFeedback":{"blockReason":"SAFETY"},"candidates":[]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("gemini",
+            new Uri("https://generativelanguage.googleapis.com/v1beta/models/model-test:generateContent"));
+        var agent = new HeadlessAiAgent(client, profile, new GeminiGenerateContentAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("SAFETY", exception.Message);
+    }
+
+    [Fact]
+    public async Task AnthropicAdapter_RejectsRefusalStopReason()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"id":"msg_refusal","stop_reason":"refusal","content":[{"type":"text","text":"I cannot help with that request."}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
+        var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("I cannot help", exception.Message);
+    }
+
+    [Fact]
     public async Task GeminiAdapter_DoesNotTreatMaxTokenPartialCandidateAsSuccess()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
