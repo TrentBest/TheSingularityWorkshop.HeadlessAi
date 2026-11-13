@@ -459,9 +459,8 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         var json = Encoding.UTF8.GetString(frame, 43, frame.Length - 43);
         var validIdentity = "\"acceptedReportIdentity\":\"sha256:" + digest + "\"";
         var invalidIdentity = "\"acceptedReportIdentity\":\"sha256x:" + digest + "\"";
-        var index = json.IndexOf(validIdentity, StringComparison.Ordinal);
-        Assert.True(index >= 0);
-        var alteredJson = json[..index] + invalidIdentity + json[(index + validIdentity.Length)..];
+        var alteredJson = json.Replace(validIdentity, invalidIdentity, StringComparison.Ordinal);
+        Assert.NotEqual(json, alteredJson);
         using var corrupted = new MemoryBinaryStream(Reframe(frame, Encoding.UTF8.GetBytes(alteredJson)));
 
         Assert.Throws<ArgumentException>(() => HeadlessAiAgentTurnBinaryCodec.UnpackComparison(corrupted));
