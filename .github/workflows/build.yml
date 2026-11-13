@@ -57,7 +57,13 @@ jobs:
           files: HeadlessAi/TestResults/coverage.cobertura.xml
           fail_ci_if_error: true
 
-# This workflow is development verification only. It deliberately does not pack,
-# build a release package, or publish to NuGet. A separately authorized release
-# workflow must first pass all gates, then opt into UsePublishedDependencies=true
-# with an exact dependency version that already exists on NuGet.org.
+  verify-package:
+    name: Non-publishing package verification
+    uses: ./.github/workflows/release-verification.yml
+    with:
+      candidate_sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      fsm_serialization_version: '1.0.0'
+
+# Package verification builds against the exact published dependency, audits one
+# candidate archive, and proves it installs in a clean consumer. It only uploads
+# an artifact; it never publishes, creates a release, deploys, merges, or writes.
