@@ -397,6 +397,8 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     [InlineData("run-id")]
     [InlineData("attempt")]
     [InlineData("candidate")]
+    [InlineData("verdict")]
+    [InlineData("source-artifact")]
     public void Comparison_RejectsDifferentAcceptedReportLineage(string mismatch)
     {
         var first = WithAcceptedReport(Result("provider-a", "turn-a"), new string('a', 64));
@@ -433,6 +435,16 @@ public sealed class HeadlessAiAgentTurnComparisonTests
                 AcceptedReportCandidateCommitSha = new string('b', 40),
                 CandidateCommitSha = new string('b', 40),
                 Proposal = second.Proposal with { AcceptedReportCandidateCommitSha = new string('b', 40) }
+            },
+            "verdict" => second with
+            {
+                AcceptedReportVerdict = "NonActionableFailure",
+                Proposal = second.Proposal with { AcceptedReportVerdict = "NonActionableFailure" }
+            },
+            "source-artifact" => second with
+            {
+                AcceptedReportSourceArtifactIdentitySha256 = new string('b', 64),
+                Proposal = second.Proposal with { AcceptedReportSourceArtifactIdentitySha256 = new string('b', 64) }
             },
             _ => second
         };
@@ -471,6 +483,8 @@ public sealed class HeadlessAiAgentTurnComparisonTests
             AcceptedReportWorkflowRunId = "run-123",
             AcceptedReportRunAttempt = 1,
             AcceptedReportCandidateCommitSha = Sha,
+            AcceptedReportVerdict = "ActionableFailure",
+            AcceptedReportSourceArtifactIdentitySha256 = new string('c', 64),
             Proposal = result.Proposal with
             {
                 AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
@@ -478,7 +492,9 @@ public sealed class HeadlessAiAgentTurnComparisonTests
                 AcceptedReportSha256 = digest,
                 AcceptedReportWorkflowRunId = "run-123",
                 AcceptedReportRunAttempt = 1,
-                AcceptedReportCandidateCommitSha = Sha
+                AcceptedReportCandidateCommitSha = Sha,
+                AcceptedReportVerdict = "ActionableFailure",
+                AcceptedReportSourceArtifactIdentitySha256 = new string('c', 64)
             }
         };
     }
