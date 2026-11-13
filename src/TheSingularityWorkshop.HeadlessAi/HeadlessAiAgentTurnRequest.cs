@@ -65,7 +65,7 @@ public sealed class HeadlessAiAgentTurnRequest
         ArgumentNullException.ThrowIfNull(envelope);
         ArgumentNullException.ThrowIfNull(acceptedCiReport);
         envelope.Validate(now);
-        acceptedCiReport.Validate(envelope);
+        acceptedCiReport.Validate(envelope, now);
         return CreateCore(envelope, acceptedCiReport, now);
     }
 
@@ -99,7 +99,7 @@ public sealed class HeadlessAiAgentTurnRequest
             acceptedReportSnapshot = providerPayload.AcceptedCiReport;
         }
         snapshot.Validate(now);
-        acceptedReportSnapshot?.Validate(snapshot);
+        acceptedReportSnapshot?.Validate(snapshot, now);
 
         var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalPayload)))
             .ToLowerInvariant();
