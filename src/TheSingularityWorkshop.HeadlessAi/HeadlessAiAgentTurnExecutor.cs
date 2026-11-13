@@ -64,7 +64,7 @@ public sealed class HeadlessAiAgentTurnExecutor
         var envelope = request.Envelope;
         var acceptedCiReport = request.AcceptedCiReport;
         envelope.Validate(startedAt);
-        acceptedCiReport?.Validate(envelope);
+        acceptedCiReport?.Validate(envelope, startedAt);
 
         var canonicalRequest = request.CanonicalPayload;
         var fingerprint = request.Fingerprint;
