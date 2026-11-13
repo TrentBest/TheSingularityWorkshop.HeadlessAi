@@ -7,6 +7,35 @@ public sealed class HeadlessAiAgentTurnContractTests
     private static readonly DateTimeOffset Now = new(2026, 10, 30, 12, 0, 0, TimeSpan.Zero);
     private const string Sha = "0123456789abcdef0123456789abcdef01234567";
 
+    private static HeadlessAiAcceptedCiSourceArtifactContext CreateSourceArtifact(
+        string repository, string workflowPath, long runId, int runAttempt,
+        string candidateSha, DateTimeOffset now)
+    {
+        var source = new HeadlessAiAcceptedCiSourceArtifactContext
+        {
+            Repository = repository,
+            WorkflowPath = workflowPath,
+            RunId = runId,
+            RunAttempt = runAttempt,
+            CandidateCommitSha = candidateSha,
+            JobId = 987654321,
+            JobName = "test-minesweeper",
+            JobKey = "minesweeper-required-check",
+            ArtifactId = 7001,
+            ArtifactName = "minesweeper-test-results",
+            ProviderArchiveDigest = "sha256:" + new string('a', 64),
+            ArchiveSizeBytes = 512,
+            JobStartedAt = now.AddMinutes(-10),
+            JobCompletedAt = now.AddMinutes(-5),
+            ArtifactCreatedAt = now.AddMinutes(-6),
+            ArtifactExpiresAt = now.AddDays(7),
+            PayloadSha256 = new string('f', 64),
+            PayloadSizeBytes = 512,
+            IdentitySha256 = string.Empty
+        };
+        return source with { IdentitySha256 = HeadlessAiAcceptedCiSourceArtifactContext.ComputeIdentitySha256(source) };
+    }
+
     private static HeadlessAiAgentTurnEnvelope ValidEnvelope() => new()
     {
         TaskId = "task-42",
@@ -613,9 +642,15 @@ public sealed class HeadlessAiAgentTurnContractTests
             ReportIdentity = "sha256:" + digest,
             CanonicalReportJson = report,
             ReportSha256 = digest,
-            WorkflowRunId = "run-aggregate-limit",
+            WorkflowRunId = "41950000001",
             RunAttempt = 1,
-            CandidateCommitSha = candidateSha
+            CandidateCommitSha = candidateSha,
+            Verdict = "ActionableFailure",
+            Repository = "TrentBest/Example",
+            WorkflowPath = ".github/workflows/ci.yml",
+            ReportObservedAt = Now.AddMinutes(-1),
+            SourceArtifact = CreateSourceArtifact("TrentBest/Example", ".github/workflows/ci.yml",
+                41950000001, 1, candidateSha, Now)
         };
         var envelope = ValidEnvelope() with
         {
