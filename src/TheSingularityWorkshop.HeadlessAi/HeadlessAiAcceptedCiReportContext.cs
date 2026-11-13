@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,6 +20,21 @@ public sealed record HeadlessAiAcceptedCiReportContext
     /// <summary>Canonical report schema identifier; CiAi owns this versioned report surface.</summary>
     public string SchemaVersion { get; init; } = RequiredSchemaVersion;
 
+    /// <summary>Verdict parsed and accepted by the host; HeadlessAi does not re-evaluate it.</summary>
+    public required string Verdict { get; init; }
+
+    /// <summary>Repository owner/name identity from the host-accepted report mapping.</summary>
+    public required string Repository { get; init; }
+
+    /// <summary>Workflow definition path bound by the host to the exact run.</summary>
+    public required string WorkflowPath { get; init; }
+
+    /// <summary>Time the host accepted the canonical report.</summary>
+    public required DateTimeOffset ReportObservedAt { get; init; }
+
+    /// <summary>Independent provider-observed nested TRX source artifact provenance.</summary>
+    public HeadlessAiAcceptedCiSourceArtifactContext? SourceArtifact { get; init; }
+
     /// <summary>Stable identity assigned to the accepted canonical report by its owner.</summary>
     public required string ReportIdentity { get; init; }
 
@@ -38,7 +54,7 @@ public sealed record HeadlessAiAcceptedCiReportContext
     public required string CandidateCommitSha { get; init; }
 
     /// <summary>Validates bounds, exact-byte digest, and binding to the host-created turn envelope.</summary>
-    public void Validate(HeadlessAiAgentTurnEnvelope envelope)
+    public void Validate(HeadlessAiAgentTurnEnvelope envelope, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(envelope);
         if (!string.Equals(SchemaVersion, RequiredSchemaVersion, StringComparison.Ordinal))
@@ -49,6 +65,23 @@ public sealed record HeadlessAiAcceptedCiReportContext
             throw new ArgumentException("Accepted report workflow run identity is required and bounded.", nameof(WorkflowRunId));
         if (RunAttempt < 1)
             throw new ArgumentOutOfRangeException(nameof(RunAttempt));
+        if (!long.TryParse(WorkflowRunId, NumberStyles.None, CultureInfo.InvariantCulture, out var runId) || runId <= 0)
+            throw new ArgumentException("Accepted report workflow run identity must be a positive numeric run ID.", nameof(WorkflowRunId));
+        if (string.IsNullOrWhiteSpace(Repository) || Repository.Length > 200 ||
+            Repository.Split('/').Length != 2 || Repository.Split('/').Any(part =>
+                string.IsNullOrWhiteSpace(part) || part.Length > 100 || part.Any(char.IsControl)))
+            throw new ArgumentException("Accepted report repository must be in owner/name form.", nameof(Repository));
+        if (string.IsNullOrWhiteSpace(WorkflowPath) || WorkflowPath.Length > 512 ||
+            !WorkflowPath.StartsWith(".github/workflows/", StringComparison.Ordinal) ||
+            WorkflowPath.Any(char.IsControl))
+            throw new ArgumentException("Accepted report workflow path is invalid.", nameof(WorkflowPath));
+        if (ReportObservedAt == default || ReportObservedAt > now)
+            throw new ArgumentException("Accepted report observation time must be present and not in the future.", nameof(ReportObservedAt));
+        if (Verdict is not ("CompletePass" or "ActionableFailure" or "NonActionableFailure" or "IncompleteOrUntrusted"))
+            throw new ArgumentException("Accepted report verdict is unknown.", nameof(Verdict));
+        if ((Verdict is "CompletePass" or "ActionableFailure" or "NonActionableFailure") && SourceArtifact is null)
+            throw new ArgumentException("Complete accepted CI evidence requires independently observed source-artifact provenance.", nameof(SourceArtifact));
+        SourceArtifact?.Validate(this, now);
         if (!Regex.IsMatch(CandidateCommitSha ?? string.Empty, "^[0-9a-fA-F]{40}$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Accepted report candidate must be a full commit SHA.", nameof(CandidateCommitSha));
 
