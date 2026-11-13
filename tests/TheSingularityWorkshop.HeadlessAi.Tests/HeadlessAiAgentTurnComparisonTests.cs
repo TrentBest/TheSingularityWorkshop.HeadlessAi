@@ -399,6 +399,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
     [InlineData("candidate")]
     [InlineData("verdict")]
     [InlineData("source-artifact")]
+    [InlineData("notice-identity")]
     public void Comparison_RejectsDifferentAcceptedReportLineage(string mismatch)
     {
         var first = WithAcceptedReport(Result("provider-a", "turn-a"), new string('a', 64));
@@ -446,6 +447,11 @@ public sealed class HeadlessAiAgentTurnComparisonTests
                 AcceptedReportSourceArtifactIdentitySha256 = new string('b', 64),
                 Proposal = second.Proposal with { AcceptedReportSourceArtifactIdentitySha256 = new string('b', 64) }
             },
+            "notice-identity" => second with
+            {
+                AcceptedReportNoticeIdentitySha256 = new string('b', 64),
+                Proposal = second.Proposal with { AcceptedReportNoticeIdentitySha256 = new string('b', 64) }
+            },
             _ => second
         };
 
@@ -485,6 +491,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
             AcceptedReportCandidateCommitSha = Sha,
             AcceptedReportVerdict = "ActionableFailure",
             AcceptedReportSourceArtifactIdentitySha256 = new string('c', 64),
+            AcceptedReportNoticeIdentitySha256 = new string('d', 64),
             Proposal = result.Proposal with
             {
                 AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
@@ -494,7 +501,8 @@ public sealed class HeadlessAiAgentTurnComparisonTests
                 AcceptedReportRunAttempt = 1,
                 AcceptedReportCandidateCommitSha = Sha,
                 AcceptedReportVerdict = "ActionableFailure",
-                AcceptedReportSourceArtifactIdentitySha256 = new string('c', 64)
+                AcceptedReportSourceArtifactIdentitySha256 = new string('c', 64),
+                AcceptedReportNoticeIdentitySha256 = new string('d', 64)
             }
         };
     }
