@@ -75,6 +75,12 @@ public sealed class GeminiGenerateContentAdapter : IHeadlessAiAdapter
                     continue;
                 foreach (var part in parts.EnumerateArray())
                 {
+                    // Function calls are structured actions, not plain text. Do not
+                    // discard one and accidentally accept neighboring text as a full answer.
+                    if (part.TryGetProperty("functionCall", out var functionCall) &&
+                        functionCall.ValueKind != JsonValueKind.Null)
+                        throw new InvalidDataException("Gemini generateContent returned an unsupported function call.");
+
                     if (part.TryGetProperty("text", out var value) && value.ValueKind == JsonValueKind.String)
                     {
                         if (text.Length > 0)
