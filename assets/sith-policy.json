@@ -7,15 +7,16 @@
   ],
   "actual_branches": [
     "development",
+    "docs/headlessai-ecosystem-adoption-assessment",
     "docs/readme-contrast-accessibility",
     "feature/bounded-artifact-http-adapter",
     "feature/resumable-agent-turn-integration",
     "master",
     "work/http-retry-after-guidance"
   ],
-  "branch_count": 6,
+  "branch_count": 7,
   "status": "NON-COMPLIANT",
-  "evaluated_at": "2026-11-13T22:38:19Z",
-  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43520888561",
-  "triggering_commit": "13ba191feea5b43d75e15ba3c35de466d2971903"
+  "evaluated_at": "2026-11-14T11:29:57Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43590273666",
+  "triggering_commit": "47a96d0b4cd064dce4b42fa89d3089341ee7d9a4"
 }
