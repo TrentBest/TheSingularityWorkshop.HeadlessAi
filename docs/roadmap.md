@@ -26,7 +26,7 @@ The target is a **useful first release with honest boundaries**: implement the c
 
 - [ ] Complete official-schema fixture coverage for provider success variants, error envelopes, and missing fields. Minimum malformed-JSON, empty-body, and valid-JSON-without-usable-text cases are now covered for all three built-in adapters; see [Provider Failure Contract](provider-failure-contract.md).
 - [x] Document redirect behavior, credential-forwarding risk, and host-owned outbound endpoint validation; see [Security](security.md).
-- [ ] Define a stable adapter parse-error taxonomy that callers can handle without depending on provider-specific parser internals.
+- [x] Define a stable adapter parse-error taxonomy: built-in JSON adapters expose the public, provider-neutral `HeadlessAiProviderResponseException` with the stable `malformed_provider_json` and `invalid_provider_response` codes. Raw provider response text remains internal and is not exposed through the public exception surface.
 - [ ] Add safe diagnostics and correlation identifiers without content or credential logging.
 - [ ] Document and test configuration defaults, request headers, timeout/cancellation, response bounds, and error handling as one coherent developer journey.
 - [ ] Implement and test a small fluent configuration facade that composes the existing profile/template contracts; follow the [Fluent Configuration Design](fluent-configuration-design.md) acceptance criteria and keep the current constructor API supported.

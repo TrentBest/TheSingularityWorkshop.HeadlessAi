@@ -12,7 +12,7 @@
 [![Build](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml/badge.svg?branch=development)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml)
 [![Code Coverage](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi/branch/development/graph/badge.svg)](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi)
 
-[![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/sith-policy.yml)
+[![Sith Policy](https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/sith-policy.yml)
 <p align="center">
   <img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/docs/assets/headless-ai-architecture.svg" alt="The host owns task intent, validation, permissions, memory, and actions; HeadlessAi constructs bounded HTTP requests through explicit protocol adapters; configured endpoints perform inference." width="100%">
 </p>
@@ -61,7 +61,7 @@ The current API separates four responsibilities:
 
 The host can configure a target and create many logical callers while reusing its HTTP transport. It still owns task planning, concurrency, cost budgets, role permissions, conversation state, output validation, and approval of consequential actions.
 
-The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These are concrete protocol adapters around generic invocation contracts; the core domain remains independent of provider and model types.
+The current source includes raw-text, delegate, JSON, OpenAI Responses, Gemini generateContent, and Anthropic Messages adapters. These are concrete protocol adapters around generic invocation contracts; the core domain remains independent of provider and model types. Non-success HTTP responses preserve bounded excerpts and optional `Retry-After` guidance; HeadlessAi reports that metadata without automatically replaying the request.
 
 ## 🟢 05 See it in a minute
 
@@ -112,17 +112,18 @@ sealed class EnvironmentBearerHeaderProvider : IHeadlessAiRequestHeaderProvider
 }
 ```
 
-Expected behavior: the program prints the response text extracted by the selected adapter. The example is compiled as part of the solution build and compiled again against the packed NuGet artifact by CI using [the quickstart sample](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/samples/TheSingularityWorkshop.HeadlessAi.Quickstart/Program.cs); it is not run against a live provider. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
+Expected behavior: the program prints the response text extracted by the selected adapter. The example is compiled as part of the solution build and the [quickstart sample](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/samples/TheSingularityWorkshop.HeadlessAi.Quickstart/Program.cs) is included in development CI; it is not run against a live provider. Development CI uses the `FSM_Serialization` development source project and does not build a NuGet package. For prerequisites, provider setup, transport limits, and build/test commands, use the [Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md).
 
 ## 🟪 06 Documentation and theory
 
+- **[Agent turns and resumability](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/agent-turns-and-resumability.md)** — create, validate, execute, compare, and persist bounded v1 agent-turn snapshots.
 - **[Usage Guide](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/usage.md)** — configure the current constructor-based API, call an endpoint, and understand credentials, limits, and failure behavior.
+- **[Next release candidate](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/RELEASE_CANDIDATE.md)** — current package version, dependency, exact CI evidence, and remaining non-publishing release gates.
 - **[What is HeadlessAi?](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/WHAT_IS_HEADLESSAI.md)** — build the mental model without needing to know the implementation first.
 - **[Theory](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/THEORY.md)** — understand why endpoint protocol, transport, identity, and application authority are separate concerns.
 - **[Problem Domain](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/problem-domain.md)** — understand the request, response, and host responsibilities.
 - **[Architecture](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-and-theory.md) and [Dependency Boundaries](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/architecture-boundaries.md)** — inspect responsibility ownership and prohibited dependencies.
 - **[Provider Adapters](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/provider-adapters.md) and [Provider Failure Contract](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/provider-failure-contract.md)** — see supported direct-HTTP protocol slices and the limits of their parsing behavior.
-
 - **[Security](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/security.md), [Performance](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/performance.md), and [Measurement Plan](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/docs/measurement-plan.md)** — review trust boundaries and what evidence is required before making claims.
 - **[Documentation Index](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md)** — navigate the full guide set.
 - **[Source-level type guides and UML/use cases](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/DOCUMENTATION_INDEX.md#source-level-type-guides-and-uml)** — inspect public contracts, source-backed relationships, and host-owned use cases.
@@ -159,12 +160,6 @@ Local benchmarks use deterministic fixture HTTP responses rather than live provi
 - **PayPal:** [Make a donation](https://www.paypal.com/donate/?hosted_button_id=3Z7263LCQMV9J)
 
 <p align="center">
-  <a href="https://github.com/TrentBest">
-    <img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop avatar and brand" width="200">
-  </a>
-</p>
-
-<p align="center">
   <a href="https://github.com/TrentBest">GitHub</a> ·
   <a href="https://coderlegion.com/">Coder Legion</a> ·
   <a href="https://www.patreon.com/c/TheSingularityWorkshop">Patreon</a> ·
@@ -180,4 +175,4 @@ Local benchmarks use deterministic fixture HTTP responses rather than live provi
 ---
 
 <!-- THE SINGULARITY WORKSHOP FOOTER -->
-<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop avatar" width="200" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" width="200" /></p>

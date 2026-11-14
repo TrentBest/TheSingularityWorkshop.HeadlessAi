@@ -50,12 +50,24 @@ public sealed class AnthropicMessagesAdapter : IHeadlessAiAdapter
 
     private static string ExtractText(JsonElement root)
     {
+        // Only completed message turns are valid text responses for this non-tool adapter.
+        var stopReason = JsonProviderAdapterHelpers.ReadString(root, "stop_reason");
+        if (stopReason is not null &&
+            stopReason is not ("end_turn" or "stop_sequence"))
+            throw new InvalidDataException("Anthropic Messages API did not complete a plain-text response.");
+
         if (root.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.Array)
         {
             var text = new StringBuilder();
             foreach (var part in content.EnumerateArray())
             {
-                if (JsonProviderAdapterHelpers.ReadString(part, "type") == "text" &&
+                // This adapter is text-only. Reject every tool-related content block,
+                // including tool results, even when stop_reason is absent or adjacent text exists.
+                var blockType = JsonProviderAdapterHelpers.ReadString(part, "type");
+                if (blockType?.Contains("tool", StringComparison.Ordinal) == true)
+                    throw new InvalidDataException("Anthropic Messages API returned an unsupported tool block.");
+
+                if (blockType == "text" &&
                     part.TryGetProperty("text", out var value) && value.ValueKind == JsonValueKind.String)
                 {
                     if (text.Length > 0)

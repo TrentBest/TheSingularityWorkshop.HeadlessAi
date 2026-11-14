@@ -26,8 +26,10 @@ public sealed class ProviderAdapterFailureTests
             Content = new StringContent("{}")
         };
 
-        await Assert.ThrowsAsync<InvalidDataException>(
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
             async () => await adapter.ReadResponseAsync(response));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
     }
 
     [Theory]
@@ -39,8 +41,10 @@ public sealed class ProviderAdapterFailureTests
             Content = new StringContent("{ definitely not json")
         };
 
-        await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
             async () => await adapter.ReadResponseAsync(response));
+
+        Assert.Equal("malformed_provider_json", exception.ErrorCode);
     }
 
     [Theory]
@@ -52,8 +56,10 @@ public sealed class ProviderAdapterFailureTests
             Content = new StringContent(string.Empty)
         };
 
-        await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
             async () => await adapter.ReadResponseAsync(response));
+
+        Assert.Equal("malformed_provider_json", exception.ErrorCode);
     }
 
     [Theory]
@@ -114,5 +120,4 @@ public sealed class ProviderAdapterFailureTests
         Assert.Contains("fixture-profile", exception.Message);
         Assert.Contains("max_tokens", exception.Message);
     }
-
 }

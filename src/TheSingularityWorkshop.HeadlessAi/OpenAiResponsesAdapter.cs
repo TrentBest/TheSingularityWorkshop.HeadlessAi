@@ -45,16 +45,33 @@ public sealed class OpenAiResponsesAdapter : IHeadlessAiAdapter
 
     private static string ExtractText(JsonElement root)
     {
+        // A successful HTTP response can still represent an incomplete Responses API turn.
+        // Do not promote partial output text to a completed provider result.
+        var status = JsonProviderAdapterHelpers.ReadString(root, "status");
+        if (status is not null && !string.Equals(status, "completed", StringComparison.Ordinal))
+            throw new InvalidDataException("OpenAI Responses API did not complete the response.");
+
         if (root.TryGetProperty("output", out var output) && output.ValueKind == JsonValueKind.Array)
         {
             var text = new StringBuilder();
             foreach (var item in output.EnumerateArray())
             {
-                if (JsonProviderAdapterHelpers.ReadString(item, "type") != "message" ||
+                var itemType = JsonProviderAdapterHelpers.ReadString(item, "type");
+                // This adapter is text-only. Never silently discard a tool invocation
+                // and return adjacent text as though the whole response were plain text.
+                if (itemType?.EndsWith("_call", StringComparison.Ordinal) == true)
+                    throw new InvalidDataException("OpenAI Responses API returned an unsupported tool call.");
+
+                if (itemType != "message" ||
                     !item.TryGetProperty("content", out var content) || content.ValueKind != JsonValueKind.Array)
                     continue;
                 foreach (var part in content.EnumerateArray())
                 {
+                    // This adapter returns plain text only. A refusal must never be
+                    // hidden by adjacent output_text content in the same response.
+                    if (JsonProviderAdapterHelpers.ReadString(part, "type") == "refusal")
+                        throw new InvalidDataException("OpenAI Responses API returned a refusal.");
+
                     if (JsonProviderAdapterHelpers.ReadString(part, "type") == "output_text" &&
                         part.TryGetProperty("text", out var value) && value.ValueKind == JsonValueKind.String)
                     {

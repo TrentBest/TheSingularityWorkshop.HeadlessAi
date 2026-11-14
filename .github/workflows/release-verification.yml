@@ -1,0 +1,260 @@
+name: NuGet Release Verification (Non-Publishing)
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact 40-character HeadlessAi candidate commit SHA to verify
+        required: true
+        type: string
+      fsm_serialization_version:
+        description: Exact published FSM_Serialization version (currently allowlisted: 1.0.0)
+        required: true
+        default: 1.0.0
+        type: string
+  workflow_call:
+    inputs:
+      candidate_sha:
+        description: Exact 40-character HeadlessAi candidate commit SHA to verify
+        required: true
+        type: string
+      fsm_serialization_version:
+        description: Exact published FSM_Serialization version (currently allowlisted: 1.0.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify-package:
+    name: Build, audit, and clean-consumer verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate immutable candidate identity
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$CANDIDATE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "candidate_sha must be an exact 40-character Git commit SHA."
+            exit 1
+          fi
+
+      - name: Check out exact HeadlessAi candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: TrentBest/TheSingularityWorkshop.HeadlessAi
+          ref: ${{ inputs.candidate_sha }}
+          path: HeadlessAi
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Validate the published dependency allowlist
+        env:
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version }}
+        run: |
+          set -euo pipefail
+          if [[ "$FSM_SERIALIZATION_VERSION" != "1.0.0" ]]; then
+            echo "FSM_Serialization version '$FSM_SERIALIZATION_VERSION' is not on the approved release allowlist."
+            echo "Review and update this workflow's allowlist only after the exact dependency release is approved and published."
+            exit 1
+          fi
+          package_url="https://api.nuget.org/v3-flatcontainer/thesingularityworkshop.fsm_serialization/$FSM_SERIALIZATION_VERSION/thesingularityworkshop.fsm_serialization.$FSM_SERIALIZATION_VERSION.nupkg"
+          curl --fail --silent --show-error --location "$package_url" --output /tmp/fsm-serialization.nupkg
+          test -s /tmp/fsm-serialization.nupkg
+          echo "Approved published dependency exists: TheSingularityWorkshop.FSM_Serialization $FSM_SERIALIZATION_VERSION"
+
+      - name: Restore against published dependencies
+        working-directory: HeadlessAi
+        env:
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version }}
+        run: |
+          dotnet restore TheSingularityWorkshop.HeadlessAi.slnx \
+            -p:UsePublishedDependencies=true \
+            -p:FsmSerializationPackageVersion="$FSM_SERIALIZATION_VERSION"
+
+      - name: Build candidate
+        working-directory: HeadlessAi
+        env:
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version }}
+        run: |
+          dotnet build TheSingularityWorkshop.HeadlessAi.slnx \
+            --configuration Release --no-restore \
+            -p:UsePublishedDependencies=true \
+            -p:FsmSerializationPackageVersion="$FSM_SERIALIZATION_VERSION"
+
+      - name: Run tests against published dependencies
+        working-directory: HeadlessAi
+        env:
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version }}
+        run: |
+          dotnet test tests/TheSingularityWorkshop.HeadlessAi.Tests/TheSingularityWorkshop.HeadlessAi.Tests.csproj \
+            --configuration Release --no-build \
+            -p:UsePublishedDependencies=true \
+            -p:FsmSerializationPackageVersion="$FSM_SERIALIZATION_VERSION"
+
+      - name: Pack exactly one candidate package
+        working-directory: HeadlessAi
+        env:
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version }}
+        run: |
+          dotnet pack src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj \
+            --configuration Release --no-build --no-restore --output ./artifacts \
+            -p:UsePublishedDependencies=true \
+            -p:FsmSerializationPackageVersion="$FSM_SERIALIZATION_VERSION"
+          count="$(find ./artifacts -maxdepth 1 -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | wc -l)"
+          if [[ "$count" -ne 1 ]]; then
+            echo "Expected exactly one .nupkg; found $count."
+            exit 1
+          fi
+
+      - name: Audit package archive, manifest, dependency allowlist, and README
+        working-directory: HeadlessAi
+        env:
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import glob, os, re, zipfile
+          from xml.etree import ElementTree as ET
+
+          packages = glob.glob("artifacts/*.nupkg")
+          if len(packages) != 1:
+              raise SystemExit(f"Expected exactly one package, found: {packages}")
+          package = packages[0]
+          project = ET.parse("src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj").getroot()
+          properties = project.find("PropertyGroup")
+          if properties is None:
+              raise SystemExit("Package project properties are missing.")
+          expected_id = properties.findtext("PackageId")
+          expected_version = properties.findtext("Version")
+          if not expected_id or not expected_version:
+              raise SystemExit("PackageId or Version is missing from the project.")
+          expected_dependency = "TheSingularityWorkshop.FSM_Serialization"
+          expected_dependency_version = os.environ["FSM_SERIALIZATION_VERSION"]
+
+          with zipfile.ZipFile(package) as archive:
+              names = archive.namelist()
+              nuspecs = [n for n in names if n.lower().endswith(".nuspec")]
+              if len(nuspecs) != 1:
+                  raise SystemExit(f"Expected one nuspec, found {nuspecs}")
+              root = ET.fromstring(archive.read(nuspecs[0]))
+              metadata = root.find(".//{*}metadata")
+              if metadata is None:
+                  raise SystemExit("Nuspec metadata is missing.")
+
+              def value(tag):
+                  node = metadata.find("{*}" + tag)
+                  return node.text.strip() if node is not None and node.text else ""
+
+              if value("id") != expected_id:
+                  raise SystemExit(f"Unexpected package id: {value('id')}")
+              if value("version") != expected_version:
+                  raise SystemExit(f"Unexpected package version: {value('version')}")
+              if not value("license") and not value("licenseUrl"):
+                  raise SystemExit("MIT license metadata is missing.")
+              if value("readme") != "README.md":
+                  raise SystemExit(f"Unexpected package README metadata: {value('readme')}")
+
+              dependency_nodes = root.findall(".//{*}dependency")
+              if len(dependency_nodes) != 1:
+                  raise SystemExit(f"Expected exactly one approved dependency, found {[n.attrib for n in dependency_nodes]}")
+              dependency = dependency_nodes[0]
+              if dependency.attrib.get("id") != expected_dependency:
+                  raise SystemExit(f"Dependency is not allowlisted: {dependency.attrib}")
+              if dependency.attrib.get("version") != f"[{expected_dependency_version}, {expected_dependency_version}]":
+                  raise SystemExit(f"Dependency is not pinned to the exact approved version: {dependency.attrib}")
+
+              required = [
+                  "README.md", "LICENSE",
+                  "docs/GALLERY.md",
+              ]
+              for path in required:
+                  if path not in names:
+                      raise SystemExit(f"Package is missing {path}")
+              if "lib/net8.0/TheSingularityWorkshop.HeadlessAi.dll" not in names:
+                  raise SystemExit("Package is missing the expected HeadlessAi net8.0 assembly.")
+              if "lib/net8.0/TheSingularityWorkshop.HeadlessAi.xml" not in names:
+                  raise SystemExit("Package is missing the expected HeadlessAi XML API documentation.")
+              if not any(n.startswith("docs/") and n.endswith(".md") for n in names):
+                  raise SystemExit("Package is missing Markdown documentation.")
+              if not any(n.startswith("docs/") and n.endswith(".svg") for n in names):
+                  raise SystemExit("Package is missing SVG documentation assets.")
+
+              readme = archive.read("README.md").decode("utf-8")
+              required_visual = "https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/docs/assets/headless-ai-architecture.svg"
+              if required_visual not in readme:
+                  raise SystemExit("README architecture visual must use the package-safe absolute URL.")
+
+              markdown_targets = re.findall(r"!?\[[^\]]*\]\(([^)\s]+)", readme)
+              html_targets = re.findall(r"""(?:src|href)\s*=\s*["']([^"']+)["']""", readme, flags=re.I)
+              for target in markdown_targets + html_targets:
+                  if target.startswith(("https://", "http://", "mailto:", "#", "data:")):
+                      continue
+                  raise SystemExit(f"README contains unresolved relative target: {target}")
+
+              print(f"PASS: {package} has the expected identity/version, exact allowlisted dependency, assembly, XML docs, README, MIT license, Markdown/SVG docs, and package-safe README links.")
+          PY
+
+      - name: Verify the packed package in a clean consumer
+        working-directory: HeadlessAi
+        run: |
+          set -euo pipefail
+          package="$(find ./artifacts -maxdepth 1 -type f -name '*.nupkg' ! -name '*.symbols.nupkg' -print -quit)"
+          mapfile -t package_metadata < <(python3 - "$package" <<'PY'
+          import sys, zipfile
+          from xml.etree import ElementTree as ET
+          with zipfile.ZipFile(sys.argv[1]) as archive:
+              nuspec = next(name for name in archive.namelist() if name.lower().endswith(".nuspec"))
+              root = ET.fromstring(archive.read(nuspec))
+              metadata = root.find(".//{*}metadata")
+              if metadata is None:
+                  raise SystemExit("Package metadata is missing.")
+              for field in ("id", "version"):
+                  node = metadata.find("{*}" + field)
+                  if node is None or not node.text:
+                      raise SystemExit(f"Package {field} is missing.")
+                  print(node.text.strip())
+          PY
+          )
+          package_id="${package_metadata[0]:-}"
+          package_version="${package_metadata[1]:-}"
+          if [[ -z "$package_id" || -z "$package_version" ]]; then
+            echo "Could not read package identity from the candidate archive."
+            exit 1
+          fi
+
+          consumer_dir="$(mktemp -d)"
+          trap 'rm -rf "$consumer_dir"' EXIT
+          cat > "$consumer_dir/NuGet.Config" <<EOF
+          <configuration>
+            <packageSources>
+              <clear />
+              <add key="candidate" value="$PWD/artifacts" />
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+            </packageSources>
+          </configuration>
+          EOF
+          dotnet new console --framework net8.0 --output "$consumer_dir" --no-restore
+          (
+            cd "$consumer_dir"
+            dotnet add package "$package_id" --version "$package_version"
+            dotnet build --configuration Release
+          )
+
+      - name: Upload verified package for review (no publication)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: headlessai-verified-nupkg
+          path: HeadlessAi/artifacts/*.nupkg
+          if-no-files-found: error
+          retention-days: 30
+
+# Manual dispatch and CiAi workflow_call both verify an exact immutable candidate SHA.
+# Deliberately no NuGet push, release creation, deployment, merge, or write permission.
+# Passing this workflow produces a reviewable artifact only; publication requires
+# separate, explicit authorization for that specific release.

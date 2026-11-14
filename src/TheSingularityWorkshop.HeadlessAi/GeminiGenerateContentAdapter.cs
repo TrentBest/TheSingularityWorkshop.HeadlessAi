@@ -65,11 +65,22 @@ public sealed class GeminiGenerateContentAdapter : IHeadlessAiAdapter
             var text = new StringBuilder();
             foreach (var candidate in candidates.EnumerateArray())
             {
+                // This adapter has no continuation/tool protocol: only a normal STOP finish is complete.
+                var finishReason = JsonProviderAdapterHelpers.ReadString(candidate, "finishReason");
+                if (finishReason is not null && finishReason != "STOP")
+                    throw new InvalidDataException("Gemini generateContent candidate did not finish normally.");
+
                 if (!candidate.TryGetProperty("content", out var content) ||
                     !content.TryGetProperty("parts", out var parts) || parts.ValueKind != JsonValueKind.Array)
                     continue;
                 foreach (var part in parts.EnumerateArray())
                 {
+                    // Function calls are structured actions, not plain text. Do not
+                    // discard one and accidentally accept neighboring text as a full answer.
+                    if (part.TryGetProperty("functionCall", out var functionCall) &&
+                        functionCall.ValueKind != JsonValueKind.Null)
+                        throw new InvalidDataException("Gemini generateContent returned an unsupported function call.");
+
                     if (part.TryGetProperty("text", out var value) && value.ValueKind == JsonValueKind.String)
                     {
                         if (text.Length > 0)

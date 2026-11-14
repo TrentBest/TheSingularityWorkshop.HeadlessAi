@@ -119,6 +119,26 @@ public sealed class ProviderAdapterTests
 
 
     [Fact]
+    public async Task OpenAiResponsesAdapter_DoesNotTreatIncompletePartialTextAsSuccess()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"id":"resp_incomplete","status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output":[{"type":"message","content":[{"type":"output_text","text":"partial answer"}]}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("openai", new Uri("https://api.openai.com/v1/responses"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test" });
+        var agent = new HeadlessAiAgent(client, profile, new OpenAiResponsesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial answer", exception.Message);
+    }
+
+    [Fact]
     public async Task OpenAiResponsesAdapter_CombinesTextPartsWithoutOptionalMetadata()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
@@ -157,22 +177,184 @@ public sealed class ProviderAdapterTests
     }
 
     [Fact]
-    public async Task AnthropicAdapter_CombinesTextBlocksWithoutOptionalMetadata()
+    public async Task AnthropicAdapter_RejectsToolUseMixedWithTextWhenStopReasonIsMissing()
     {
         using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(
-                "{\"content\":[{\"type\":\"text\",\"text\":\"first\"},{\"type\":\"tool_use\",\"id\":\"tool-1\"},{\"type\":\"text\",\"text\":\"second\"}]}",
+                """{"content":[{"type":"text","text":"partial text"},{"type":"tool_use","id":"tool-1","name":"run"}]}""",
                 System.Text.Encoding.UTF8, "application/json")
         })));
         var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
             settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
         var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
 
-        var output = await agent.SendAsync(new HeadlessAiInput("task"));
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
 
-        Assert.Equal($"first{Environment.NewLine}second", output.Content);
-        Assert.Null(output.Metadata);
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial text", exception.Message);
+    }
+
+    [Fact]
+    public async Task AnthropicAdapter_RejectsToolResultMixedWithTextWhenStopReasonIsMissing()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"content":[{"type":"text","text":"partial text"},{"type":"tool_result","tool_use_id":"tool-1","content":"tool output"}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
+        var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial text", exception.Message);
+    }
+
+    [Fact]
+    public async Task OpenAiResponsesAdapter_DoesNotAcceptRefusalAlongsideOutputText()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"status":"completed","output":[{"type":"message","content":[{"type":"refusal","refusal":"I cannot help with that request."},{"type":"output_text","text":"untrusted adjacent text"}]}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("openai", new Uri("https://api.openai.com/v1/responses"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test" });
+        var agent = new HeadlessAiAgent(client, profile, new OpenAiResponsesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("I cannot help", exception.Message);
+        Assert.DoesNotContain("untrusted adjacent text", exception.Message);
+    }
+
+    [Fact]
+    public async Task GeminiAdapter_RejectsPromptBlockedResponse()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"promptFeedback":{"blockReason":"SAFETY"},"candidates":[]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("gemini",
+            new Uri("https://generativelanguage.googleapis.com/v1beta/models/model-test:generateContent"));
+        var agent = new HeadlessAiAgent(client, profile, new GeminiGenerateContentAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("SAFETY", exception.Message);
+    }
+
+    [Fact]
+    public async Task AnthropicAdapter_RejectsRefusalStopReason()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"id":"msg_refusal","stop_reason":"refusal","content":[{"type":"text","text":"I cannot help with that request."}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
+        var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("I cannot help", exception.Message);
+    }
+
+    [Fact]
+    public async Task GeminiAdapter_DoesNotTreatMaxTokenPartialCandidateAsSuccess()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"candidates":[{"content":{"parts":[{"text":"partial answer"}]},"finishReason":"MAX_TOKENS"}],"usageMetadata":{"candidatesTokenCount":64}}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("gemini",
+            new Uri("https://generativelanguage.googleapis.com/v1beta/models/model-test:generateContent"));
+        var agent = new HeadlessAiAgent(client, profile, new GeminiGenerateContentAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial answer", exception.Message);
+    }
+
+    [Fact]
+    public async Task AnthropicAdapter_DoesNotTreatMaxTokenPartialMessageAsSuccess()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"id":"msg_partial","stop_reason":"max_tokens","content":[{"type":"text","text":"partial answer"}],"usage":{"input_tokens":10,"output_tokens":100}}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("anthropic", new Uri("https://api.anthropic.com/v1/messages"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test", ["max_tokens"] = "100" });
+        var agent = new HeadlessAiAgent(client, profile, new AnthropicMessagesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial answer", exception.Message);
+    }
+
+    [Fact]
+    public async Task OpenAiResponsesAdapter_RejectsToolCallMixedWithMessageText()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":"partial text"}]},{"type":"function_call","name":"run","arguments":"{}"}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("openai", new Uri("https://api.openai.com/v1/responses"),
+            settings: new Dictionary<string, string> { ["model"] = "model-test" });
+        var agent = new HeadlessAiAgent(client, profile, new OpenAiResponsesAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial text", exception.Message);
+    }
+
+    [Fact]
+    public async Task GeminiAdapter_RejectsFunctionCallMixedWithText()
+    {
+        using var client = new HttpClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"candidates":[{"content":{"parts":[{"text":"partial text"},{"functionCall":{"name":"run","args":{}}}]},"finishReason":"STOP"}]}""",
+                System.Text.Encoding.UTF8, "application/json")
+        })));
+        var profile = new HeadlessAiProfile("gemini",
+            new Uri("https://generativelanguage.googleapis.com/v1beta/models/model-test:generateContent"));
+        var agent = new HeadlessAiAgent(client, profile, new GeminiGenerateContentAdapter());
+
+        var exception = await Assert.ThrowsAsync<HeadlessAiProviderResponseException>(
+            () => agent.SendAsync(new HeadlessAiInput("task")));
+
+        Assert.Equal("invalid_provider_response", exception.ErrorCode);
+        Assert.DoesNotContain("partial text", exception.Message);
     }
 
     private sealed class StubHandler(

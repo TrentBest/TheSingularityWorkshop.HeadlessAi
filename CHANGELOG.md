@@ -9,6 +9,15 @@
 
 All notable changes to HeadlessAi are recorded here. This repository is in early development; entries describe repository state, not a promise of compatibility or a published NuGet release.
 
+## 0.1.0-alpha.2 — Release candidate prepared (not published)
+
+- Adds versioned, provider-neutral resumable agent-turn contracts, canonical request snapshots, provider-attributed comparisons, and bounded binary persistence through FSM_Serialization.
+- Preserves host-accepted CiAi report bytes and provenance as opaque, untrusted input; digest consistency is not authentication or a CI verdict.
+- Hardens credential-bearing URL screening, persisted accepted-report identity validation, and bounded provider failure metadata.
+- Adds a non-publishing package verification gate for exact published dependencies, archive/nuspec/docs audit, and clean-consumer installation/build.
+- Advances the package version from the already-published `0.1.0-alpha.1` to `0.1.0-alpha.2`.
+- Publication remains a separate owner-authorized action. This candidate has not been published.
+
 ## Unreleased
 
 - Established the .NET 8 library, test project, benchmark project, and solution.
@@ -20,11 +29,7 @@ All notable changes to HeadlessAi are recorded here. This repository is in early
 
 ---
 
-<p align="center">
-  <a href="https://github.com/TrentBest">
-    <img src="https://github.com/TrentBest.png?size=200" alt="The Singularity Workshop on GitHub" width="200">
-  </a>
-</p>
+
 
 <p align="center">
   <a href="https://github.com/TrentBest">GitHub</a> ·
@@ -38,3 +43,8 @@ All notable changes to HeadlessAi are recorded here. This repository is in early
 </p>
 
 <p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong><br><em>And because static boundaries are invitations to cause trouble.</em></p>
+
+---
+
+<!-- THE SINGULARITY WORKSHOP FOOTER -->
+<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" width="200" /></p>

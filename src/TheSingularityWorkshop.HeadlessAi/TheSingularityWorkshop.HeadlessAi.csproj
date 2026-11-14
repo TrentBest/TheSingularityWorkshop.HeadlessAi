@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <PackageId>TheSingularityWorkshop.HeadlessAi</PackageId>
-    <Version>0.1.0-alpha.1</Version>
+    <Version>0.1.0-alpha.2</Version>
     <Authors>The Singularity Workshop</Authors>
     <Company>The Singularity Workshop</Company>
     <Description>Provider-neutral HTTP agent primitives with explicit endpoint-specific request and response adapters.</Description>
@@ -20,8 +20,17 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
+  <!-- Development builds consume the dependency's development source, never a published NuGet package. -->
+  <ItemGroup Condition="'$(UsePublishedDependencies)' != 'true'">
+    <ProjectReference Include="../../../dependencies/FSM_Serialization/TheSingularityWorkshop.FSM_Serialization.csproj" />
+  </ItemGroup>
+  <!-- Release packaging opts into an exact dependency version already published on NuGet. -->
+  <ItemGroup Condition="'$(UsePublishedDependencies)' == 'true'">
+    <PackageReference Include="TheSingularityWorkshop.FSM_Serialization" Version="[$(FsmSerializationPackageVersion), $(FsmSerializationPackageVersion)]" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" />
     <None Include="../../docs/**/*.md" Pack="true" PackagePath="docs/%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../docs/**/*.svg" Pack="true" PackagePath="docs/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>

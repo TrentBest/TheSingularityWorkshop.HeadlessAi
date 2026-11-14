@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 
 namespace TheSingularityWorkshop.HeadlessAi;
 
@@ -10,15 +11,31 @@ public sealed class HeadlessAiHttpException : HttpRequestException
     /// <param name="statusCode">HTTP response status code.</param>
     /// <param name="responseExcerpt">Bounded response text that may contain sensitive information.</param>
     public HeadlessAiHttpException(string profileId, HttpStatusCode statusCode, string responseExcerpt)
+        : this(profileId, statusCode, responseExcerpt, null)
+    {
+    }
+
+    /// <summary>Creates an exception with the profile, HTTP status, bounded excerpt, and optional retry guidance.</summary>
+    /// <param name="profileId">Identifier of the endpoint profile that returned the error.</param>
+    /// <param name="statusCode">HTTP response status code.</param>
+    /// <param name="responseExcerpt">Bounded response text that may contain sensitive information.</param>
+    /// <param name="retryAfter">Optional Retry-After guidance supplied by the endpoint.</param>
+    public HeadlessAiHttpException(string profileId, HttpStatusCode statusCode, string responseExcerpt,
+        RetryConditionHeaderValue? retryAfter)
         : base($"HeadlessAi profile '{profileId}' returned HTTP {(int)statusCode} ({statusCode}).", null, statusCode)
     {
         ProfileId = profileId;
         ResponseExcerpt = responseExcerpt;
+        RetryAfter = retryAfter;
     }
 
-    /// <summary>Gets the identifier of the profile that returned the HTTP error.</summary>
+    /// <summary>Gets the identifier of the endpoint profile that returned the HTTP error.</summary>
     public string ProfileId { get; }
 
     /// <summary>Gets bounded but potentially sensitive response text. Redact before persistence.</summary>
     public string ResponseExcerpt { get; }
+
+    /// <summary>Gets optional server retry guidance. This is metadata, not an instruction to retry.</summary>
+    /// <remarks>The host owns retry budgets, deadlines, idempotency, and the decision to repeat an operation.</remarks>
+    public RetryConditionHeaderValue? RetryAfter { get; }
 }

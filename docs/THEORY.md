@@ -142,7 +142,11 @@ A response may contain instructions, code, tool arguments, URLs, or proposed mut
 
 This invariant applies even when the response comes from a trusted vendor or a well-performing model.
 
-## 8. Performance is a property to measure
+## 8. Failure metadata is evidence, not policy
+
+A remote endpoint may provide useful recovery metadata such as `Retry-After`. HeadlessAi preserves that signal alongside the HTTP failure, but does not turn it into an automatic retry. The host knows the operation's idempotency, deadline, workload budget, and user-facing consequences; the transport does not. Preserving evidence while leaving the decision with the authority-owning host prevents a low-level client from silently replaying work.
+
+## 9. Performance is a property to measure
 
 Design can avoid obvious overhead: duplicate clients, redundant serialization, unbounded buffering, and unnecessary object graphs. But design intent is not a benchmark result. Measure allocations, throughput, latency, payload size, and resource behavior under documented conditions.
 
