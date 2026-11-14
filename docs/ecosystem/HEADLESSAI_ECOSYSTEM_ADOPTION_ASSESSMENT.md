@@ -137,6 +137,16 @@ Do not make HeadlessAi a blanket Workshop dependency. Put it at application/host
 
 **First proof:** Candidate command object with tests proving invalid, ambiguous, or unauthorized candidates never dispatch.
 
+### RevitFamilyManagerBuilders — YES, Medium
+
+**Why:** Its README describes catalog-driven family configuration, modal high-fidelity family type change review, and a deliberate production boundary requiring transaction, regeneration, reread, and final verified Revit model evidence. This creates a credible draft-assistance seam, but not an autonomous model-editing seam.
+
+**Implement:** Use HeadlessAi only to draft a typed configuration proposal or explain catalog/descriptor choices from explicitly selected, non-sensitive model/catalog facts. Validate the proposal locally against descriptor metadata and parameter constraints. Present a review diff. The existing Revit transaction pipeline must remain responsible for transaction execution, regeneration, reread, and final verification; no generated proposal may bypass those gates.
+
+**First proof:** With a fixed catalog fixture, request a proposed family configuration, parse it into a typed draft, run deterministic descriptor/parameter validation, and show a review diff without opening a write transaction.
+
+**Tests:** unknown family/type, invalid parameter/value, stale catalog version, conflicting descriptors, prompt injection in catalog text, malformed output, provider timeout, transaction failure, regeneration mismatch, reread mismatch, and final-model verification failure. The LLM must never be able to mark its own proposal as verified.
+
 ### Conditional candidates
 
 - **TheSingularityWorkshop.MyVR — Defer/possible Yes:** Potential NPC/voice assistance; route via ServerApp, use short bounded turns and fallbacks. Never put frame loops or gesture recognition behind remote inference.
@@ -181,7 +191,7 @@ Do not make HeadlessAi a blanket Workshop dependency. Put it at application/host
 | B4GBot | Defer | Low | Placeholder README; confirm active identity. |
 | MyCity | Defer | Low | Sparse README; inspect simulation/user interaction. |
 | FSM_PackageManager | Defer | Low | Sparse README; inspect package-authoring workflows. |
-| RevitFamilyManagerBuilders | Defer/possible Yes | Medium | Draft-only catalog configuration assistance with Revit verification gates. |
+| RevitFamilyManagerBuilders | Yes | Medium | README documents catalog configuration and review workflows; model may draft only, while Revit verification remains authoritative. |
 | MicroBundleDomain_Benchmarks | No | High | Benchmark harness. |
 | StoryBuilder | Yes | Medium | Narrative authoring and continuity assistance. |
 | TheForge | Defer | Low | Legacy/Unity meta-framework; verify current activity. |
@@ -276,7 +286,7 @@ Do not make HeadlessAi a blanket Workshop dependency. Put it at application/host
 6. Learning, StoryBuilder, CreatorNetwork — bounded domain features.
 7. SingularityBot, Hermit, CommandAi — offline proposal generation and typed intent.
 8. WebApp, WebPage, Experiences — reuse shared server-side service.
-9. Conditional candidates only after further validation: MyVR, RevitFamilyManagerBuilders, SingularityWarehouse, Workshop umbrella, and sparse repositories.
+9. Conditional candidates only after further validation: MyVR, SingularityWarehouse, Workshop umbrella, and sparse repositories.
 
 ## Limitations and authorization
 
