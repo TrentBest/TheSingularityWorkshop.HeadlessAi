@@ -762,6 +762,41 @@ public sealed class HeadlessAiAgentTurnContractTests
         Assert.Throws<ArgumentException>(result.Validate);
     }
 
+    [Fact]
+    public void Result_RejectsProposalNoticeIdentityMismatch()
+    {
+        const string reportDigest = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        const string candidateSha = "abcdefabcdefabcdefabcdefabcdefabcdefabcd";
+        var hostNoticeIdentity = new string('d', 64);
+        var result = ValidResult() with
+        {
+            CandidateCommitSha = candidateSha,
+            AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
+            AcceptedReportIdentity = "sha256:" + reportDigest,
+            AcceptedReportNoticeIdentitySha256 = hostNoticeIdentity,
+            AcceptedReportSha256 = reportDigest,
+            AcceptedReportWorkflowRunId = "41950000001",
+            AcceptedReportRunAttempt = 1,
+            AcceptedReportCandidateCommitSha = candidateSha,
+            AcceptedReportVerdict = "ActionableFailure",
+            AcceptedReportSourceArtifactIdentitySha256 = new string('b', 64),
+            Proposal = new HeadlessAiAgentTurnProposal
+            {
+                AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
+                AcceptedReportIdentity = "sha256:" + reportDigest,
+                AcceptedReportNoticeIdentitySha256 = new string('e', 64),
+                AcceptedReportSha256 = reportDigest,
+                AcceptedReportWorkflowRunId = "41950000001",
+                AcceptedReportRunAttempt = 1,
+                AcceptedReportCandidateCommitSha = candidateSha,
+                AcceptedReportVerdict = "ActionableFailure",
+                AcceptedReportSourceArtifactIdentitySha256 = new string('b', 64)
+            }
+        };
+
+        Assert.Throws<ArgumentException>(result.Validate);
+    }
+
     private static HeadlessAiAgentTurnResult ValidResult() => new()
     {
         TurnId = "turn-valid",
