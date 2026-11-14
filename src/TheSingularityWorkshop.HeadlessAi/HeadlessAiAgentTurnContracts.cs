@@ -596,6 +596,7 @@ public sealed record HeadlessAiAgentTurnResult
             Proposal.AcceptedReportRunAttempt != AcceptedReportRunAttempt ||
             Proposal.AcceptedReportCandidateCommitSha != AcceptedReportCandidateCommitSha ||
             Proposal.AcceptedReportVerdict != AcceptedReportVerdict ||
+            Proposal.AcceptedReportNoticeIdentitySha256 != AcceptedReportNoticeIdentitySha256 ||
             Proposal.AcceptedReportSourceArtifactIdentitySha256 != AcceptedReportSourceArtifactIdentitySha256)
             throw new ArgumentException("Proposal accepted-report lineage must exactly match the host-bound result lineage.", nameof(Proposal));
     }
