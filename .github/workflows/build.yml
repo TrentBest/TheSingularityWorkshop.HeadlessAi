@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
       - name: Restore
         run: dotnet restore TheSingularityWorkshop.HeadlessAi.slnx
       - name: Build
@@ -66,13 +66,13 @@ jobs:
               names = z.namelist()
               readme_names = [n for n in names if n.lower() == 'readme.md']
               nuspec_names = [n for n in names if n.endswith('.nuspec')]
-              dlls = [n for n in names if n.startswith('lib/net8.0/') and n.endswith('.dll')]
-              xml_docs = [n for n in names if n.startswith('lib/net8.0/') and n.endswith('.xml')]
+              dlls = [n for n in names if n.startswith('lib/net10.0/') and n.endswith('.dll')]
+              xml_docs = [n for n in names if n.startswith('lib/net10.0/') and n.endswith('.xml')]
               docs = [n for n in names if n.startswith('docs/') and n.endswith('.md')]
               svg_docs = [n for n in names if n.startswith('docs/') and n.endswith('.svg')]
               assert readme_names, 'Package is missing README.md'
               assert nuspec_names, 'Package is missing its .nuspec manifest'
-              assert dlls, 'Package is missing the net8.0 assembly'
+              assert dlls, 'Package is missing the net10.0 assembly'
               assert xml_docs, 'Package is missing XML API documentation'
               assert docs, 'Package is missing Markdown documentation under docs/'
               assert 'docs/GALLERY.md' in names, 'Package is missing docs/GALLERY.md'
@@ -146,7 +146,7 @@ jobs:
           fi
           consumer_dir="$(mktemp -d)"
           trap 'rm -rf "$consumer_dir"' EXIT
-          dotnet new console --framework net8.0 --output "$consumer_dir" --no-restore
+          dotnet new console --framework net10.0 --output "$consumer_dir" --no-restore
           dotnet add "$consumer_dir" package "$package_id" --version "$package_version" --source "$PWD/artifacts"
           dotnet build "$consumer_dir" --configuration Release
 
