@@ -51,7 +51,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Validate the published dependency allowlist
         env:
@@ -176,9 +176,9 @@ jobs:
               for path in required:
                   if path not in names:
                       raise SystemExit(f"Package is missing {path}")
-              if "lib/net8.0/TheSingularityWorkshop.HeadlessAi.dll" not in names:
-                  raise SystemExit("Package is missing the expected HeadlessAi net8.0 assembly.")
-              if "lib/net8.0/TheSingularityWorkshop.HeadlessAi.xml" not in names:
+              if "lib/net10.0/TheSingularityWorkshop.HeadlessAi.dll" not in names:
+                  raise SystemExit("Package is missing the expected HeadlessAi net10.0 assembly.")
+              if "lib/net10.0/TheSingularityWorkshop.HeadlessAi.xml" not in names:
                   raise SystemExit("Package is missing the expected HeadlessAi XML API documentation.")
               if not any(n.startswith("docs/") and n.endswith(".md") for n in names):
                   raise SystemExit("Package is missing Markdown documentation.")
@@ -239,7 +239,7 @@ jobs:
             </packageSources>
           </configuration>
           EOF
-          dotnet new console --framework net8.0 --output "$consumer_dir" --no-restore
+          dotnet new console --framework net10.0 --output "$consumer_dir" --no-restore
           (
             cd "$consumer_dir"
             dotnet add package "$package_id" --version "$package_version"
