@@ -7,7 +7,7 @@
 
 # HeadlessAi — Next Release Candidate
 
-**Review date:** 2026-11-12 UTC  
+**Review date:** 2026-11-17 UTC  
 **Purpose:** one evidence-backed status page for the next HeadlessAi NuGet package candidate. This document is a release-preparation record, not authorization to merge or publish.
 
 ## Candidate identity
@@ -17,12 +17,12 @@
 | Package | `TheSingularityWorkshop.HeadlessAi` |
 | Previous published version | `0.1.0-alpha.1` |
 | Next candidate version | `0.1.0-alpha.2` |
-| Target framework | `net8.0` |
+| Target framework | `net10.0` |
 | License | MIT |
 | Required package dependency | `TheSingularityWorkshop.FSM_Serialization 1.0.0` |
 | Candidate branch | `feature/resumable-agent-turn-integration` |
 | Candidate commit at review start | `5ca7b42af7bb90453f5ef4334c594a291771b36a` |
-| Current exact source-verified PR head | `8d57d2a0f3abeec3357ac603f72ba81a31207d88` |
+| Current candidate SHA | Read the live head from [PR #13](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13); this document is not the SHA authority. |
 | Integration PR | [#13 — Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13) |
 
 NuGet currently lists `0.1.0-alpha.1` as the published HeadlessAi version. The next package must not reuse that immutable version. The project version has therefore been advanced to `0.1.0-alpha.2` for this candidate. See the [NuGet package listing](https://www.nuget.org/packages/TheSingularityWorkshop.HeadlessAi).
@@ -40,7 +40,7 @@ HeadlessAi is a provider-neutral .NET library for bounded HTTP invocation agains
 
 ## Verification evidence
 
-- [x] Current exact PR head `8d57d2a0f3abeec3357ac603f72ba81a31207d88` passed Development Build, Test, and Coverage: [run #43161560404](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161560404).
+- [x] Historical PR head `8d57d2a0f3abeec3357ac603f72ba81a31207d88` passed Development Build, Test, and Coverage: [run #43161560404](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161560404). This is historical evidence, not validation of the current reconciled head.
 - [x] Build succeeded; **248 tests passed, 0 failed, 0 skipped**.
 - [x] Coverage preparation and Codecov upload succeeded.
 - [x] Earlier package-version baseline also passed: [run #43161297815](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161297815), SHA `bb10aaf02d98191c5a4ba0064d1f54885bdcf9e7`.
