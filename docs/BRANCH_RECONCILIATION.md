@@ -72,7 +72,7 @@ The master README is 163 lines and development's README is 160 lines. The master
 
 ## Release-critical differences
 
-- `master` and the current `development` baseline retain the previously published `0.1.0-alpha.1`; the active PR candidate advances to `0.1.0-alpha.2`. Both target .NET 8.
+- `master` retains the previously published `0.1.0-alpha.1` baseline and its .NET 8 target. The active `development` line and PR #13 candidate advance to `0.1.0-alpha.2` and target .NET 10.
 - Development includes Markdown under `docs/` and SVG assets in the NuGet package. Master packs only the root README in the project file. Keep the development package-documentation behavior.
 - The current development workflow has no package-publishing job and no pack step. The manual release-verification workflow has read-only repository permissions and no publishing step.
 - Development pins NuGet Trusted Publishing's action to an immutable commit SHA; master uses a mutable version tag.
