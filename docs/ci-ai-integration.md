@@ -29,7 +29,7 @@ See [Agent turns and resumability](agent-turns-and-resumability.md) for the requ
 
 ## Package and dependency ordering for CiAi
 
-HeadlessAi is a **NuGet library package**, not a MicroBundle derivative. Its current package identity is `TheSingularityWorkshop.HeadlessAi`, targeting `net8.0`. The next candidate is `0.1.0-alpha.2`; its required package dependency is `TheSingularityWorkshop.FSM_Serialization` at the exact published version `1.0.0`.
+HeadlessAi is a **NuGet library package**, not a MicroBundle derivative. Its current package identity is `TheSingularityWorkshop.HeadlessAi`, targeting `net10.0`. The next candidate is `0.1.0-alpha.2`; its required package dependency is `TheSingularityWorkshop.FSM_Serialization` at the exact published version `1.0.0`.
 
 The project deliberately has two dependency modes:
 
