@@ -492,6 +492,8 @@ public sealed class HeadlessAiAgentTurnComparisonTests
             AcceptedReportVerdict = "ActionableFailure",
             AcceptedReportSourceArtifactIdentitySha256 = new string('c', 64),
             AcceptedReportNoticeIdentitySha256 = new string('d', 64),
+            AcceptedReportAuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
+            AuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
             Proposal = result.Proposal with
             {
                 AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
