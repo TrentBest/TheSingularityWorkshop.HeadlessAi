@@ -170,7 +170,8 @@ public sealed class HeadlessAiAgentTurnExecutor
                 AcceptedReportWorkflowRunId = null,
                 AcceptedReportRunAttempt = null,
                 AcceptedReportCandidateCommitSha = null,
-                AcceptedReportSourceArtifactIdentitySha256 = null
+                AcceptedReportSourceArtifactIdentitySha256 = null,
+                AcceptedReportAuthoritativeWorkflowEvidenceSha256 = null
             };
             proposal.Validate();
         }
@@ -336,7 +337,8 @@ public sealed class HeadlessAiAgentTurnExecutor
             AcceptedReportRunAttempt = acceptedCiReport?.RunAttempt,
             AcceptedReportCandidateCommitSha = acceptedCiReport?.CandidateCommitSha,
             AcceptedReportVerdict = acceptedCiReport?.Verdict,
-            AcceptedReportSourceArtifactIdentitySha256 = acceptedCiReport?.SourceArtifact?.IdentitySha256
+            AcceptedReportSourceArtifactIdentitySha256 = acceptedCiReport?.SourceArtifact?.IdentitySha256,
+            AcceptedReportAuthoritativeWorkflowEvidenceSha256 = acceptedCiReport?.AuthoritativeWorkflowEvidenceSha256
         };
 
     private static bool IsCredentialMetadata(string key, string value)
