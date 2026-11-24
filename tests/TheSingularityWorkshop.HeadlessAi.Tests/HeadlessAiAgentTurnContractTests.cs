@@ -641,6 +641,7 @@ public sealed class HeadlessAiAgentTurnContractTests
         {
             ReportIdentity = "sha256:" + digest,
             NoticeIdentitySha256 = new string('d', 64),
+            AuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
             CanonicalReportJson = report,
             ReportSha256 = digest,
             WorkflowRunId = "41950000001",
@@ -774,6 +775,7 @@ public sealed class HeadlessAiAgentTurnContractTests
             AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
             AcceptedReportIdentity = "sha256:" + reportDigest,
             AcceptedReportNoticeIdentitySha256 = hostNoticeIdentity,
+            AcceptedReportAuthoritativeWorkflowEvidenceSha256 = new string('f', 64),
             AcceptedReportSha256 = reportDigest,
             AcceptedReportWorkflowRunId = "41950000001",
             AcceptedReportRunAttempt = 1,
@@ -785,6 +787,7 @@ public sealed class HeadlessAiAgentTurnContractTests
                 AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
                 AcceptedReportIdentity = "sha256:" + reportDigest,
                 AcceptedReportNoticeIdentitySha256 = new string('e', 64),
+            AcceptedReportAuthoritativeWorkflowEvidenceSha256 = new string('f', 64),
                 AcceptedReportSha256 = reportDigest,
                 AcceptedReportWorkflowRunId = "41950000001",
                 AcceptedReportRunAttempt = 1,
