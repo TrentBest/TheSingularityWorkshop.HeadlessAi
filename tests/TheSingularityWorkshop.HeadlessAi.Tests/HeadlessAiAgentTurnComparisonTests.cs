@@ -450,6 +450,7 @@ public sealed class HeadlessAiAgentTurnComparisonTests
             "notice-identity" => second with
             {
                 AcceptedReportNoticeIdentitySha256 = new string('b', 64),
+                AcceptedReportAuthoritativeWorkflowEvidenceSha256 = new string('f', 64),
                 Proposal = second.Proposal with { AcceptedReportNoticeIdentitySha256 = new string('b', 64) }
             },
             _ => second
