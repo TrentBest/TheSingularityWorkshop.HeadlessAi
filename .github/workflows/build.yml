@@ -2,7 +2,7 @@ name: Development Build, Test, and Coverage
 
 on:
   push:
-    branches: [master, development]
+    branches: [master, development, "feature/**"]
   pull_request:
     branches: [master, development]
   workflow_dispatch:
