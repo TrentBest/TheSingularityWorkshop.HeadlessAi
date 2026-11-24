@@ -338,6 +338,8 @@ public sealed record HeadlessAiAgentTurnProposal
     public string? PatchIntent { get; init; }
     /// <summary>Questions the model proposes asking the host or owner.</summary>
     public IReadOnlyList<string> Questions { get; init; } = Array.Empty<string>();
+    /// <summary>Structured, untrusted operation proposals for the host to classify and authorize.</summary>
+    public IReadOnlyList<HeadlessAiAgentOperationProposal> Operations { get; init; } = Array.Empty<HeadlessAiAgentOperationProposal>();
     /// <summary>Model-reported confidence in the proposal, from zero to one.</summary>
     public double? Confidence { get; init; }
     /// <summary>Model-reported uncertainty and missing information.</summary>
@@ -377,6 +379,11 @@ public sealed record HeadlessAiAgentTurnProposal
     public void Validate()
     {
         ArgumentNullException.ThrowIfNull(Questions);
+        ArgumentNullException.ThrowIfNull(Operations);
+        if (Operations.Count > 16 || Operations.Any(operation => operation is null))
+            throw new ArgumentException("At most 16 non-null operation proposals are supported.", nameof(Operations));
+        foreach (var operation in Operations)
+            operation.Validate();
         if (Confidence is < 0 or > 1 || (Confidence.HasValue && double.IsNaN(Confidence.Value)))
             throw new ArgumentOutOfRangeException(nameof(Confidence), "Confidence must be between zero and one.");
         if (Questions.Count > 64 || Questions.Any(q => string.IsNullOrWhiteSpace(q) || q.Length > 2_048))
