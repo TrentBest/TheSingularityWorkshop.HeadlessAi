@@ -20,11 +20,12 @@ They do **not** create an autonomous agent loop. The host remains responsible fo
 | `HeadlessAiAcceptedCiReportContext` | Exact bounded UTF-8 report bytes, digest, report identity, run/attempt, and candidate binding supplied by the trusted host |
 | `HeadlessAiAgentTurnExecutor` | Exactly one provider invocation through a configured `HeadlessAiAgentTemplate` and host-owned `HttpClient` |
 | `HeadlessAiAgentTurnResult` | Provider-attributed result, raw response, normalized untrusted proposal, timestamps, and provenance |
+| `HeadlessAiAgentOperationProposal` | A bounded structured operation request (operation name, summary, rationale, JSON arguments); it is still untrusted data and grants no authority |
 | `HeadlessAiAgentTurnComparison` | Validated collection of independent provider results and explicitly attributed assessments/relationships |
 | `HeadlessAiAgentTurnComparisonSnapshot` | Immutable canonical comparison snapshot and fingerprint |
 | `HeadlessAiAgentTurnBinaryCodec` | Versioned binary framing for request and comparison snapshots over `FSM_Serialization.IBinaryStream` |
 
-The envelope is data, not authority. Validation requires an isolated feature branch and rejects `master` and `development` as authorized targets. CI evidence is treated as untrusted, provenance-bearing input; HeadlessAi does not independently verify a CI provider's verdict.
+A model may return up to 16 structured operation proposals. Each proposal contains a bounded operation identifier, summary, rationale, and JSON-object arguments. The host must compare the operation against its own closed vocabulary and policy; unknown or unauthorized proposals are rejected or escalated. The model cannot set an approval flag, grant itself a capability, or choose its own authority.\n\nThe envelope is data, not authority. Validation requires an isolated feature branch and rejects `master` and `development` as authorized targets. CI evidence is treated as untrusted, provenance-bearing input; HeadlessAi does not independently verify a CI provider's verdict.
 
 The isolated authorized branch is a **host-managed candidate ref**, not a permanent repository branch. A host may create it for one bounded agent turn or review cycle and discard it after integration or rejection. The repository's maintained branch policy can therefore remain exactly `master` and `development`; HeadlessAi neither creates candidate branches nor decides their retention or deletion. The host must enforce the repository's branch-creation and cleanup policy.
 
