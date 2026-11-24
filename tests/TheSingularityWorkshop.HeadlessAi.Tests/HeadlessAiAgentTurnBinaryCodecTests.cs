@@ -83,6 +83,7 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         {
             ReportIdentity = "sha256:" + digest,
             NoticeIdentitySha256 = new string('d', 64),
+            AuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
             CanonicalReportJson = report,
             ReportSha256 = digest,
             WorkflowRunId = "100",
@@ -502,7 +503,6 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
             AcceptedReportSourceArtifactIdentitySha256 = Fingerprint,
             AcceptedReportNoticeIdentitySha256 = new string('d', 64),
             AcceptedReportAuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
-            AuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
             Proposal = result.Proposal with
             {
                 AcceptedReportSchemaVersion = HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion,
