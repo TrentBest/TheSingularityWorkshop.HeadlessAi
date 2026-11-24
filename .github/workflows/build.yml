@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: [master, development]
   workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact 40-character HeadlessAi candidate commit SHA (defaults to the triggering commit)
+        required: false
+        type: string
+      fsm_serialization_version:
+        description: Exact published FSM_Serialization version (currently allowlisted: 1.0.0)
+        required: true
+        default: 1.0.0
+        type: string
 
 permissions:
   contents: read
@@ -63,7 +73,7 @@ jobs:
     steps:
       - name: Validate immutable candidate identity
         env:
-          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha || github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           if [[ ! "$CANDIDATE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
@@ -75,7 +85,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: TrentBest/TheSingularityWorkshop.HeadlessAi
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ inputs.candidate_sha || github.event.pull_request.head.sha || github.sha }}
           path: HeadlessAi
 
       - name: Set up .NET
@@ -85,7 +95,7 @@ jobs:
 
       - name: Validate the published dependency allowlist
         env:
-          FSM_SERIALIZATION_VERSION: 1.0.0
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version || '1.0.0' }}
         run: |
           set -euo pipefail
           if [[ "$FSM_SERIALIZATION_VERSION" != "1.0.0" ]]; then
@@ -101,7 +111,7 @@ jobs:
       - name: Restore against published dependencies
         working-directory: HeadlessAi
         env:
-          FSM_SERIALIZATION_VERSION: 1.0.0
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version || '1.0.0' }}
         run: |
           dotnet restore TheSingularityWorkshop.HeadlessAi.slnx \
             -p:UsePublishedDependencies=true \
@@ -110,7 +120,7 @@ jobs:
       - name: Build candidate
         working-directory: HeadlessAi
         env:
-          FSM_SERIALIZATION_VERSION: 1.0.0
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version || '1.0.0' }}
         run: |
           dotnet build TheSingularityWorkshop.HeadlessAi.slnx \
             --configuration Release --no-restore \
@@ -120,7 +130,7 @@ jobs:
       - name: Run tests against published dependencies
         working-directory: HeadlessAi
         env:
-          FSM_SERIALIZATION_VERSION: 1.0.0
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version || '1.0.0' }}
         run: |
           dotnet test tests/TheSingularityWorkshop.HeadlessAi.Tests/TheSingularityWorkshop.HeadlessAi.Tests.csproj \
             --configuration Release --no-build \
@@ -130,7 +140,7 @@ jobs:
       - name: Pack exactly one candidate package
         working-directory: HeadlessAi
         env:
-          FSM_SERIALIZATION_VERSION: 1.0.0
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version || '1.0.0' }}
         run: |
           dotnet pack src/TheSingularityWorkshop.HeadlessAi/TheSingularityWorkshop.HeadlessAi.csproj \
             --configuration Release --no-build --no-restore --output ./artifacts \
@@ -145,7 +155,7 @@ jobs:
       - name: Audit package archive, manifest, dependency allowlist, and README
         working-directory: HeadlessAi
         env:
-          FSM_SERIALIZATION_VERSION: 1.0.0
+          FSM_SERIALIZATION_VERSION: ${{ inputs.fsm_serialization_version || '1.0.0' }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
