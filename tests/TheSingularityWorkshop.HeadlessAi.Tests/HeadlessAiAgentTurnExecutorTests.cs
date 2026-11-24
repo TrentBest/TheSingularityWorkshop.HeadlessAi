@@ -906,6 +906,8 @@ public sealed class HeadlessAiAgentTurnExecutorTests
             JobId = 987654321,
             JobName = "test-minesweeper",
             JobKey = "minesweeper-required-check",
+            JobStatus = "completed",
+            JobConclusion = "failure",
             ArtifactId = 7001,
             ArtifactName = "minesweeper-test-results",
             ProviderArchiveDigest = "sha256:" + new string('a', 64),
