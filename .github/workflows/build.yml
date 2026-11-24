@@ -196,7 +196,7 @@ jobs:
               dependency = dependency_nodes[0]
               if dependency.attrib.get("id") != expected_dependency:
                   raise SystemExit(f"Dependency is not allowlisted: {dependency.attrib}")
-              if dependency.attrib.get("version") != f"[{expected_dependency_version}, {expected_dependency_version}]":
+              if dependency.attrib.get("version") not in {f"[{expected_dependency_version}]", f"[{expected_dependency_version}, {expected_dependency_version}]"}:
                   raise SystemExit(f"Dependency is not pinned to the exact approved version: {dependency.attrib}")
 
               required = [
