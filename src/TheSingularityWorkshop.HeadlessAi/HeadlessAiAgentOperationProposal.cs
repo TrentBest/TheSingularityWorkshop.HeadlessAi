@@ -7,11 +7,16 @@ namespace TheSingularityWorkshop.HeadlessAi;
 /// </summary>
 public sealed record HeadlessAiAgentOperationProposal
 {
+    /// <summary>Host-recognized operation identifier proposed by the model; it grants no permission.</summary>
     public required string Operation { get; init; }
+    /// <summary>Human-readable summary of the proposed operation.</summary>
     public required string Summary { get; init; }
+    /// <summary>Model-provided rationale, retained as untrusted explanatory text.</summary>
     public required string Rationale { get; init; }
+    /// <summary>Exact JSON-object arguments for host-side validation and authorization.</summary>
     public required string ArgumentsJson { get; init; }
 
+    /// <summary>Validates bounds and JSON shape without authorizing or executing the proposal.</summary>
     public void Validate()
     {
         static void Required(string value, string name, int maximum)
