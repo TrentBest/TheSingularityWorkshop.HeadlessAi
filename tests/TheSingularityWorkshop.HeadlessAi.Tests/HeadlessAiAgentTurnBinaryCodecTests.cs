@@ -132,6 +132,8 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
             JobId = 987654321,
             JobName = "test",
             JobKey = "required-tests",
+            JobStatus = "completed",
+            JobConclusion = "failure",
             ArtifactId = 7001,
             ArtifactName = "test-results",
             ProviderArchiveDigest = "sha256:" + new string('a', 64),
