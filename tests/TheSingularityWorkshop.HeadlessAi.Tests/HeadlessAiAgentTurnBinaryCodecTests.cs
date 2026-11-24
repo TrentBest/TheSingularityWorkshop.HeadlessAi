@@ -83,7 +83,6 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
         {
             ReportIdentity = "sha256:" + digest,
             NoticeIdentitySha256 = new string('d', 64),
-            AuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
             CanonicalReportJson = report,
             ReportSha256 = digest,
             WorkflowRunId = "100",
@@ -514,7 +513,8 @@ public sealed class HeadlessAiAgentTurnBinaryCodecTests
                 AcceptedReportCandidateCommitSha = Sha,
                 AcceptedReportVerdict = "ActionableFailure",
                 AcceptedReportSourceArtifactIdentitySha256 = Fingerprint,
-                AcceptedReportNoticeIdentitySha256 = new string('d', 64)
+                AcceptedReportNoticeIdentitySha256 = new string('d', 64),
+                AcceptedReportAuthoritativeWorkflowEvidenceSha256 = new string('e', 64)
             }
         };
     }
