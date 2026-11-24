@@ -40,6 +40,9 @@ public sealed record HeadlessAiAcceptedCiReportContext
     /// <summary>Fingerprint of the authenticated outer notice, durable receipt, and report artifact identity.</summary>
     public required string NoticeIdentitySha256 { get; init; }
 
+    /// <summary>Digest of the authoritative ciai.workflow-evidence.v2 packet that gated repair.</summary>
+    public required string AuthoritativeWorkflowEvidenceSha256 { get; init; }
+
     /// <summary>Exact canonical report JSON, represented as its original UTF-8 text.</summary>
     public required string CanonicalReportJson { get; init; }
 
@@ -66,6 +69,8 @@ public sealed record HeadlessAiAcceptedCiReportContext
         if (NoticeIdentitySha256 is not { Length: 64 } || !NoticeIdentitySha256.All(Uri.IsHexDigit) ||
             !string.Equals(NoticeIdentitySha256, NoticeIdentitySha256.ToLowerInvariant(), StringComparison.Ordinal))
             throw new ArgumentException("Accepted outer notice identity must be a lowercase SHA-256 fingerprint.", nameof(NoticeIdentitySha256));
+        if (!Regex.IsMatch(AuthoritativeWorkflowEvidenceSha256 ?? string.Empty, "^[0-9a-f]{64}$", RegexOptions.CultureInvariant))
+            throw new ArgumentException("Authoritative workflow-evidence v2 digest must be a lowercase SHA-256 fingerprint.", nameof(AuthoritativeWorkflowEvidenceSha256));
         if (string.IsNullOrWhiteSpace(WorkflowRunId) || WorkflowRunId.Length > 128)
             throw new ArgumentException("Accepted report workflow run identity is required and bounded.", nameof(WorkflowRunId));
         if (RunAttempt < 1)
