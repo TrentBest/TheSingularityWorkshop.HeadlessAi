@@ -403,20 +403,25 @@ public sealed record HeadlessAiAgentTurnProposal
         HeadlessAiAgentTurnEnvelope.ValidateAcceptedReportLineage(AcceptedReportIdentity, AcceptedReportSha256,
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
         ValidateAcceptedReportProvenance(AcceptedReportSchemaVersion, AcceptedReportVerdict,
-            AcceptedReportSourceArtifactIdentitySha256, AcceptedReportNoticeIdentitySha256);
+            AcceptedReportSourceArtifactIdentitySha256, AcceptedReportNoticeIdentitySha256,
+            AcceptedReportAuthoritativeWorkflowEvidenceSha256);
     }
 
-    internal static void ValidateAcceptedReportProvenance(string? schemaVersion, string? verdict, string? sourceIdentity, string? noticeIdentity)
+    internal static void ValidateAcceptedReportProvenance(string? schemaVersion, string? verdict,
+        string? sourceIdentity, string? noticeIdentity, string? authoritativeWorkflowEvidenceSha256)
     {
         if (schemaVersion is null)
         {
-            if (verdict is not null || sourceIdentity is not null || noticeIdentity is not null)
-                throw new ArgumentException("Accepted report verdict and source identity require an accepted report schema.");
+            if (verdict is not null || sourceIdentity is not null || noticeIdentity is not null ||
+                authoritativeWorkflowEvidenceSha256 is not null)
+                throw new ArgumentException("Accepted report provenance requires an accepted report schema.");
             return;
         }
         if (noticeIdentity is not { Length: 64 } || !noticeIdentity.All(Uri.IsHexDigit) ||
             !string.Equals(noticeIdentity, noticeIdentity.ToLowerInvariant(), StringComparison.Ordinal))
             throw new ArgumentException("Accepted outer notice identity must be a lowercase SHA-256 fingerprint.", nameof(noticeIdentity));
+        if (!Regex.IsMatch(authoritativeWorkflowEvidenceSha256 ?? string.Empty, "^[0-9a-f]{64}$", RegexOptions.CultureInvariant))
+            throw new ArgumentException("Authoritative workflow-evidence v2 digest must be a lowercase SHA-256 fingerprint.", nameof(authoritativeWorkflowEvidenceSha256));
         if (verdict is not ("CompletePass" or "ActionableFailure" or "NonActionableFailure" or "IncompleteOrUntrusted"))
             throw new ArgumentException("Accepted report verdict is unknown.", nameof(verdict));
         if (sourceIdentity is not null &&
@@ -488,6 +493,8 @@ public sealed record HeadlessAiAgentTurnResult
     public string? AcceptedReportVerdict { get; init; }
     /// <summary>Fingerprint of the independently observed nested TRX source artifact.</summary>
     public string? AcceptedReportSourceArtifactIdentitySha256 { get; init; }
+    /// <summary>Digest of the authoritative workflow-evidence v2 packet that gated repair.</summary>
+    public string? AcceptedReportAuthoritativeWorkflowEvidenceSha256 { get; init; }
     /// <summary>Provider adapter identity.</summary>
     public required string ProviderId { get; init; }
     /// <summary>Provider model identifier.</summary>
