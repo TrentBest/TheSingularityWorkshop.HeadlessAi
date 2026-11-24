@@ -28,6 +28,10 @@ public sealed record HeadlessAiAcceptedCiSourceArtifactContext
     public required string JobName { get; init; }
     /// <summary>Stable machine-readable key assigned to the source job by the host.</summary>
     public required string JobKey { get; init; }
+    /// <summary>Provider-observed terminal state of the source job.</summary>
+    public required string JobStatus { get; init; }
+    /// <summary>Provider-observed terminal conclusion of the source job, when supplied.</summary>
+    public required string? JobConclusion { get; init; }
     /// <summary>Provider artifact identifier.</summary>
     public required long ArtifactId { get; init; }
     /// <summary>Name of the provider artifact containing the bounded source archive.</summary>
@@ -70,6 +74,8 @@ public sealed record HeadlessAiAcceptedCiSourceArtifactContext
             !Clean(WorkflowPath, 512) || !WorkflowPath.StartsWith(".github/workflows/", StringComparison.Ordinal) ||
             RunId <= 0 || RunAttempt <= 0 || !IsSha(CandidateCommitSha) ||
             JobId <= 0 || !Clean(JobName, 200) || !Clean(JobKey, 100) ||
+            JobStatus != "completed" ||
+            (JobConclusion is not null && !new[] { "success", "failure", "cancelled", "timed_out", "action_required", "neutral", "skipped", "stale", "startup_failure" }.Contains(JobConclusion, StringComparer.Ordinal)) ||
             JobKey.Any(c => !(char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.')) ||
             ArtifactId <= 0 || !Clean(ArtifactName, 200) ||
             ProviderArchiveDigest is not { Length: 71 } ||
@@ -115,6 +121,8 @@ public sealed record HeadlessAiAcceptedCiSourceArtifactContext
             source.JobId.ToString(CultureInfo.InvariantCulture),
             source.JobName,
             source.JobKey,
+            source.JobStatus,
+            source.JobConclusion ?? string.Empty,
             source.ArtifactId.ToString(CultureInfo.InvariantCulture),
             source.ArtifactName,
             source.ProviderArchiveDigest.ToLowerInvariant(),
