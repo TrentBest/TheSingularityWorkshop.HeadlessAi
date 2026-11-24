@@ -7,44 +7,55 @@
 
 # Branch Reconciliation Ledger
 
-**Review date:** 2026-11-12 UTC  
-**Scope:** all persistent branches, with comparisons against `development`  
-**Disposition:** Audit and documentation reconciliation only. No merge, cherry-pick, reset, force-push, or branch deletion has been performed. NuGet publication remains unauthorized.
+**Review date:** 2026-11-24 UTC  
+**Scope:** all persistent HeadlessAi branches, compared with `development`  
+**Disposition:** Inventory and semantic reconciliation only. No merge, cherry-pick, reset, force-push, or branch deletion has been performed. NuGet publication remains unauthorized.
 
-## Live audit — 2026-11-12 UTC
+## Live audit — 2026-11-24 UTC
 
-GitHub reports **7 persistent branches**. The comparisons below were refreshed against the current `development` head `3cb5ace24fe97822eaa1e9b65b3aa8da8589ab07`.
+GitHub reports **9 persistent branches**. The required permanent inventory is exactly `master` and `development`. Comparisons below are against the current `development` head (11 commits behind the active integration branches at this checkpoint).
 
 ### Verified inventory
 
 | Branch | Commits ahead / behind `development` | Evidence and disposition |
 |---|---:|---|
-| `master` | 19 / 150 | PRESERVE — released baseline. Its divergence includes workflow and Sith-policy differences; no blind reconciliation. |
-| `development` | canonical | PRESERVE — active integration baseline. |
-| `feature/resumable-agent-turn-integration` | 126 / 0 | PRESERVE — active PR #13 head `7f3df570f58686481e0ab797cae9de5094ad8188`. Latest completed source CI [run #43161297815](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161297815) passed 248 tests at `bb10aaf02d98191c5a4ba0064d1f54885bdcf9e7`; later commits are documentation and release-workflow integration changes. |
-| `feature/resumable-agent-turn-contracts` | 159 / 72 | PRESERVE — 159 unique commits and substantial divergence. Do not discard its history merely because PR #11 was superseded. |
-| `work/http-retry-after-guidance` | 15 / 93 | PRESERVE — 15 unique commits and seven changed paths remain. PR #13 contains related retry-after behavior, but this branch's unique history has not been fully reconciled semantically. |
-| `docs/readme-contrast-accessibility` | 1 / 93 | PRESERVE — one unique architecture-SVG commit remains. Similar contrast treatment in PR #13 is not by itself proof that the original change is fully superseded. |
-| `feature/bounded-artifact-http-adapter` | 0 / 3 | HOLD — no unique commits or file diff remain against `development`, but HeadlessAi Issue #12 is still open and specifies the bounded artifact-fetch integration needed by Foundry. Do not mark ready for deletion until Issue #12, Foundry #8, and the FSM_REST #13/#15 transport ownership work are reconciled and any useful branch-specific design is preserved. |
+| `master` | 32 / 161 | **PRESERVE** — released baseline. Its history and release identity must be reconciled deliberately; do not reset or delete it. |
+| `development` | canonical | **PRESERVE** — active integration baseline. |
+| `docs/headlessai-ecosystem-adoption-assessment` | 3 / 11 | **PRESERVE** — open draft PR #16; one changed file. Review the assessment against current repository reality before integration. |
+| `docs/readme-contrast-accessibility` | 1 / 104 | **PRESERVE / REVIEW** — one unique documentation/visual commit remains. Similar contrast treatment elsewhere is not proof that its specific content is superseded. |
+| `feature/bounded-artifact-http-adapter` | 0 / 14 | **HOLD** — no unique commits or file diff remain against current `development`, but Issue #12 is still open. Its requirement explicitly calls for the optional HeadlessAi integration to delegate to FSM_REST's shared bounded transport and connection-time remote-IP policy. Execution PR #50 contains a separate pinned HTTPS artifact transport, but that does not satisfy the shared FSM_REST ownership requirement. Do not mark ready for deletion until Issue #12 and the FSM_REST transport ownership work are reconciled. |
+| `feature/headlessai-ci-workflow-validation` | 205 / 11 | **PRESERVE / RECONCILE** — 51 changed files. It overlaps the later fix branch in scope; compare the unique commit and file-level semantics before deciding whether either branch is superseded. |
+| `fix/headlessai-ci-workflow-validation` | 202 / 11 | **PRESERVE / RECONCILE** — 51 changed files. Similarity to the feature branch is not enough to delete either history; reconcile the exact workflow fixes and their tests first. |
+| `feature/resumable-agent-turn-integration` | 213 / 11 | **PRESERVE** — open draft PR #13; current exact head `088c638ae85a25649e0ddabb3773ac2ee5b941cc`. This is the active resumable-turn integration candidate. |
+| `work/http-retry-after-guidance` | 15 / 104 | **PRESERVE / REVIEW** — 15 unique commits and 7 changed paths remain. Retry-after behavior may overlap PR #13, but the branch's unique history has not been fully reconciled semantically. |
+
+### Active pull requests and exact-head evidence
+
+- PR #13: [Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13), from `feature/resumable-agent-turn-integration` into `development`; draft, open, and unmerged.
+- PR #16: [Document HeadlessAi adoption assessment across Workshop repositories](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/16), from `docs/headlessai-ecosystem-adoption-assessment` into `development`; draft, open, and unmerged.
+- Exact-head Development Build, Test, and Coverage [run #45337803129](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/45337803129) passed on `088c638ae85a25649e0ddabb3773ac2ee5b941cc`: build succeeded; **263 tests passed, 0 failed, 0 skipped**; coverage was prepared and Codecov upload completed.
+- The same exact-head run's **Non-publishing exact-candidate package verification** job passed: restore/build/test against published FSM_Serialization 1.0.0 succeeded, the `0.1.0-alpha.2` package archive audit passed, clean-consumer restore/build passed, and a review artifact was uploaded. No package was published.
+- Sith Policy remains red because the repository has **9 branches**, not exactly `master` and `development`.
 
 ### Owner cleanup batch
 
-**No surplus branch is currently marked READY FOR OWNER DELETION by this audit.** In particular, the zero-ahead bounded-adapter branch is only a candidate: its associated Issue #12 remains open, so commit-count equality does not establish that the work or design intent is disposable.
+**No surplus branch is currently marked READY FOR OWNER DELETION.** In particular:
 
-The owner performs any eventual deletion. Do not delete branches automatically, and group only branches with completed semantic/reference reconciliation into one owner-reviewed cleanup batch.
+- The bounded-artifact branch has no remaining diff but is still referenced by open Issue #12, whose transport ownership requirements are not yet met.
+- The two workflow-validation branches have substantial unique history and need semantic reconciliation.
+- The documentation and retry-after branches retain unique content.
+- PR #13 and PR #16 remain open and draft.
 
-### Active integration and exact-head verification
-
-- PR #13: [Integrate v1 resumable agent-turn contracts](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/pull/13), from `feature/resumable-agent-turn-integration` into `development`; it remains draft, open, and unmerged.
-- Current PR head at this ledger update: `7f3df570f58686481e0ab797cae9de5094ad8188` (126 commits ahead, 0 behind `development`).
-- Prior exact-head Development Build, Test, and Coverage run [#43160452720](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43160452720) completed successfully: build succeeded; **248 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded. Follow-up run [#43161297815](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/43161297815) also completed successfully: build succeeded; **248 tests passed, 0 failed, 0 skipped**; coverage preparation and Codecov upload succeeded. Its tested SHA is `bb10aaf02d98191c5a4ba0064d1f54885bdcf9e7`; later changes are documentation/workflow integration only.
-- The permanent branch-policy check remains failing because seven branches exist instead of exactly `master` and `development`. This policy failure is not a reason to delete unreconciled work.
+The owner performs any eventual deletion. Do not delete branches automatically. Group only branches with completed semantic/reference reconciliation into one owner-reviewed cleanup batch.
 
 ### Release and authority boundary
 
-- Issue #15 tracks the non-publishing NuGet verification gate. It now exposes manual dispatch and a reusable CiAi workflow-call interface that requires an immutable candidate SHA. The workflow exists on PR #13 but not yet on a canonical branch, so it cannot be dispatched/called until integration. Package archive integrity and clean-consumer compatibility remain unverified.
-- Ordinary development CI continues to use the FSM_Serialization `development` source and does not pack or publish packages.
-- No merge, release, deployment, NuGet publication, canonical-branch write, manual release-verification dispatch, or branch deletion has been performed.
+- The ordinary development workflow builds/tests the source and reports coverage.
+- The non-publishing candidate verification workflow validates the packed artifact and a clean consumer. Its uploaded package artifact is for review only.
+- NuGet publication remains disabled until Trent explicitly authorizes a specific release.
+- No merge, release, deployment, canonical-branch write, privileged workflow dispatch, or branch deletion has been performed.
+
+---
 
 ## Historical branch evidence — 2026-10-22
 
