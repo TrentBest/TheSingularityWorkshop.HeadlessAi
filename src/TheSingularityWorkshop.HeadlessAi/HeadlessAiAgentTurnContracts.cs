@@ -374,6 +374,8 @@ public sealed record HeadlessAiAgentTurnProposal
     public string? AcceptedReportVerdict { get; init; }
     /// <summary>Fingerprint of the independently observed nested TRX source artifact.</summary>
     public string? AcceptedReportSourceArtifactIdentitySha256 { get; init; }
+    /// <summary>Digest of the authoritative workflow-evidence v2 packet that gated repair.</summary>
+    public string? AcceptedReportAuthoritativeWorkflowEvidenceSha256 { get; init; }
 
     /// <summary>Validates proposal bounds without treating any field as trusted or executable.</summary>
     public void Validate()
@@ -577,7 +579,7 @@ public sealed record HeadlessAiAgentTurnResult
             AcceptedReportWorkflowRunId, AcceptedReportRunAttempt, AcceptedReportCandidateCommitSha);
         HeadlessAiAgentTurnProposal.ValidateAcceptedReportProvenance(
             AcceptedReportSchemaVersion, AcceptedReportVerdict, AcceptedReportSourceArtifactIdentitySha256,
-            AcceptedReportNoticeIdentitySha256);
+            AcceptedReportNoticeIdentitySha256, AcceptedReportAuthoritativeWorkflowEvidenceSha256);
         if (AcceptedReportCandidateCommitSha is not null &&
             !(CandidateCommitSha is not null && string.Equals(AcceptedReportCandidateCommitSha, CandidateCommitSha, StringComparison.OrdinalIgnoreCase)) &&
             !(PriorCandidateCommitSha is not null && string.Equals(AcceptedReportCandidateCommitSha, PriorCandidateCommitSha, StringComparison.OrdinalIgnoreCase)))
