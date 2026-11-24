@@ -1,0 +1,15 @@
+name: Workflow Syntax Probe
+
+on:
+  push:
+    branches: ["fix/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm workflow parsing and runner startup
+        run: echo "Workflow syntax probe passed."
