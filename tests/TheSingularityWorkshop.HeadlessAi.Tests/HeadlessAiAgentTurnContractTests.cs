@@ -970,4 +970,44 @@ public sealed class HeadlessAiAgentTurnContractTests
         }).Validate());
     }
 
+    [Fact]
+    public void Proposal_AcceptsBoundedStructuredOperationRequestsAsUntrustedData()
+    {
+        var operation = new HeadlessAiAgentOperationProposal
+        {
+            Operation = "CreateDraftPullRequest",
+            Summary = "Open a draft for human review",
+            Rationale = "The candidate has passed its required checks.",
+            ArgumentsJson = "{\"title\":\"Repair CI failure\",\"draft\":true}"
+        };
+        var proposal = new HeadlessAiAgentTurnProposal { Operations = [operation] };
+        proposal.Validate();
+        Assert.Single(proposal.Operations);
+        Assert.Equal("CreateDraftPullRequest", proposal.Operations[0].Operation);
+    }
+
+    [Fact]
+    public void Proposal_RejectsMalformedOperationArgumentsAndUnboundedActionLists()
+    {
+        var malformed = new HeadlessAiAgentOperationProposal
+        {
+            Operation = "CreateDraftPullRequest",
+            Summary = "Open draft",
+            Rationale = "Needs review",
+            ArgumentsJson = "not-json"
+        };
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal { Operations = [malformed] }.Validate());
+        var valid = new HeadlessAiAgentOperationProposal
+        {
+            Operation = "ReadRepository",
+            Summary = "Read a file",
+            Rationale = "Inspect source",
+            ArgumentsJson = "{\"path\":\"README.md\"}"
+        };
+        Assert.Throws<ArgumentException>(() => new HeadlessAiAgentTurnProposal
+        {
+            Operations = Enumerable.Repeat(valid, 17).ToArray()
+        }.Validate());
+        Assert.Throws<ArgumentNullException>(() => new HeadlessAiAgentTurnProposal { Operations = null! }.Validate());
+    }
 }
