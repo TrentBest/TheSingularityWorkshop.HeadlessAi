@@ -788,6 +788,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         {
             ReportIdentity = "sha256:" + digest,
             NoticeIdentitySha256 = new string('d', 64),
+            AuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
             CanonicalReportJson = report,
             ReportSha256 = digest,
             WorkflowRunId = "41950000001",
@@ -836,6 +837,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         Assert.Equal(candidateSha, result.AcceptedReportCandidateCommitSha);
         Assert.Equal("ActionableFailure", result.AcceptedReportVerdict);
         Assert.Equal(sourceArtifact.IdentitySha256, result.AcceptedReportSourceArtifactIdentitySha256);
+        Assert.Equal(new string('e', 64), result.AcceptedReportAuthoritativeWorkflowEvidenceSha256);
         Assert.Equal(HeadlessAiAcceptedCiReportContext.RequiredSchemaVersion, result.Proposal.AcceptedReportSchemaVersion);
         Assert.Equal("sha256:" + digest, result.Proposal.AcceptedReportIdentity);
         Assert.Equal(digest, result.Proposal.AcceptedReportSha256);
@@ -856,6 +858,7 @@ public sealed class HeadlessAiAgentTurnExecutorTests
         {
             ReportIdentity = "sha256:" + digest,
             NoticeIdentitySha256 = new string('d', 64),
+            AuthoritativeWorkflowEvidenceSha256 = new string('e', 64),
             CanonicalReportJson = report,
             ReportSha256 = new string('a', 64),
             WorkflowRunId = "41950000001",
