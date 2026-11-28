@@ -9,7 +9,7 @@
 # ✳️ 00 TheSingularityWorkshop.HeadlessAi
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/blob/development/LICENSE)
-[![Build](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml/badge.svg?branch=development)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml)
+[![Build](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml/badge.svg?branch=development)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/build.yml)\n[![Pages](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/pages.yml/badge.svg?branch=development)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/pages.yml)\n\n**[Open the HeadlessAi architecture portal](https://trentbest.github.io/TheSingularityWorkshop.HeadlessAi/)** · Published only after the complete build, test, coverage, package audit, and consumer verification workflow succeeds.
 [![Code Coverage](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi/branch/development/graph/badge.svg)](https://codecov.io/gh/TrentBest/TheSingularityWorkshop.HeadlessAi)
 
 [![Sith Policy](https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.HeadlessAi/development/assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/workflows/sith-policy.yml)
