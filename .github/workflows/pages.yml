@@ -1,0 +1,39 @@
+name: HeadlessAi Pages
+
+on:
+  workflow_run:
+    workflows: ["Build, Test, Coverage, and Pack"]
+    types: [completed]
+    branches: [development]
+
+permissions:
+  contents: read
+
+jobs:
+  package-site:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'development' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout the exact validated commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Verify portal and architecture assets
+        run: |
+          set -euo pipefail
+          test -s docs/site/index.html
+          test -s docs/assets/headless-ai-architecture.svg
+          test -s docs/assets/headless-ai-invocation-lifecycle.svg
+          grep -q 'The response is data—not authority' docs/site/index.html
+          grep -q 'headless-ai-architecture.svg' docs/site/index.html
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/site
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'development' }}
+    needs: package-site
+    permissions:
+      pages: write
+      id-token: write
+    uses: TrentBest/TheSingularityWorkshop.CiAi/.github/workflows/deploy-pages.yml@5083c452b555d7645dd0c8ab01d76008026da436
