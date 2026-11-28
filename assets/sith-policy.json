@@ -18,7 +18,7 @@
   ],
   "branch_count": 9,
   "status": "NON-COMPLIANT",
-  "evaluated_at": "2026-11-27T13:53:57Z",
-  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/46011058164",
-  "triggering_commit": "4b397e4db016628d5c3679ea22a19898d8646212"
+  "evaluated_at": "2026-11-28T13:01:33Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi/actions/runs/46147517918",
+  "triggering_commit": "c821903f8f3d122405d77d3f2c7aa10653d4a269"
 }
