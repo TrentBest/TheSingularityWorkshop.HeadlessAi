@@ -178,3 +178,28 @@ jobs:
           user: TheSingularityWorkshop
       - name: Publish package to NuGet.org
         run: dotnet nuget push "./artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
+
+  pages-package:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/development' }}
+    needs: verify
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout the fully validated commit
+        uses: actions/checkout@v7
+      - name: Verify static portal entry point
+        run: |
+          set -euo pipefail
+          test -s docs/site/index.html
+          grep -q 'The Singularity Workshop' docs/site/index.html
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/site
+
+  pages-deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/development' }}
+    needs: pages-package
+    permissions:
+      pages: write
+      id-token: write
+    uses: TrentBest/TheSingularityWorkshop.CiAi/.github/workflows/deploy-pages.yml@5083c452b555d7645dd0c8ab01d76008026da436
